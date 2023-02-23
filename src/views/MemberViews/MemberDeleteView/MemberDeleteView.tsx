@@ -8,6 +8,7 @@ import {MembersApi} from "../../../services";
 import {Container} from "typescript-ioc";
 
 export interface MemberDeleteViewProps {
+    nav: string
 }
 
 export const MemberDeleteView = (props: MemberDeleteViewProps) => {
@@ -18,7 +19,7 @@ export const MemberDeleteView = (props: MemberDeleteViewProps) => {
     const navigation = useNavigate()
 
     const cancelAction = () => {
-        navigation('/members')
+        navigation(props.nav)
     }
 
     const yesAction = () => {
@@ -32,7 +33,7 @@ export const MemberDeleteView = (props: MemberDeleteViewProps) => {
                 setLoading(false)
             })
 
-        navigation('/members')
+        navigation(props.nav)
     }
 
     return (

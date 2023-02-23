@@ -4,17 +4,27 @@ import {Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow
 import {useAtomValue, useSetAtom} from "jotai";
 
 import {MemberListMenu} from "./MemberListMenu";
-import {currentMemberAtom, memberListAtomLoadable} from "../../../atoms";
+import {currentMemberAtom, memberListAtomLoadable, memberResponsesAtom, signupListAtom} from "../../../atoms";
 import {createEmptyMember, MemberModel} from "../../../models";
 
 export interface MemberPageProps {
+    navAddEdit: string
+    navDelete: string
+    navDetail: string
 }
 
 export const MemberListView = (props: MemberPageProps) => {
     const loadableMembers = useAtomValue(memberListAtomLoadable)
     const setCurrentMember = useSetAtom(currentMemberAtom)
+    const loadMemberResponses = useSetAtom(memberResponsesAtom)
 
     const navigate = useNavigate()
+
+    const showDetailView = (member: MemberModel) => {
+        setCurrentMember(member)
+
+        navigate(props.navDetail)
+    }
 
     const showAddView = () => {
         showUpdateView(createEmptyMember())
@@ -22,14 +32,15 @@ export const MemberListView = (props: MemberPageProps) => {
 
     const showUpdateView = (member: MemberModel) => {
         setCurrentMember(member)
+        loadMemberResponses(member).catch(err => console.error('Error loading responses', err))
 
-        navigate('/members/addEdit')
+        navigate(props.navAddEdit)
     }
 
     const deleteMember = (member: MemberModel) => {
         setCurrentMember(member)
 
-        navigate('/members/delete')
+        navigate(props.navDelete)
     }
 
     if (loadableMembers.state === 'loading') {
@@ -61,7 +72,7 @@ export const MemberListView = (props: MemberPageProps) => {
                         <TableCell>{member.phone}</TableCell>
                         <TableCell>{member.email}</TableCell>
                         <TableCell>{member.preferredContact}</TableCell>
-                        <TableCell><MemberListMenu onDelete={() => deleteMember(member)} onUpdate={() => showUpdateView(member)}></MemberListMenu></TableCell>
+                        <TableCell><MemberListMenu onDelete={() => deleteMember(member)} onUpdate={() => showUpdateView(member)} onDetail={() => showDetailView(member)}></MemberListMenu></TableCell>
                     </TableRow>
                 ))}
             </TableBody>

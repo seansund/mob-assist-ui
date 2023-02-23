@@ -1,11 +1,5 @@
 import {MemberModel} from "../../models";
+import {BaseApi} from "../base.api";
 
-export abstract class MembersApi {
-    abstract list(): Promise<MemberModel[]>;
-
-    abstract get(phone: string): Promise<MemberModel | undefined>;
-
-    abstract addUpdate(member: MemberModel): Promise<MemberModel[]>;
-
-    abstract delete(member: MemberModel): Promise<MemberModel[]>;
+export abstract class MembersApi extends BaseApi<MemberModel> {
 }

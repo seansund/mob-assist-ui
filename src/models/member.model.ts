@@ -14,3 +14,7 @@ export const createEmptyMember = (): MemberModel => ({
     email: '',
     preferredContact: 'text'
 })
+
+export const isMemberModel = (val: any): val is MemberModel => {
+    return !!val && !!val.phone
+}

@@ -1,19 +1,21 @@
 import React from "react";
-import {useAtomValue} from "jotai";
 import {Avatar, Button, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Popover} from "@mui/material";
+import {useAtomValue} from "jotai";
 import UpdateIcon from '@mui/icons-material/Update';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CopyIcon from '@mui/icons-material/CopyAll';
 import DetailIcon from '@mui/icons-material/Details';
 
 import {currentUserAtom} from "../../../../atoms";
 
-export interface MemberListMenuProps {
+export interface SignupListMenuProps {
     onDelete: () => void
     onUpdate: () => void
+    onDuplicate: () => void
     onDetail: () => void
 }
 
-export const MemberListMenu = (props: MemberListMenuProps) => {
+export const SignupListMenu = (props: SignupListMenuProps) => {
     const currentUser = useAtomValue(currentUserAtom)
     const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
 
@@ -30,10 +32,10 @@ export const MemberListMenu = (props: MemberListMenuProps) => {
 
     if (currentUser.role !== 'admin') {
         return (<div>
-            <Button aria-describedby={id} variant="contained" onClick={props.onDetail}>
-                Details
-            </Button>
-        </div>)
+                <Button aria-describedby={id} variant="contained" onClick={props.onDetail}>
+                    Details
+                </Button>
+            </div>)
     }
 
     return (
@@ -75,7 +77,20 @@ export const MemberListMenu = (props: MemberListMenuProps) => {
                                     <UpdateIcon />
                                 </Avatar>
                             </ListItemAvatar>
-                            <ListItemText primary="Update member" />
+                            <ListItemText primary="Update signup" />
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem disableGutters>
+                        <ListItemButton
+                            autoFocus
+                            onClick={props.onDuplicate}
+                        >
+                            <ListItemAvatar>
+                                <Avatar>
+                                    <CopyIcon />
+                                </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText primary="Duplicate signup" />
                         </ListItemButton>
                     </ListItem>
                     <ListItem disableGutters>
@@ -88,7 +103,7 @@ export const MemberListMenu = (props: MemberListMenuProps) => {
                                     <DeleteIcon />
                                 </Avatar>
                             </ListItemAvatar>
-                            <ListItemText primary="Delete member" />
+                            <ListItemText primary="Delete signup" />
                         </ListItemButton>
                     </ListItem>
                 </List>

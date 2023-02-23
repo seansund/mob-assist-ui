@@ -1,7 +1,7 @@
 import React, {FormEvent} from "react";
 import {useNavigate} from "react-router-dom";
 import {useAtomValue, useSetAtom} from "jotai";
-import {Button, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, TextField} from "@mui/material";
+import {Button, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, Stack, TextField} from "@mui/material";
 import isEqual from 'lodash.isequal'
 import {Container} from "typescript-ioc";
 
@@ -10,6 +10,7 @@ import {currentMemberAtom, loadingAtom, memberListAtom} from "../../../atoms";
 import {MembersApi} from "../../../services";
 
 export interface MemberAddEditViewProps {
+    nav: string
 }
 
 export const MemberAddEditView = (props: MemberAddEditViewProps) => {
@@ -34,7 +35,7 @@ export const MemberAddEditView = (props: MemberAddEditViewProps) => {
     }
 
     const cancelAction = () => {
-        navigate('/members')
+        navigate(props.nav)
     }
 
     const submitAction = (event: FormEvent<HTMLFormElement>) => {
@@ -49,11 +50,12 @@ export const MemberAddEditView = (props: MemberAddEditViewProps) => {
                 setLoading(false)
             })
 
-        navigate('/members')
+        navigate(props.nav)
     }
 
     return (<div>
         <form onSubmit={(event: FormEvent<HTMLFormElement>) => submitAction(event) }>
+            <Stack spacing={3}>
             <TextField
                 required
                 name="phone"
@@ -101,6 +103,7 @@ export const MemberAddEditView = (props: MemberAddEditViewProps) => {
             </FormControl>
             <Button variant="outlined" onClick={cancelAction}>Cancel</Button>
             <Button variant="contained" type="submit">Submit</Button>
+            </Stack>
         </form>
     </div>)
 }

@@ -1,31 +1,30 @@
 import {atom} from "jotai";
 import {isMemberModel, MemberModel, MemberResponseModel, SignupModel} from "../models";
-import {loadable} from "jotai/utils";
+import {atomWithObservable, loadable} from "jotai/utils";
 import {Container} from "typescript-ioc";
 import {SignupResponsesApi} from "../services";
+import {Observable} from "rxjs";
 
 const service: SignupResponsesApi = Container.get(SignupResponsesApi)
 
+const baseAtom = atomWithObservable<MemberResponseModel[]>(() => service.subscribeToResponses())
 
-const baseAtom = atom<Promise<MemberResponseModel[]>>(Promise.resolve([]))
-
-const getIdValue = (idType: MemberModel | SignupModel): {id: string, name: 'listByUser' | 'listBySignup'} => {
+const getIdValue = (idType: MemberModel | SignupModel): {id: string, name: 'subscribeToUserResponses' | 'subscribeToSignupResponses'} => {
     if (isMemberModel(idType)) {
-        return {id: idType.phone, name: 'listByUser'}
+        return {id: idType.phone, name: 'subscribeToUserResponses'}
     } else {
-        return {id: idType.id, name: 'listBySignup'}
+        return {id: idType.id, name: 'subscribeToSignupResponses'}
     }
 }
+
 export const memberResponsesAtom = atom(
     get => get(baseAtom),
     async (get, set, idType: MemberModel | SignupModel) => {
         const config = getIdValue(idType)
 
-        const update: Promise<MemberResponseModel[]> = service[config.name](config.id)
+        service[config.name](config.id)
 
-        set(baseAtom, update)
-
-        return update
+        return get(baseAtom)
     }
 )
 

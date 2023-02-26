@@ -6,6 +6,7 @@ import {MembersApi} from "../members";
 import {SignupsApi} from "../signups";
 import {getMemberResponseId, MemberModel, MemberResponseModel, SignupModel} from "../../models";
 import {first, timer} from "../../util";
+import {BehaviorSubject, Observable} from "rxjs";
 
 const membersApi: MembersApi = Container.get(MembersApi)
 const signupsApi: SignupsApi = Container.get(SignupsApi)
@@ -31,8 +32,12 @@ const loadResponsesByUser = async (): Promise<MemberResponseModel[]> => {
 }
 
 export class SignupResponsesMock extends BaseMock<MemberResponseModel> implements SignupResponsesApi {
+    subject: BehaviorSubject<MemberResponseModel[]>
+
     constructor() {
         super(loadResponsesByUser());
+
+        this.subject = new BehaviorSubject<MemberResponseModel[]>([])
     }
 
     getId(val: MemberResponseModel): string {
@@ -82,4 +87,19 @@ export class SignupResponsesMock extends BaseMock<MemberResponseModel> implement
         return result
     }
 
+    subscribeToResponses(): Observable<MemberResponseModel[]> {
+        return this.subject;
+    }
+
+    subscribeToSignupResponses(signupId: string): Observable<MemberResponseModel[]> {
+        this.listBySignup(signupId).then((result: MemberResponseModel[]) => this.subject.next(result));
+
+        return this.subject;
+    }
+
+    subscribeToUserResponses(phone: string): Observable<MemberResponseModel[]> {
+        this.listByUser(phone).then((result: MemberResponseModel[]) => this.subject.next(result));
+
+        return this.subject;
+    }
 }

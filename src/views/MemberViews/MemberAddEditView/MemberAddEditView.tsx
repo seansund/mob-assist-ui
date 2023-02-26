@@ -6,7 +6,7 @@ import isEqual from 'lodash.isequal'
 import {Container} from "typescript-ioc";
 
 import {MemberModel} from "../../../models";
-import {currentMemberAtom, loadingAtom, memberListAtom} from "../../../atoms";
+import {currentMemberAtom, memberListAtom} from "../../../atoms";
 import {MembersApi} from "../../../services";
 
 export interface MemberAddEditViewProps {
@@ -18,8 +18,6 @@ export const MemberAddEditView = (props: MemberAddEditViewProps) => {
 
     const setMemberList = useSetAtom(memberListAtom)
     const [member, setMember] = React.useState(Object.assign({}, currentMember))
-
-    const setLoading = useSetAtom(loadingAtom)
 
     const navigate = useNavigate()
 
@@ -38,19 +36,19 @@ export const MemberAddEditView = (props: MemberAddEditViewProps) => {
         navigate(props.nav)
     }
 
-    const submitAction = (event: FormEvent<HTMLFormElement>) => {
+    const submitAction = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
-        setLoading(true)
-        const service: MembersApi = Container.get(MembersApi)
+        try {
+            const service: MembersApi = Container.get(MembersApi)
 
-        service.addUpdate(member)
-            .then(async members => {
-                await setMemberList(members)
-                setLoading(false)
-            })
+            await service.addUpdate(member)
+            setMemberList(service.list())
 
-        navigate(props.nav)
+            navigate(props.nav)
+        } catch (err) {
+            // TODO handle error
+        }
     }
 
     return (<div>

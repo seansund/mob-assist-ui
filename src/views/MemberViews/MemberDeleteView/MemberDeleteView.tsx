@@ -1,7 +1,7 @@
 import {useAtomValue, useSetAtom} from "jotai";
 import {Box, Button, Dialog, DialogTitle} from "@mui/material";
 
-import {currentMemberAtom, loadingAtom, memberListAtom} from "../../../atoms";
+import {currentMemberAtom, memberListAtom} from "../../../atoms";
 import React from "react";
 import {useNavigate} from "react-router-dom";
 import {MembersApi} from "../../../services";
@@ -14,7 +14,6 @@ export interface MemberDeleteViewProps {
 export const MemberDeleteView = (props: MemberDeleteViewProps) => {
     const member = useAtomValue(currentMemberAtom)
     const setMemberList = useSetAtom(memberListAtom)
-    const setLoading = useSetAtom(loadingAtom)
 
     const navigation = useNavigate()
 
@@ -22,18 +21,18 @@ export const MemberDeleteView = (props: MemberDeleteViewProps) => {
         navigation(props.nav)
     }
 
-    const yesAction = () => {
+    const yesAction = async () => {
         const service: MembersApi = Container.get(MembersApi)
 
-        setLoading(true)
+        try {
+            await service.delete(member)
 
-        service.delete(member)
-            .then(async members => {
-                await setMemberList(members)
-                setLoading(false)
-            })
+            setMemberList(service.list())
 
-        navigation(props.nav)
+            navigation(props.nav)
+        } catch (err) {
+            // TODO handle error
+        }
     }
 
     return (

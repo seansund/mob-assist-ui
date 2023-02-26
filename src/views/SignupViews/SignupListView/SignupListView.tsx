@@ -10,8 +10,7 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow,
-    Typography
+    TableRow
 } from "@mui/material";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -37,6 +36,7 @@ export const SignupListView = (props: SignupListViewProps) => {
 
     const showDetailView = (signup: SignupModel) => {
         setCurrentSignup(signup)
+        loadMemberResponses(signup)
 
         navigate(props.navDetail)
     }
@@ -88,9 +88,8 @@ export const SignupListView = (props: SignupListViewProps) => {
                 </TableHead>
                 <TableBody>
                     {(loadableSignups as any).data.map((signup: SignupModel) => (
-                        <>
+                        <React.Fragment key={signup.id}>
                         <TableRow
-                            key={signup.id}
                             sx={{ '&:last-child td, &:last-child th': { border: 0 }, '& > *': { borderBottom: 'unset' } }}
                         >
                             <TableCell>
@@ -108,13 +107,10 @@ export const SignupListView = (props: SignupListViewProps) => {
                             <TableCell>{signup.responses.reduce(totalResponses, 0)}</TableCell>
                             <TableCell><SignupListMenu onDuplicate={() => duplicateSignup(signup)} onDelete={() => deleteSignup(signup)} onUpdate={() => showUpdateView(signup)} onDetail={() => showDetailView(signup)}></SignupListMenu></TableCell>
                         </TableRow>
-                        <TableRow key={signup.id + '-options'}>
+                        <TableRow>
                             <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
                             <Collapse in={open} timeout="auto" unmountOnExit>
                                 <Box sx={{ margin: 1}}>
-                                    <Typography variant="h6" gutterBottom component="div">
-                                        Responses
-                                    </Typography>
                                     <Table size="small" aria-label="purchases">
                                         <TableHead>
                                             <TableRow>
@@ -125,7 +121,7 @@ export const SignupListView = (props: SignupListViewProps) => {
                                         </TableHead>
                                         <TableBody>
                                             {signup.responses.map(response => (
-                                                <TableRow key={response.option.id}>
+                                                <TableRow key={response.option.value}>
                                                     <TableCell component="th" scope="row">
                                                         {response.option.value}
                                                     </TableCell>
@@ -140,7 +136,7 @@ export const SignupListView = (props: SignupListViewProps) => {
                             </TableCell>
                             <TableCell style={{ paddingBottom: 0, paddingTop: 0 }}></TableCell>
                         </TableRow>
-                        </>
+                        </React.Fragment>
                     ))}
                 </TableBody>
             </Table>

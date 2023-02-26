@@ -26,3 +26,7 @@ export function omit<T, U extends keyof T>(value: T, field: U): Omit<T, U> {
 
   return c;
 }
+
+export const reverse = <T> (sorter: (a: T, b: T) => number) => {
+  return (a: T, b: T): number => sorter(b, a)
+}

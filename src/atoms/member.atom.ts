@@ -12,13 +12,13 @@ const service: MembersApi = Container.get(MembersApi)
 const baseAtom = atomWithDefault<Promise<MemberModel[]>>(async () => service.list())
 export const memberListAtom = atom(
     get => get(baseAtom),
-    async (_get, set, update: MemberModel[]) => {
+    async (_get, set, update: MemberModel[] | Promise<MemberModel[]>) => {
 
         if (!update) {
             update = await service.list()
         }
 
-        set(baseAtom, update)
+        set(baseAtom, await update)
 
         return update
     }

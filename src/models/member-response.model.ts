@@ -2,6 +2,7 @@ import {AssignmentModel, SignupModel, SignupOptionModel} from "./signup.model";
 import {MemberModel} from "./member.model";
 
 export interface MemberResponseModel {
+    id: string
     signup: SignupModel
     member: MemberModel
     selectedOption?: SignupOptionModel
@@ -9,6 +10,6 @@ export interface MemberResponseModel {
     assignments?: AssignmentModel[]
 }
 
-export const getMemberResponseId = (response: MemberResponseModel): string => {
+export const getMemberResponseId = (response: {member: MemberModel, signup: SignupModel}): string => {
     return response.signup.id + '-' + response.member.phone
 }

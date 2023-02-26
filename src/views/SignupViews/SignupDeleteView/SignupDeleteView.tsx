@@ -1,6 +1,6 @@
 import {useNavigate} from "react-router-dom";
 import {useAtomValue, useSetAtom} from "jotai";
-import {currentSignupAtom, loadingAtom, signupListAtom} from "../../../atoms";
+import {currentSignupAtom, signupListAtom} from "../../../atoms";
 import {SignupsApi} from "../../../services";
 import {Container} from "typescript-ioc";
 import {Box, Button, Dialog, DialogTitle} from "@mui/material";
@@ -13,7 +13,6 @@ export interface SignupDeleteViewProps {
 export const SignupDeleteView = (props: SignupDeleteViewProps) => {
     const signup = useAtomValue(currentSignupAtom)
     const setSignupList = useSetAtom(signupListAtom)
-    const setLoading = useSetAtom(loadingAtom)
 
     const navigation = useNavigate()
 
@@ -21,18 +20,17 @@ export const SignupDeleteView = (props: SignupDeleteViewProps) => {
         navigation(props.nav)
     }
 
-    const yesAction = () => {
-        const service: SignupsApi = Container.get(SignupsApi)
+    const yesAction = async () => {
+        try {
+            const service: SignupsApi = Container.get(SignupsApi)
 
-        setLoading(true)
+            await service.delete(signup)
+            setSignupList(service.list())
 
-        service.delete(signup)
-            .then(async signups => {
-                await setSignupList(signups)
-                setLoading(false)
-            })
-
-        navigation(props.nav)
+            navigation(props.nav)
+        } catch (err) {
+            // TODO handle error
+        }
     }
 
     return (

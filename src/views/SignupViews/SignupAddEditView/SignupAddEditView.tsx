@@ -10,7 +10,7 @@ import {DesktopDatePicker, LocalizationProvider} from "@mui/x-date-pickers";
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
 
 import {SignupOptionsView} from "./SignupOptionsView";
-import {currentSignupAtom, loadingAtom, signupListAtom} from "../../../atoms";
+import {currentSignupAtom, signupListAtom} from "../../../atoms";
 import {SignupModel, SignupModelBase} from "../../../models";
 import {SignupsApi} from "../../../services";
 
@@ -23,8 +23,6 @@ export const SignupAddEditView = (props: SignupAddEditViewProps) => {
 
     const setSignupList = useSetAtom(signupListAtom)
     const [signup, setSignup] = React.useState(Object.assign({}, currentSignup))
-
-    const setLoading = useSetAtom(loadingAtom)
 
     const navigate = useNavigate()
 
@@ -62,19 +60,19 @@ export const SignupAddEditView = (props: SignupAddEditViewProps) => {
         navigate(props.nav)
     }
 
-    const submitAction = (event: FormEvent<HTMLFormElement>) => {
+    const submitAction = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
 
-        setLoading(true)
-        const service: SignupsApi = Container.get(SignupsApi)
+        try {
+            const service: SignupsApi = Container.get(SignupsApi)
 
-        service.addUpdate(signup)
-            .then(async signups => {
-                await setSignupList(signups)
-                setLoading(false)
-            })
+            await service.addUpdate(signup)
+            setSignupList(service.list())
 
-        navigate(props.nav)
+            navigate(props.nav)
+        } catch (err) {
+            // TODO handle error
+        }
     }
 
     return (<div>

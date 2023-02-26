@@ -22,6 +22,7 @@ export const MemberListView = (props: MemberPageProps) => {
 
     const showDetailView = (member: MemberModel) => {
         setCurrentMember(member)
+        loadMemberResponses(member)
 
         navigate(props.navDetail)
     }

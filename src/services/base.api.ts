@@ -3,7 +3,7 @@ export abstract class BaseApi<T> {
 
     abstract get(phone: string): Promise<T | undefined>;
 
-    abstract addUpdate(member: T): Promise<Array<T>>;
+    abstract addUpdate(member: T): Promise<T>;
 
-    abstract delete(member: T): Promise<Array<T>>;
+    abstract delete(member: T): Promise<boolean>;
 }

@@ -7,15 +7,13 @@ import {UsersApi} from "../services";
 
 const service: UsersApi = Container.get(UsersApi)
 
-const baseAtom = atomWithDefault(async () => service.current())
+const baseAtom = atomWithDefault<Promise<UserModel>>(async () => service.current())
 export const currentUserAtom = atom(
     get => get(baseAtom),
-    async (_get, set, newUser: UserModel | undefined) => {
-        if (!newUser) {
-            newUser = await service.current()
-        }
+    async (_get, set, inUser: UserModel | Promise<UserModel> | undefined) => {
+        const newUser = (!inUser) ? service.current() : inUser
 
-        set(baseAtom, newUser)
+        set(baseAtom, await newUser)
 
         return newUser
     }

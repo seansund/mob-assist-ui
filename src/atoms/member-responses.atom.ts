@@ -7,7 +7,7 @@ import {SignupResponsesApi} from "../services";
 const service: SignupResponsesApi = Container.get(SignupResponsesApi)
 
 
-const baseAtom = atom<MemberResponseModel[]>([])
+const baseAtom = atom<Promise<MemberResponseModel[]>>(Promise.resolve([]))
 
 const getIdValue = (idType: MemberModel | SignupModel): {id: string, name: 'listByUser' | 'listBySignup'} => {
     if (isMemberModel(idType)) {
@@ -19,11 +19,9 @@ const getIdValue = (idType: MemberModel | SignupModel): {id: string, name: 'list
 export const memberResponsesAtom = atom(
     get => get(baseAtom),
     async (get, set, idType: MemberModel | SignupModel) => {
-        set(baseAtom, [])
-
         const config = getIdValue(idType)
 
-        const update: MemberResponseModel[] = await service[config.name](config.id)
+        const update: Promise<MemberResponseModel[]> = service[config.name](config.id)
 
         set(baseAtom, update)
 
@@ -32,3 +30,5 @@ export const memberResponsesAtom = atom(
 )
 
 export const memberResponsesAtomLoadable = loadable(memberResponsesAtom)
+
+export const selectedMemberResponseAtom = atom<MemberResponseModel | undefined>(undefined)

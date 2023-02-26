@@ -2,7 +2,7 @@ import {BaseApi} from "./base.api";
 import {Comparator, first, invertFilter, timer} from "../util";
 
 export abstract class BaseMock<T> extends BaseApi<T> {
-    constructor(private values: T[] | Promise<T[]>) {
+    protected constructor(private values: T[] | Promise<T[]>) {
         super();
     }
 
@@ -17,16 +17,16 @@ export abstract class BaseMock<T> extends BaseApi<T> {
     }
 
     async get(id: string): Promise<T | undefined> {
-        const values = await this.values
+        const values: T[] = await this.values
 
         return first(values.filter(this.filter(id)))
             .orElse(undefined as any)
     }
 
-    async addUpdate(toUpdate: T): Promise<Array<T>> {
-        const values = await this.values
+    async addUpdate(toUpdate: T): Promise<T> {
+        const values: T[] = await this.values
 
-        first(values.filter(this.filter(this.getId(toUpdate))))
+        return first(values.filter(this.filter(this.getId(toUpdate))))
             .ifPresent(val => Object.assign(val as any, toUpdate))
             .orElseGet(() => {
                 console.log('Adding new value: ', toUpdate)
@@ -34,21 +34,20 @@ export abstract class BaseMock<T> extends BaseApi<T> {
 
                 return toUpdate
             })
-
-        return this.values
     }
 
-    async delete(toDelete: T): Promise<Array<T>> {
+    async delete(toDelete: T): Promise<boolean> {
         console.log('Deleting value: ', toDelete)
-        const values = await this.values
+        const values: T[] = await this.values
 
         const newValues: Array<T> = values.filter(invertFilter(this.filter(this.getId(toDelete))))
 
         if (newValues.length !== values.length) {
             this.values = newValues
+            return true
         }
 
-        return this.values
+        return false
     }
 
     filter(id: string): Comparator<T> {

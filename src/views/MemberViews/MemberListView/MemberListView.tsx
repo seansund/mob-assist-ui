@@ -33,7 +33,6 @@ export const MemberListView = (props: MemberPageProps) => {
 
     const showUpdateView = (member: MemberModel) => {
         setCurrentMember(member)
-        loadMemberResponses(member).catch(err => console.error('Error loading responses', err))
 
         navigate(props.navAddEdit)
     }

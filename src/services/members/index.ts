@@ -1,7 +1,7 @@
 import {Container} from "typescript-ioc";
 import {MembersApi} from "./members.api";
-import {MembersMock} from "./members.mock";
+import {MembersGraphql} from "./members.graphql";
 
 export * from './members.api'
 
-Container.bind(MembersApi).to(MembersMock)
+Container.bind(MembersApi).to(MembersGraphql)

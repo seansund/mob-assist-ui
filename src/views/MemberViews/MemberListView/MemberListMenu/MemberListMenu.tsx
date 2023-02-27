@@ -25,7 +25,7 @@ export const MemberListMenu = (props: MemberListMenuProps) => {
         setAnchorEl(null);
     };
 
-    const open = Boolean(anchorEl);
+    const open = !!anchorEl;
     const id = open ? 'simple-popover' : undefined;
 
     if (currentUser.role !== 'admin') {

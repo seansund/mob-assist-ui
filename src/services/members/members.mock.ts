@@ -1,3 +1,5 @@
+import {BehaviorSubject, Observable} from "rxjs";
+
 import {MembersApi} from "./members.api";
 import {BaseMock} from "../base.mock";
 import {MemberModel} from "../../models";
@@ -8,6 +10,10 @@ let members: MemberModel[] = [
 ]
 
 export class MembersMock extends BaseMock<MemberModel> implements MembersApi {
+
+    // TODO: implement subject behavior
+    subject: BehaviorSubject<MemberModel[]> = new BehaviorSubject<MemberModel[]>(members)
+
     constructor() {
         super(members);
     }
@@ -18,5 +24,9 @@ export class MembersMock extends BaseMock<MemberModel> implements MembersApi {
 
     setId(val: MemberModel): MemberModel {
         return val
+    }
+
+    observe(skipQuery?: boolean): Observable<MemberModel[]> {
+        return this.subject;
     }
 }

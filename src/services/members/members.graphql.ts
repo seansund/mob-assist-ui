@@ -5,7 +5,7 @@ import {MembersApi} from "./members.api";
 import {getApolloClient} from "../../backends";
 import {MemberModel} from "../../models";
 
-const LIST_MEMBERS = gql`query { listMembers { phone lastName firstName email preferredContact } }`;
+const LIST_MEMBERS = gql`query ListMembers { listMembers { phone lastName firstName email preferredContact } }`;
 const GET_MEMBER_BY_PHONE = gql`query GetMemberByPhone($phone: String!) { getMemberByPhone(phone: $phone) { phone lastName firstName email preferredContact } }`;
 const ADD_UPDATE_MEMBER = gql`mutation AddUpdateMember($phone: String!, $firstName: String!, $lastName: String!, $email: String, $preferredContact: String) { addUpdateMember(phone: $phone, firstName: $firstName, lastName: $lastName, email: $email, preferredContact: $preferredContact) { phone lastName firstName email preferredContact } }`;
 const DELETE_MEMBER = gql`query DeleteMember($phone: String!) { removeMember(phone: $phone) { result } }`;
@@ -21,7 +21,6 @@ export class MembersGraphql implements MembersApi {
     }
 
     list(): Promise<Array<MemberModel>> {
-        console.log('Querying members')
         return this.client
             .query<{listMembers: MemberModel[]}>({
                 query: LIST_MEMBERS,
@@ -42,21 +41,26 @@ export class MembersGraphql implements MembersApi {
             .then(result => result.data.getMemberByPhone)
     }
 
-    addUpdate(member: MemberModel): Promise<MemberModel> {
-        console.log('Updating member')
-        return this.client
-            .query<{addUpdateMember: MemberModel}>({
-                query: ADD_UPDATE_MEMBER,
-                variables: member
+    async addUpdate(member: MemberModel): Promise<MemberModel | undefined> {
+        const result = await this.client
+            .mutate<{addUpdateMember: MemberModel}>({
+                mutation: ADD_UPDATE_MEMBER,
+                variables: member,
+                refetchQueries: [{query: LIST_MEMBERS}],
+                awaitRefetchQueries: true
             })
-            .then(result => result.data.addUpdateMember)
+            .then(async (result: FetchResult<{addUpdateMember: MemberModel}>) => await result.data?.addUpdateMember || undefined)
+
+        return result;
     }
 
     delete(member: MemberModel): Promise<boolean> {
         return this.client
-            .query<{removeMember: {}}>({
-                query: DELETE_MEMBER,
-                variables: {phone: member.phone}
+            .mutate<{removeMember: {}}>({
+                mutation: DELETE_MEMBER,
+                variables: {phone: member.phone},
+                refetchQueries: [{query: LIST_MEMBERS}],
+                awaitRefetchQueries: true
             })
             .then(() => true)
     }

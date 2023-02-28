@@ -9,8 +9,14 @@ export interface SignupModelBase {
 
 export interface SignupModel extends SignupModelBase {
     assignments?: AssignmentSetModel
-    options: SignupOptionModel[]
+    options: SignupOptionSetModel
     responses: SignupOptionResponseModel[]
+}
+
+export interface SignupOptionSetModel {
+    id: string
+    name: string
+    options: SignupOptionModel[]
 }
 
 export const isSignupModel = (val: any): val is SignupModel => {
@@ -154,6 +160,10 @@ export const createEmptySignup = (): SignupModel => ({
     date: '',
     title: '',
     description: '',
-    options: [],
+    options: {
+        id: '',
+        name: '',
+        options: []
+    },
     responses: []
 })

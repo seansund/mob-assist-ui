@@ -101,7 +101,7 @@ export const SignupAddEditView = (props: SignupAddEditViewProps) => {
                     value={signup.description}
                     onChange={handleTextEvent}
                 />
-                <SignupOptionsView onChange={handleTextEvent} value={signup.options}></SignupOptionsView>
+                <SignupOptionsView onChange={handleTextEvent} value={signup.options.options}></SignupOptionsView>
                 <Button variant="outlined" onClick={cancelAction}>Cancel</Button>
                 <Button variant="contained" type="submit">Submit</Button>
             </Stack>

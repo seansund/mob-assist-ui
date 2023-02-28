@@ -103,7 +103,7 @@ export const SignupListView = (props: SignupListViewProps) => {
                             </TableCell>
                             <TableCell>{signup.date}</TableCell>
                             <TableCell>{signup.title}</TableCell>
-                            <TableCell>{signup.options.map(s => s.value).join(', ')}</TableCell>
+                            <TableCell>{signup.options.options.map(s => s.value).join(', ')}</TableCell>
                             <TableCell>{signup.responses.reduce(totalResponses, 0)}</TableCell>
                             <TableCell><SignupListMenu onDuplicate={() => duplicateSignup(signup)} onDelete={() => deleteSignup(signup)} onUpdate={() => showUpdateView(signup)} onDetail={() => showDetailView(signup)}></SignupListMenu></TableCell>
                         </TableRow>

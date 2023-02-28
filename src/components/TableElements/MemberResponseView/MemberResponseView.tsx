@@ -29,7 +29,7 @@ export const MemberResponseView = (props: MemberResponseViewProps) => {
         props.onClick()
     }
 
-    return (<div onClick={onClick}>{options.map(option => (
+    return (<div onClick={onClick}>{options.options.map(option => (
         <span key={option.value} className={`signup-response ${isSelected(option) ? "active": ""}`}>{option.value}</span>
     ))}</div>)
 }

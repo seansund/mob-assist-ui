@@ -1,3 +1,5 @@
+import {Observable, Subject} from "rxjs";
+
 import {SignupsApi} from "./signups.api";
 import {BaseMock} from "../base.mock";
 import {SignupModel} from "../../models";
@@ -107,17 +109,21 @@ let signups: SignupModel[] = [{
             group: 'Table 5'
         }]
     },
-    options: [{
-        id: '1-1',
-        value: '9am',
-    }, {
-        id: '1-2',
-        value: '10:30am'
-    }, {
-        id: '1-3',
-        value: 'No',
-        declineOption: true
-    }],
+    options: {
+        id: '1',
+        name: 'service',
+        options: [{
+            id: '1-1',
+            value: '9am',
+        }, {
+            id: '1-2',
+            value: '10:30am'
+        }, {
+            id: '1-3',
+            value: 'No',
+            declineOption: true
+        }]
+    },
     responses: [{
         option: {
             id: '1-1',
@@ -151,6 +157,10 @@ export class SignupsMock extends BaseMock<SignupModel> implements SignupsApi {
 
     setId(val: SignupModel): SignupModel {
         return Object.assign({}, val, {id: val.id || `${val.title}-${val.date}`})
+    }
+
+    observeList(skipQuery?: boolean): Observable<SignupModel[]> {
+        return new Subject();
     }
 }
 

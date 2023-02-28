@@ -26,7 +26,7 @@ export class MembersMock extends BaseMock<MemberModel> implements MembersApi {
         return val
     }
 
-    observe(skipQuery?: boolean): Observable<MemberModel[]> {
+    observeList(skipQuery?: boolean): Observable<MemberModel[]> {
         return this.subject;
     }
 }

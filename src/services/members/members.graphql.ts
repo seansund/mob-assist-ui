@@ -6,9 +6,9 @@ import {getApolloClient} from "../../backends";
 import {MemberModel} from "../../models";
 
 const LIST_MEMBERS = gql`query ListMembers { listMembers { phone lastName firstName email preferredContact } }`;
-const GET_MEMBER_BY_PHONE = gql`query GetMemberByPhone($phone: String!) { getMemberByPhone(phone: $phone) { phone lastName firstName email preferredContact } }`;
-const ADD_UPDATE_MEMBER = gql`mutation AddUpdateMember($phone: String!, $firstName: String!, $lastName: String!, $email: String, $preferredContact: String) { addUpdateMember(phone: $phone, firstName: $firstName, lastName: $lastName, email: $email, preferredContact: $preferredContact) { phone lastName firstName email preferredContact } }`;
-const DELETE_MEMBER = gql`query DeleteMember($phone: String!) { removeMember(phone: $phone) { result } }`;
+const GET_MEMBER_BY_PHONE = gql`query GetMemberByPhone($phone: ID!) { getMemberByPhone(phone: $phone) { phone lastName firstName email preferredContact } }`;
+const ADD_UPDATE_MEMBER = gql`mutation AddUpdateMember($phone: ID!, $firstName: String!, $lastName: String!, $email: String, $preferredContact: String) { addUpdateMember(phone: $phone, firstName: $firstName, lastName: $lastName, email: $email, preferredContact: $preferredContact) { phone lastName firstName email preferredContact } }`;
+const DELETE_MEMBER = gql`query DeleteMember($phone: ID!) { removeMember(phone: $phone) { result } }`;
 const MEMBERS_SUBSCRIPTION = gql`subscription { members { phone lastName firstName email preferredContact } }`
 
 export class MembersGraphql implements MembersApi {
@@ -42,16 +42,14 @@ export class MembersGraphql implements MembersApi {
     }
 
     async addUpdate(member: MemberModel): Promise<MemberModel | undefined> {
-        const result = await this.client
+        return this.client
             .mutate<{addUpdateMember: MemberModel}>({
                 mutation: ADD_UPDATE_MEMBER,
                 variables: member,
-                refetchQueries: [{query: LIST_MEMBERS}],
+                refetchQueries: [{query: LIST_MEMBERS}, {query: GET_MEMBER_BY_PHONE, variables: {phone: member.phone}}],
                 awaitRefetchQueries: true
             })
             .then(async (result: FetchResult<{addUpdateMember: MemberModel}>) => await result.data?.addUpdateMember || undefined)
-
-        return result;
     }
 
     delete(member: MemberModel): Promise<boolean> {
@@ -59,13 +57,13 @@ export class MembersGraphql implements MembersApi {
             .mutate<{removeMember: {}}>({
                 mutation: DELETE_MEMBER,
                 variables: {phone: member.phone},
-                refetchQueries: [{query: LIST_MEMBERS}],
+                refetchQueries: [{query: LIST_MEMBERS}, {query: GET_MEMBER_BY_PHONE, variables: {phone: member.phone}}],
                 awaitRefetchQueries: true
             })
             .then(() => true)
     }
 
-    observe(skipQuery: boolean = false): Observable<MemberModel[]> {
+    observeList(skipQuery: boolean = false): Observable<MemberModel[]> {
         if (skipQuery) {
             return this.subject
         }

@@ -89,8 +89,8 @@ const SignupResponseTableView = (props: SignupResponseTableViewProps) => {
             })
     }
 
-    const options: Array<SignupOptionModel | undefined> = currentSignup.options.length > 0
-        ? currentSignup.options.concat([undefined as any])
+    const options: Array<SignupOptionModel | undefined> = currentSignup.options.options.length > 0
+        ? currentSignup.options.options.concat([undefined as any])
         : []
 
     const onClose = () => {

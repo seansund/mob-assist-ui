@@ -44,7 +44,7 @@ export const MemberResponseDialog = (props: MemberResponseDialogProps) => {
                                    open={props.open}
                                    title="Update Signup Response"
                                    label="Response"
-                                   options={selectedMemberResponse.signup.options}
+                                   options={selectedMemberResponse.signup.options.options}
                                    selectedValue={selectedMemberResponse.selectedOption}
                                    onClose={handleSelection} />)
 }

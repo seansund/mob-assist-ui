@@ -27,7 +27,6 @@ export class SignupsGraphql implements SignupsApi {
                 variables: {scope}
             })
             .then(result => {
-                console.log('Got members: ', result.data.listSignups)
                 return result.data.listSignups
             })
             .catch(err => {

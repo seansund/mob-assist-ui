@@ -49,8 +49,17 @@ export interface SignupOptionResponseModel {
 
 export interface AssignmentModel {
 
+    id: string
     name: string
     group: string
+}
+
+export const createAssignment = ({name, group}: {name: string, group: string}): AssignmentModel => {
+    return {
+        name,
+        group,
+        id: group + '-' + name
+    }
 }
 
 export interface AssignmentDetail {

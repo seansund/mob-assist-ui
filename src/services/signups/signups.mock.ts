@@ -8,7 +8,7 @@ let signups: SignupModel[] = [{
     id: '1',
     date: '03/19/2023',
     title: 'Communion',
-    assignments: {
+    assignmentSet: {
         id: '1',
         name: 'FBG Sanctuary',
         assignments: [createAssignment({

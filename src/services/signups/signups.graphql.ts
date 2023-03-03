@@ -3,7 +3,7 @@ import {BehaviorSubject, Observable} from "rxjs";
 
 import {SignupsApi} from "./signups.api";
 import {getApolloClient} from "../../backends";
-import {MemberModel, SignupModel} from "../../models";
+import {MemberModel, SignupModel, SignupScope} from "../../models";
 
 const LIST_SIGNUPS = gql`query ListSignups($scope: String) { listSignups(scope:$scope) { id date title options { id name options { id value declineOption } } responses { option { id value declineOption } count assignments } } }`;
 const GET_SIGNUP_BY_ID = gql`query GetSignupById($id: ID!) { getSignupById(id: $id) { id date title options { id name options { id value declineOption } } responses { option { id value declineOption } count assignments } assignmentSet { id name assignments { group name } } } }`;
@@ -20,15 +20,15 @@ export class SignupsGraphql implements SignupsApi {
         this.subject = new BehaviorSubject<SignupModel[]>([])
     }
 
-    list(scope?: string): Promise<Array<SignupModel>> {
+    list(scope?: SignupScope): Promise<Array<SignupModel>> {
+        console.log('Loading signups with scope: ', {scope})
+
         return this.client
             .query<{listSignups: SignupModel[]}>({
                 query: LIST_SIGNUPS,
                 variables: {scope}
             })
-            .then(result => {
-                return result.data.listSignups
-            })
+            .then(result => result.data.listSignups)
             .catch(err => {
                 console.log('Error querying members: ', err)
                 throw err
@@ -53,7 +53,7 @@ export class SignupsGraphql implements SignupsApi {
         return this.client
             .mutate<{addUpdateSignup: SignupModel}>({
                 mutation: ADD_UPDATE_SIGNUP,
-                variables: {id: signup.id, date: signup.date, title: signup.title, optionSetId: signup.options.id, assignmentSetId: signup.assignments?.id},
+                variables: {id: signup.id, date: signup.date, title: signup.title, optionSetId: signup.options.id, assignmentSetId: signup.assignmentSet?.id},
                 refetchQueries,
                 awaitRefetchQueries: true
             })

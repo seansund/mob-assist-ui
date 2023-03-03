@@ -1,10 +1,10 @@
 import React, {useState} from "react";
-import {useAtomValue} from "jotai";
+import {useAtomValue, useSetAtom} from "jotai";
 import {Accordion, AccordionDetails, AccordionSummary, Stack, Typography} from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import {SignupResponseTable} from "./SignupResponseTable";
-import {currentSignupAtom, memberResponsesAtomLoadable} from "../../../atoms";
+import {currentSignupAtom, memberResponsesAtomLoadable, signupListAtom} from "../../../atoms";
 import {AssignmentDialog, MemberResponseDialog} from "../../../components";
 import {
     AssignmentModel,
@@ -63,6 +63,7 @@ const SignupResponseTableView = (props: SignupResponseTableViewProps) => {
     const [openResponseDialog, setOpenResponseDialog] = useState(false)
     const [openAssignmentDialog, setOpenAssignmentDialog] = useState(false)
     const loadableResponses = useAtomValue(memberResponsesAtomLoadable)
+    const loadSignups = useSetAtom(signupListAtom)
 
     const currentSignup = props.currentSignup
 
@@ -70,9 +71,21 @@ const SignupResponseTableView = (props: SignupResponseTableViewProps) => {
         return (<div>Loading...</div>)
     }
 
+    const isResponseForOption = (option?: SignupOptionModel) => {
+        return (resp: MemberResponseModel): boolean => {
+            if (!option && !resp.selectedOption) {
+                return true
+            } else if (!option || !resp.selectedOption) {
+                return false
+            } else {
+                return option.id === resp.selectedOption.id
+            }
+        }
+    }
+
     const filterResponses = (option?: SignupOptionModel, responses: MemberResponseModel[] = []): MemberResponseModel[] => {
         return responses
-            .filter(resp => resp.selectedOption === option)
+            .filter(isResponseForOption(option))
             .sort((a: MemberResponseModel, b: MemberResponseModel): number => {
                 const aAssignment: Optional<AssignmentModel> = first(a.assignments || [])
                 const bAssignment: Optional<AssignmentModel> = first(b.assignments || [])
@@ -96,6 +109,8 @@ const SignupResponseTableView = (props: SignupResponseTableViewProps) => {
     const onClose = () => {
         setOpenResponseDialog(false)
         setOpenAssignmentDialog(false)
+
+        loadSignups(undefined)
     }
 
     const showMemberResponseDialog = () => {

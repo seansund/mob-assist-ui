@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import {Container} from "typescript-ioc";
 
-import {memberResponsesAtom, selectedMemberResponseAtom} from "../../../atoms";
+import {currentSignupAtom, memberResponsesAtom, selectedMemberResponseAtom} from "../../../atoms";
 import {
     AssignmentGroup,
     AssignmentModel,
@@ -32,14 +32,17 @@ export interface AssignmentDialogProps {
 
 export const AssignmentDialog = (props: AssignmentDialogProps) => {
     const response = useAtomValue(selectedMemberResponseAtom)
+    const signup = useAtomValue(currentSignupAtom)
     const loadResponses = useSetAtom(memberResponsesAtom)
     const [assignments, setAssignments] = useState(response?.assignments || [])
 
-    if (!response || !response.signup.assignments) {
+    console.log('Open assignment dialog: ', {open: props.open, response, signup})
+
+    if (!response || !signup?.assignmentSet) {
         return (<></>)
     }
 
-    const assignmentSet: AssignmentSetModel = response.signup.assignments
+    const assignmentSet: AssignmentSetModel = signup.assignmentSet
 
     const handleSubmit = () => {
         handleAssignmentChange(assignments)

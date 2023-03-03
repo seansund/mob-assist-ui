@@ -8,7 +8,7 @@ const httpLink = new HttpLink({
 });
 
 const wsLink = new GraphQLWsLink(createClient({
-  url: 'ws://localhost:8080/subscription',
+  url: 'ws://localhost:3000/subscription',
 }));
 
 // The split function takes three parameters:

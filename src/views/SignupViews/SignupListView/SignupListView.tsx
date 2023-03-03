@@ -15,10 +15,12 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import {useAtomValue, useSetAtom} from "jotai";
+import {Container} from "typescript-ioc";
 
 import {SignupListMenu} from "./SignupListMenu";
 import {currentSignupAtom, memberResponsesAtom, signupListAtomLoadable} from "../../../atoms";
 import {createEmptySignup, SignupModel, SignupOptionResponseModel} from "../../../models";
+import {SignupsApi} from "../../../services";
 
 export interface SignupListViewProps {
     navAddEdit: string
@@ -30,13 +32,29 @@ export const SignupListView = (props: SignupListViewProps) => {
     const loadableSignups = useAtomValue(signupListAtomLoadable)
     const setCurrentSignup = useSetAtom(currentSignupAtom)
     const loadMemberResponses = useSetAtom(memberResponsesAtom)
-    const [open, setOpen] = React.useState(false);
+    const [openIds, setOpenIds] = React.useState<string[]>([]);
 
     const navigate = useNavigate()
 
-    const showDetailView = (signup: SignupModel) => {
-        setCurrentSignup(signup)
-        loadMemberResponses(signup)
+    const service: SignupsApi = Container.get(SignupsApi);
+
+    const isOpen = (id: string) => {
+        return openIds.includes(id)
+    }
+
+    const toggleOpen = (id: string) => {
+        if (isOpen(id)) {
+            setOpenIds(openIds.filter(existingId => existingId !== id))
+        } else {
+            setOpenIds(openIds.concat([id]))
+        }
+    }
+
+    const showDetailView = async (signup: SignupModel) => {
+        const currentSignup: SignupModel | undefined = await service.get(signup.id)
+
+        setCurrentSignup(currentSignup || signup)
+        loadMemberResponses(currentSignup || signup)
 
         navigate(props.navDetail)
     }
@@ -70,7 +88,7 @@ export const SignupListView = (props: SignupListViewProps) => {
         return (<div>Loading...</div>)
     }
 
-    const totalResponses = (total: number, current: SignupOptionResponseModel) => total + current.count
+    const totalResponses = (total: number, current: SignupOptionResponseModel) => current.option ? total + current.count : total;
 
     return (<div>
         <Button variant="outlined" onClick={showAddView}>Add</Button>
@@ -96,20 +114,20 @@ export const SignupListView = (props: SignupListViewProps) => {
                                 <IconButton
                                     aria-label="expand row"
                                     size="small"
-                                    onClick={() => setOpen(!open)}
+                                    onClick={() => toggleOpen(signup.id)}
                                 >
-                                    {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                                    {isOpen(signup.id) ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
                                 </IconButton>
                             </TableCell>
                             <TableCell>{signup.date}</TableCell>
                             <TableCell>{signup.title}</TableCell>
-                            <TableCell>{signup.options.options.map(s => s.value).join(', ')}</TableCell>
+                            <TableCell>{signup.options.options.filter(v => !!v).map(s => s.value).join(', ')}</TableCell>
                             <TableCell>{signup.responses.reduce(totalResponses, 0)}</TableCell>
                             <TableCell><SignupListMenu onDuplicate={() => duplicateSignup(signup)} onDelete={() => deleteSignup(signup)} onUpdate={() => showUpdateView(signup)} onDetail={() => showDetailView(signup)}></SignupListMenu></TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
-                            <Collapse in={open} timeout="auto" unmountOnExit>
+                            <Collapse in={isOpen(signup.id)} timeout="auto" unmountOnExit>
                                 <Box sx={{ margin: 1}}>
                                     <Table size="small" aria-label="purchases">
                                         <TableHead>
@@ -121,9 +139,9 @@ export const SignupListView = (props: SignupListViewProps) => {
                                         </TableHead>
                                         <TableBody>
                                             {signup.responses.map(response => (
-                                                <TableRow key={response.option.value}>
+                                                <TableRow key={response.option?.value || 'no-response'}>
                                                     <TableCell component="th" scope="row">
-                                                        {response.option.value}
+                                                        {response.option?.value || 'No response'}
                                                     </TableCell>
                                                     <TableCell align="center">{response.assignments || 0}</TableCell>
                                                     <TableCell align="right">{response.count}</TableCell>

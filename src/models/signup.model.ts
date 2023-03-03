@@ -8,7 +8,7 @@ export interface SignupModelBase {
 }
 
 export interface SignupModel extends SignupModelBase {
-    assignments?: AssignmentSetModel
+    assignmentSet?: AssignmentSetModel
     options: SignupOptionSetModel
     responses: SignupOptionResponseModel[]
 }
@@ -42,7 +42,7 @@ export const isSignedUp = (response: SignupOptionModel | undefined): boolean => 
 }
 
 export interface SignupOptionResponseModel {
-    option: SignupOptionModel
+    option?: SignupOptionModel
     count: number
     assignments?: number
 }

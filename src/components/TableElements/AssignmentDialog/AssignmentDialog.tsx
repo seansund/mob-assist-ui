@@ -1,6 +1,7 @@
-import React, {useState} from "react";
+import React, {FormEvent, useState} from "react";
 import {useAtomValue, useSetAtom} from "jotai";
 import {
+    Box,
     Button,
     Checkbox,
     Dialog,
@@ -34,9 +35,6 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
     const response = useAtomValue(selectedMemberResponseAtom)
     const signup = useAtomValue(currentSignupAtom)
     const loadResponses = useSetAtom(memberResponsesAtom)
-    const [assignments, setAssignments] = useState(response?.assignments || [])
-
-    console.log('Open assignment dialog: ', {open: props.open, response, signup})
 
     if (!response || !signup?.assignmentSet) {
         return (<></>)
@@ -44,7 +42,31 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
 
     const assignmentSet: AssignmentSetModel = signup.assignmentSet
 
-    const handleSubmit = () => {
+    const formDataToObject = (formData: FormData): {[name: string]: string} => {
+        const result: {[name: string]: string} = {}
+
+        formData.forEach((value: FormDataEntryValue, key: string) => {
+            result[key] = value as string
+        })
+
+        return result
+    }
+
+    const lookupAssignment = (name: string): AssignmentModel | undefined => {
+        return first(assignmentSet.assignments.filter(assignment => assignment.name === name))
+            .orElse(undefined as any)
+    }
+
+    const handleSubmit = (e: FormEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+
+        const formData = new FormData(e.currentTarget as any)
+
+        const assignments: AssignmentModel[] = Object.values(formDataToObject(formData))
+            .map(lookupAssignment)
+            .filter(assignment => !!assignment) as AssignmentModel[]
+
         handleAssignmentChange(assignments)
 
         props.onClose()
@@ -69,26 +91,7 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
     const assignmentsByGroup: AssignmentGroup[] = groupAssignments(assignmentSet)
 
     const isChecked = (assignment: AssignmentModel): boolean => {
-        return first(assignments.filter(current => current.name === assignment.name)).isPresent()
-    }
-
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const name = event.target.name
-        const add = event.target.checked
-
-        const assignment = first(assignmentSet.assignments.filter(current => current.name === name))
-        if (!assignment.isPresent()) {
-            console.log('Unable to find assignment: ', {name})
-            return
-        }
-
-        const newAssignments = add
-            ? assignments
-                .concat([assignment.get()])
-            : assignments
-                .filter(current => current.name !== name)
-
-        setAssignments(newAssignments.sort(assignmentSorter))
+        return first((response.assignments || []).filter(current => current.name === assignment.name)).isPresent()
     }
 
     const getDirection = (group: string): 'row' | 'row-reverse' => {
@@ -97,6 +100,8 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
 
     return (<Dialog open={props.open} onClose={handleClose} >
         <DialogTitle>Update assignments</DialogTitle>
+        <Box sx={{padding: '10px'}}>
+            <form onSubmit={handleSubmit}>
         <FormControl>
             <Grid container sx={{pr: '15px'}}>
             {assignmentsByGroup.map(group => (
@@ -109,7 +114,7 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
                     <FormControlLabel
                         labelPlacement="top"
                         control={
-                            <Checkbox checked={isChecked(assignment)} onChange={handleChange} name={assignment.name} />
+                            <Checkbox defaultChecked={isChecked(assignment)} name={assignment.name} value={assignment.name}/>
                         }
                         label={assignment.name}
                         key={assignment.group + '-' + assignment.name}
@@ -122,7 +127,12 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
             ))}
             </Grid>
         </FormControl>
-        <Button variant="outlined" onClick={handleClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleSubmit}>Submit</Button>
+                <Grid container sx={{paddingTop: '5px'}}>
+                    <Grid item xs={6}><Button variant="outlined" onClick={handleClose}>Cancel</Button></Grid>
+                    <Grid item xs={6}><Button variant="contained" type="submit">Submit</Button></Grid>
+                </Grid>
+
+            </form>
+        </Box>
     </Dialog>)
 }

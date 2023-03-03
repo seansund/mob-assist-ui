@@ -52,17 +52,20 @@ export interface AssignmentModel {
     id: string
     name: string
     group: string
+    row: number
 }
 
-export const createAssignment = ({name, group}: {name: string, group: string}): AssignmentModel => {
+export const createAssignment = ({name, group, row}: {name: string, group: string, row: number}): AssignmentModel => {
     return {
         name,
         group,
+        row,
         id: group + '-' + name
     }
 }
 
 export interface AssignmentDetail {
+    row: number
     section: string
     side: number
 }
@@ -72,7 +75,7 @@ export interface AssignmentGroup {
     assignments: AssignmentModel[]
 }
 
-export const groupAssignments = (assignmentSet: AssignmentSetModel | AssignmentModel[]): AssignmentGroup[] => {
+export const groupAssignments = (assignmentSet: AssignmentSetModel | AssignmentModel[], direction: 'ascending' | 'descending' | 'middle' = 'middle'): AssignmentGroup[] => {
     const assignments = isAssignmentSet(assignmentSet) ? assignmentSet.assignments : assignmentSet
 
     return assignments.reduce((result: AssignmentGroup[], current: AssignmentModel) => {
@@ -87,15 +90,21 @@ export const groupAssignments = (assignmentSet: AssignmentSetModel | AssignmentM
                 return newGroup
             })
 
-        group.assignments = group.assignments.sort(assignmentSorter)
+        group.assignments = group.assignments.sort(assignmentSorter(direction))
 
         return result
     }, [])
-        .sort(groupSorter)
+        .sort(groupSorter(direction))
 }
 
-export const compareAssignmentDetails = (a: AssignmentDetail, b: AssignmentDetail): number => {
-    let comparison = a.section.localeCompare(b.section)
+export const compareAssignmentDetails = (a: AssignmentDetail, b: AssignmentDetail, rowCompare: number = 1): number => {
+    let comparison = (a.row * rowCompare) - (b.row * rowCompare)
+
+    if (comparison !== 0) {
+        return comparison
+    }
+
+    comparison = a.section.localeCompare(b.section)
 
     if (comparison !== 0) {
         return comparison
@@ -104,7 +113,7 @@ export const compareAssignmentDetails = (a: AssignmentDetail, b: AssignmentDetai
     return a.side - b.side
 }
 
-export const parseSectionName = (assignmentName: string): AssignmentDetail => {
+export const parseSectionName = (assignmentName: string, row: number): AssignmentDetail => {
     const regex = new RegExp('([A-Z])([0-9]+)', 'g')
 
     const result = regex.exec(assignmentName)
@@ -115,7 +124,8 @@ export const parseSectionName = (assignmentName: string): AssignmentDetail => {
 
     return {
         section: result[1],
-        side: Number(result[2])
+        side: Number(result[2]),
+        row
     }
 }
 
@@ -125,31 +135,45 @@ export const getGroupIndex = (group: string): number => {
     return groupOrder.indexOf(group)
 }
 
-export const groupSorter = <T extends {group: string}> (a: T, b: T): number => {
+export const groupSorter = (direction: 'ascending' | 'descending' | 'middle') => {
+    return <T extends {group: string}> (a: T, b: T): number => {
 
-    const aPos = getGroupIndex(a.group)
-    const bPos = getGroupIndex(b.group)
+        const aPos = getGroupIndex(a.group)
+        const bPos = getGroupIndex(b.group)
 
-    return aPos - bPos
+        if (direction === 'middle' || direction === 'descending') {
+            return aPos - bPos
+        } else {
+            return bPos - aPos
+        }
+    }
 }
 
-export const assignmentSorter = (a: AssignmentModel, b: AssignmentModel): number => {
+export const assignmentSorter = (direction: 'ascending' | 'descending' | 'middle' = 'middle') => {
+    return (a: AssignmentModel, b: AssignmentModel): number => {
 
-    const groupCompare = groupSorter(a, b)
-    if (groupCompare !== 0) {
-        return groupCompare
+        const groupCompare = groupSorter(direction)(a, b)
+        if (groupCompare !== 0) {
+            return groupCompare
+        }
+
+        const aSection = parseSectionName(a.name, a.row)
+        const bSection = parseSectionName(b.name, b.row)
+
+        if (direction === 'descending' || (direction === 'middle' && getGroupIndex(a.group) % 2 === 0)) {
+            return compareAssignmentDetails(bSection, aSection)
+        } else if (direction === 'middle' && getGroupIndex(a.group) % 2 === 1) {
+            return compareAssignmentDetails(aSection, bSection, -1)
+        } else {
+            return compareAssignmentDetails(aSection, bSection)
+        }
     }
-
-    const aSection = parseSectionName(a.name)
-    const bSection = parseSectionName(b.name)
-
-    return compareAssignmentDetails(bSection, aSection)
 }
 
 export const simpleAssignmentSorter = (a: AssignmentModel, b: AssignmentModel): number => {
 
-    const aSection = parseSectionName(a.name)
-    const bSection = parseSectionName(b.name)
+    const aSection = parseSectionName(a.name, a.row)
+    const bSection = parseSectionName(b.name, b.row)
 
     return compareAssignmentDetails(aSection, bSection)
 }

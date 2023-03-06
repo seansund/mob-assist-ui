@@ -102,4 +102,28 @@ export class SignupResponsesMock extends BaseMock<MemberResponseModel> implement
 
         return this.subject;
     }
+
+    async checkIn(id: string): Promise<MemberResponseModel> {
+        const response: MemberResponseModel | undefined = await this.get(id)
+
+        if (!response) {
+            throw new Error('Member response not found: ' + id);
+        }
+
+        response.checkedIn = true
+
+        return response
+    }
+
+    async removeCheckIn(id: string): Promise<MemberResponseModel> {
+        const response: MemberResponseModel | undefined = await this.get(id)
+
+        if (!response) {
+            throw new Error('Member response not found: ' + id);
+        }
+
+        response.checkedIn = false
+
+        return response
+    }
 }

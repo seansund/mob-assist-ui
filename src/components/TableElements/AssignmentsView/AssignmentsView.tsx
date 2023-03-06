@@ -2,8 +2,7 @@ import React from "react";
 import {useSetAtom} from "jotai";
 
 import {selectedMemberResponseAtom} from "../../../atoms";
-import {AssignmentModel, assignmentSorter, groupAssignments, MemberResponseModel} from "../../../models";
-import {reverse} from "../../../util";
+import {AssignmentModel, groupAssignments, MemberResponseModel} from "../../../models";
 
 export interface AssignmentsViewProps {
     response: MemberResponseModel

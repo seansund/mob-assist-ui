@@ -1,4 +1,4 @@
-import React, {FormEvent, useState} from "react";
+import React, {FormEvent} from "react";
 import {useAtomValue, useSetAtom} from "jotai";
 import {
     Box,
@@ -14,13 +14,16 @@ import {
 } from "@mui/material";
 import {Container} from "typescript-ioc";
 
-import {currentSignupAtom, memberResponsesAtom, selectedMemberResponseAtom} from "../../../atoms";
+import {currentSignupAtom, loadableSelectedMemberResponseAtom, memberResponsesAtom} from "../../../atoms";
 import {
     AssignmentGroup,
     AssignmentModel,
     AssignmentSetModel,
-    assignmentSorter, getGroupIndex,
-    groupAssignments, MemberModel, SignupModel
+    getGroupIndex,
+    groupAssignments,
+    MemberModel,
+    MemberResponseModel,
+    SignupModel
 } from "../../../models";
 import {SignupResponsesApi} from "../../../services";
 import {first} from "../../../util";
@@ -32,9 +35,15 @@ export interface AssignmentDialogProps {
 }
 
 export const AssignmentDialog = (props: AssignmentDialogProps) => {
-    const response = useAtomValue(selectedMemberResponseAtom)
+    const loadableResponse = useAtomValue(loadableSelectedMemberResponseAtom)
     const signup = useAtomValue(currentSignupAtom)
     const loadResponses = useSetAtom(memberResponsesAtom)
+
+    if (loadableResponse.state === 'loading' || loadableResponse.state === 'hasError') {
+        return (<></>)
+    }
+
+    const response: MemberResponseModel | undefined = loadableResponse.data
 
     if (!response || !signup?.assignmentSet) {
         return (<></>)

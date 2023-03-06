@@ -3,6 +3,8 @@ import {isMemberModel, MemberModel, MemberResponseModel, SignupModel} from "../m
 import {loadable} from "jotai/utils";
 import {Container} from "typescript-ioc";
 import {SignupResponsesApi} from "../services";
+import {Simulate} from "react-dom/test-utils";
+import select = Simulate.select;
 
 const service: SignupResponsesApi = Container.get(SignupResponsesApi)
 
@@ -31,4 +33,28 @@ export const memberResponsesAtom = atom(
 
 export const memberResponsesAtomLoadable = loadable(memberResponsesAtom)
 
-export const selectedMemberResponseAtom = atom<MemberResponseModel | undefined>(undefined)
+const baseSelectedMemberResponseAtom = atom<Promise<MemberResponseModel | undefined>>(Promise.resolve(undefined))
+
+export const selectedMemberResponseAtom = atom(
+    async get => get(baseSelectedMemberResponseAtom),
+    async (_get, set, update: Promise<MemberResponseModel | undefined> | MemberResponseModel) => {
+        set(baseSelectedMemberResponseAtom, Promise.resolve(update))
+    }
+)
+
+export const loadableSelectedMemberResponseAtom = loadable(selectedMemberResponseAtom)
+
+export const checkedInAtom = atom(
+    async get => (await get(selectedMemberResponseAtom))?.checkedIn,
+    async (get, set, value: boolean | Promise<boolean>) => {
+        const response: MemberResponseModel | undefined = await get(selectedMemberResponseAtom)
+
+        if (!response) {
+            return
+        }
+
+        response.checkedIn = !!(await value);
+
+        await set(selectedMemberResponseAtom, response)
+    }
+)

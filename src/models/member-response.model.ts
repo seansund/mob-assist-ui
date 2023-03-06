@@ -8,6 +8,7 @@ export interface MemberResponseModel {
     selectedOption?: SignupOptionModel
     message?: string
     assignments?: AssignmentModel[]
+    checkedIn?: boolean
 }
 
 export const getMemberResponseId = (response: {member: MemberModel, signup: SignupModel}): string => {

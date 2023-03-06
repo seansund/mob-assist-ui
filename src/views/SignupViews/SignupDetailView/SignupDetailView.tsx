@@ -7,7 +7,7 @@ import {SignupResponseTable} from "./SignupResponseTable";
 import {currentSignupAtom, memberResponsesAtomLoadable, signupListAtom} from "../../../atoms";
 import {AssignmentDialog, MemberResponseDialog} from "../../../components";
 import {
-    AssignmentModel,
+    AssignmentModel, MemberModel,
     MemberResponseModel,
     SignupModel,
     SignupOptionModel,
@@ -20,12 +20,12 @@ export interface SignupDetailViewProps {
 }
 
 
-const ResponseTable = ({option, responses, showAssignmentDialog, showResponseDialog}: {option: SignupOptionModel | undefined, responses: MemberResponseModel[], showResponseDialog: () => void, showAssignmentDialog: () => void}) => {
+const ResponseTable = ({option, responses, showAssignmentDialog, showResponseDialog, baseType}: {option: SignupOptionModel | undefined, responses: MemberResponseModel[], showResponseDialog: () => void, showAssignmentDialog: () => void, baseType: SignupModel | MemberModel}) => {
     if (!responses || responses.length === 0) {
         return (<div>None</div>)
     }
 
-    return (<SignupResponseTable option={option} responses={responses}  showAssignmentDialog={showAssignmentDialog} showMemberResponseDialog={showResponseDialog} />)
+    return (<SignupResponseTable option={option} responses={responses}  showAssignmentDialog={showAssignmentDialog} showMemberResponseDialog={showResponseDialog} baseType={baseType}/>)
 }
 
 interface SignupResponseAccordionProps {
@@ -33,6 +33,7 @@ interface SignupResponseAccordionProps {
     responses: MemberResponseModel[]
     showAssignmentDialog: () => void
     showMemberResponseDialog: () => void
+    baseType: SignupModel | MemberModel
 }
 
 const SignupResponseAccordion = (props: SignupResponseAccordionProps) => {
@@ -49,7 +50,7 @@ const SignupResponseAccordion = (props: SignupResponseAccordionProps) => {
                 <Typography sx={{color: 'text.secondary', textAlign: 'right', width: '66%'}}>{props.responses.length} response{props.responses.length !== 1 ? 's' : ''}</Typography>
             </AccordionSummary>
             <AccordionDetails>
-                <ResponseTable option={props.option} responses={props.responses} showAssignmentDialog={props.showAssignmentDialog} showResponseDialog={props.showMemberResponseDialog} />
+                <ResponseTable option={props.option} responses={props.responses} showAssignmentDialog={props.showAssignmentDialog} showResponseDialog={props.showMemberResponseDialog} baseType={props.baseType} />
             </AccordionDetails>
         </Accordion>
     )
@@ -125,7 +126,7 @@ const SignupResponseTableView = (props: SignupResponseTableViewProps) => {
         <MemberResponseDialog open={openResponseDialog} onClose={onClose} baseType={currentSignup} />
         <AssignmentDialog open={openAssignmentDialog} onClose={onClose} baseType={currentSignup} />
         {options.map((option?: SignupOptionModel) => (
-            <SignupResponseAccordion key={option?.value || 'no-response'} responses={filterResponses(option, (loadableResponses as any).data)} showAssignmentDialog={showAssignmentDialog} showMemberResponseDialog={showMemberResponseDialog} option={option} />
+            <SignupResponseAccordion key={option?.value || 'no-response'} responses={filterResponses(option, (loadableResponses as any).data)} showAssignmentDialog={showAssignmentDialog} showMemberResponseDialog={showMemberResponseDialog} option={option} baseType={currentSignup} />
         ))}
     </div>)
 }

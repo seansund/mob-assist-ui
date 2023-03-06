@@ -2,7 +2,7 @@ import React from "react";
 import {useAtomValue, useSetAtom} from "jotai";
 import {Container} from "typescript-ioc";
 
-import {memberResponsesAtom, selectedMemberResponseAtom} from "../../../atoms";
+import {loadableSelectedMemberResponseAtom, memberResponsesAtom} from "../../../atoms";
 import {SimpleSelectionDialog} from "../../index";
 import {MemberModel, MemberResponseModel, SignupModel, SignupOptionModel} from "../../../models";
 import {SignupResponsesApi} from "../../../services";
@@ -14,8 +14,14 @@ export interface MemberResponseDialogProps {
 }
 
 export const MemberResponseDialog = (props: MemberResponseDialogProps) => {
-    const selectedMemberResponse = useAtomValue(selectedMemberResponseAtom)
+    const loadableSelectedMemberResponse = useAtomValue(loadableSelectedMemberResponseAtom)
     const loadResponses = useSetAtom(memberResponsesAtom)
+
+    if (loadableSelectedMemberResponse.state === 'loading' || loadableSelectedMemberResponse.state === 'hasError') {
+        return (<></>)
+    }
+
+    const selectedMemberResponse: MemberResponseModel | undefined = loadableSelectedMemberResponse.data
 
     if (!selectedMemberResponse) {
         return (<></>)

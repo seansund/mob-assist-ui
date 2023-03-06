@@ -5,15 +5,17 @@ import {SignupResponsesApi} from "./signup-responses.api";
 import {getApolloClient} from "../../backends";
 import {AssignmentModel, MemberResponseModel, SignupModel} from "../../models";
 
-const LIST_SIGNUP_RESPONSES = gql`query ListSignupResponses { listSignupResponses { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message } }`;
-const LIST_SIGNUP_RESPONSES_BY_SIGNUP = gql`query ListSignupResponsesBySignup($id: ID!) { listSignupResponsesBySignup(id: $id) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message } }`;
-const LIST_SIGNUP_RESPONSES_BY_MEMBER = gql`query ListSignupResponsesByMember($phone: ID!) { listSignupResponsesByUser(phone: $phone) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message } }`;
-const GET_SIGNUP_RESPONSE_BY_ID = gql`query GetSignupResponseById($id: ID!) { getSignupResponseById(id: $id) { id signup { id date title assignmentSet { id name assignments { id group name row } } options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message } }`;
-const ADD_UPDATE_SIGNUP_RESPONSE = gql`mutation AddUpdateSignupResponse($id: ID, $signupId: ID!, $memberPhone: ID!, $selectedOptionId: ID, $assignmentIds: [String], $message: String) { addUpdateSignupResponse(id: $id, signupId: $signupId, memberPhone: $memberPhone, selectedOptionId: $selectedOptionId, assignmentIds: $assignmentIds, message: $message) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message } }`;
+const LIST_SIGNUP_RESPONSES = gql`query ListSignupResponses { listSignupResponses { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
+const LIST_SIGNUP_RESPONSES_BY_SIGNUP = gql`query ListSignupResponsesBySignup($id: ID!) { listSignupResponsesBySignup(id: $id) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
+const LIST_SIGNUP_RESPONSES_BY_MEMBER = gql`query ListSignupResponsesByMember($phone: ID!) { listSignupResponsesByUser(phone: $phone) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
+const GET_SIGNUP_RESPONSE_BY_ID = gql`query GetSignupResponseById($id: ID!) { getSignupResponseById(id: $id) { id signup { id date title assignmentSet { id name assignments { id group name row } } options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
+const ADD_UPDATE_SIGNUP_RESPONSE = gql`mutation AddUpdateSignupResponse($id: ID, $signupId: ID!, $memberPhone: ID!, $selectedOptionId: ID, $assignmentIds: [String], $message: String) { addUpdateSignupResponse(id: $id, signupId: $signupId, memberPhone: $memberPhone, selectedOptionId: $selectedOptionId, assignmentIds: $assignmentIds, message: $message) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
 const DELETE_SIGNUP_RESPONSE = gql`mutation DeleteSignupResponse($id: ID!) { removeSignupResponse(id: $id) { result } }`;
-const SIGNUP_RESPONSES_SUBSCRIPTION = gql`subscription SignupResponses { signupResponses { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message } }`;
-const SIGNUP_RESPONSES_BY_USER_SUBSCRIPTION = gql`subscription SignupResponsesByUser($phone: ID!){ signupResponsesByUser(phone: $phone) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message } }`;
-const SIGNUP_RESPONSES_BY_SIGNUP_SUBSCRIPTION = gql`subscription SignupResponsesBySignup($id: ID!) { signupResponsesBySignup(id: $id) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message } }`;
+const CHECKIN_SIGNUP_RESPONSE = gql`mutation CheckIn($id: ID!) { checkIn(id: $id) { id signup { id date title assignmentSet { id name assignments { id group name row } } options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
+const REMOVE_CHECKIN_SIGNUP_RESPONSE = gql`mutation RemoveCheckIn($id: ID!) { removeCheckIn(id: $id) { id signup { id date title assignmentSet { id name assignments { id group name row } } options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
+const SIGNUP_RESPONSES_SUBSCRIPTION = gql`subscription SignupResponses { signupResponses { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
+const SIGNUP_RESPONSES_BY_USER_SUBSCRIPTION = gql`subscription SignupResponsesByUser($phone: ID!){ signupResponsesByUser(phone: $phone) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
+const SIGNUP_RESPONSES_BY_SIGNUP_SUBSCRIPTION = gql`subscription SignupResponsesBySignup($id: ID!) { signupResponsesBySignup(id: $id) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
 
 export class SignupResponsesGraphql implements SignupResponsesApi {
     client: ApolloClient<any>
@@ -180,6 +182,54 @@ export class SignupResponsesGraphql implements SignupResponsesApi {
             })
 
         return this.subject;
+    }
+
+    async checkIn(id: string): Promise<MemberResponseModel> {
+        const refetchQueries: any[] = [
+            {query: LIST_SIGNUP_RESPONSES},
+            {query: GET_SIGNUP_RESPONSE_BY_ID, variables: {id}}
+        ]
+
+        const result: MemberResponseModel | undefined = await this.client
+            .mutate<{checkIn: MemberResponseModel | undefined}>({
+                mutation: CHECKIN_SIGNUP_RESPONSE,
+                variables: {id},
+                refetchQueries,
+                awaitRefetchQueries: true
+            })
+            .then(async (result: FetchResult<{checkIn: MemberResponseModel | undefined}>) => await result.data?.checkIn)
+
+        if (!result) {
+            throw new Error('Signup response not found: ' + id)
+        }
+
+        console.log('Check in result: ', result)
+
+        return result
+    }
+
+    async removeCheckIn(id: string): Promise<MemberResponseModel> {
+        const refetchQueries: any[] = [
+            {query: LIST_SIGNUP_RESPONSES},
+            {query: GET_SIGNUP_RESPONSE_BY_ID, variables: {id}}
+        ]
+
+        const result: MemberResponseModel | undefined = await this.client
+            .mutate<{removeCheckIn: MemberResponseModel | undefined}>({
+                mutation: REMOVE_CHECKIN_SIGNUP_RESPONSE,
+                variables: {id},
+                refetchQueries,
+                awaitRefetchQueries: true
+            })
+            .then(async (result: FetchResult<{removeCheckIn: MemberResponseModel | undefined}>) => await result.data?.removeCheckIn)
+
+        if (!result) {
+            throw new Error('Signup response not found: ' + id)
+        }
+
+        console.log('Remove check in result: ', result)
+
+        return result
     }
 
 }

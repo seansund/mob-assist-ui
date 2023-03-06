@@ -10,14 +10,7 @@ import {
     MemberResponseDialog,
     MemberResponseView
 } from "../../../../components";
-import {
-    getMemberResponseId,
-    isSignedUp,
-    MemberModel,
-    MemberResponseModel,
-    SignupModel,
-    SignupOptionModel
-} from "../../../../models";
+import {getMemberResponseId, isSignedUp, MemberModel, MemberResponseModel, SignupModel} from "../../../../models";
 
 export interface SignupResponseTableProps {
     baseType: MemberModel | SignupModel
@@ -69,7 +62,7 @@ export const SignupResponseTable = (props: SignupResponseTableProps) => {
                         <TableCell>{response.signup.title}</TableCell>
                         <TableCell><MemberResponseView response={response} onClick={showMemberResponseDialog} /></TableCell>
                         <TableCell><AssignmentsView  response={response} signedUp={isSignedUp(response.selectedOption)} onClick={showAssignmentDialog} /></TableCell>
-                        <TableCell><CheckInView signedUp={isSignedUp(response.selectedOption)} response={response} /></TableCell>
+                        <TableCell><CheckInView signedUp={isSignedUp(response.selectedOption)} response={response} baseType={props.baseType} /></TableCell>
                         <TableCell></TableCell>
                     </TableRow>
                 ))}

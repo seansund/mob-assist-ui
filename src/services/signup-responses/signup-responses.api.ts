@@ -8,4 +8,6 @@ export abstract class SignupResponsesApi extends BaseApi<MemberResponseModel> {
     abstract subscribeToUserResponses(phone: string): Observable<MemberResponseModel[]>
     abstract subscribeToSignupResponses(signupId: string): Observable<MemberResponseModel[]>
     abstract subscribeToResponses(): Observable<MemberResponseModel[]>
+    abstract checkIn(id: string): Promise<MemberResponseModel>
+    abstract removeCheckIn(id: string): Promise<MemberResponseModel>
 }

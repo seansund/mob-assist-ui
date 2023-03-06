@@ -24,7 +24,7 @@ export const isSignupModel = (val: any): val is SignupModel => {
 }
 
 export const isEligibleForCheckIn = (signup: SignupModel): boolean => {
-    return false
+    return true
 }
 
 export interface SignupOptionModel {

@@ -47,7 +47,7 @@ spec:
               name: default-config
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.image.port }}
               protocol: TCP
           livenessProbe:
             httpGet:

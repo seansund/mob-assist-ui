@@ -5,8 +5,9 @@
 replicaCount: 1
 
 image:
-  repository: nginx
+  repository: quay.io/seansund/mob-assist-ui
   pullPolicy: IfNotPresent
+  port: 8080
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 

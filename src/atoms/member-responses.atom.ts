@@ -1,10 +1,9 @@
 import {atom} from "jotai";
-import {isMemberModel, MemberModel, MemberResponseModel, SignupModel} from "../models";
 import {loadable} from "jotai/utils";
 import {Container} from "typescript-ioc";
+
+import {isMemberModel, MemberModel, MemberResponseModel, SignupModel} from "../models";
 import {SignupResponsesApi} from "../services";
-import {Simulate} from "react-dom/test-utils";
-import select = Simulate.select;
 
 const service: SignupResponsesApi = Container.get(SignupResponsesApi)
 

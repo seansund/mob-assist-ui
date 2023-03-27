@@ -6,4 +6,5 @@
 
 .active {
     color: darkgoldenrod;
+    font-weight: bold;
 }

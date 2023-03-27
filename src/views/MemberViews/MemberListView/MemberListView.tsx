@@ -1,10 +1,21 @@
 import React from "react";
 import {useNavigate} from "react-router-dom";
-import {Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material";
+import {
+    Button,
+    Grid,
+    IconButton,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow
+} from "@mui/material";
 import {useAtomValue, useSetAtom} from "jotai";
+import AddIcon from '@mui/icons-material/Add'
 
 import {MemberListMenu} from "./MemberListMenu";
-import {currentMemberAtom, memberListAtomLoadable, memberResponsesAtom, signupListAtom} from "../../../atoms";
+import {currentMemberAtom, memberListAtomLoadable, memberResponsesAtom} from "../../../atoms";
 import {createEmptyMember, MemberModel} from "../../../models";
 
 export interface MemberPageProps {
@@ -48,7 +59,14 @@ export const MemberListView = (props: MemberPageProps) => {
     }
 
     return (<div>
-        <Button variant="outlined" onClick={showAddView}>Add</Button>
+        <Grid container sx={{paddingTop: '10px', paddingRight: '10px', paddingLeft: '10px'}}>
+            <Grid item xs={6}>&nbsp;</Grid>
+            <Grid item xs={6} sx={{textAlign: 'right'}}>
+                <Button variant="outlined" onClick={showAddView} aria-label="add member" startIcon={<AddIcon />}>
+                   Add
+                </Button>
+            </Grid>
+        </Grid>
         <TableContainer>
         <Table sx={{minWidth: 650}} aria-label={"member table"}>
             <TableHead>

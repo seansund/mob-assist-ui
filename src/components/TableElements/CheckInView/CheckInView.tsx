@@ -1,8 +1,9 @@
-import {isEligibleForCheckIn, MemberModel, MemberResponseModel, SignupModel} from "../../../models";
 import {useSetAtom} from "jotai";
-import {memberResponsesAtom, selectedMemberResponseAtom} from "../../../atoms";
-import {SignupResponsesApi} from "../../../services";
 import {Container} from "typescript-ioc";
+
+import {memberResponsesAtom} from "../../../atoms";
+import {isEligibleForCheckIn, MemberModel, MemberResponseModel, SignupModel} from "../../../models";
+import {SignupResponsesApi} from "../../../services";
 
 export interface CheckInViewProps {
     signedUp: boolean

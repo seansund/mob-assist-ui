@@ -82,7 +82,7 @@ tolerations: []
 
 affinity: {}
 
-serverUrl: ""
+serverUrl: "http://mob-assist-api"
 
 route:
   enabled: true

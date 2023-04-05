@@ -5,13 +5,6 @@ metadata:
   labels:
     {{- include "mob-assist-ui.labels" . | nindent 4 }}
 spec:
-  volumes:
-    - name: config
-      configMap:
-        name: {{ include "mob-assist-ui.config-name" . }}
-    - name: default-config
-      configMap:
-        name: {{ include "mob-assist-ui.default-config-name" . }}
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
@@ -27,6 +20,13 @@ spec:
       labels:
         {{- include "mob-assist-ui.selectorLabels" . | nindent 8 }}
     spec:
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "mob-assist-ui.config-name" . }}
+        - name: default-config
+          configMap:
+            name: {{ include "mob-assist-ui.default-config-name" . }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}

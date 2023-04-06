@@ -40,10 +40,11 @@ jobs:
       - name: Setup variables
         id: variables
         shell: bash
-        run: |          
+        run: |
           LATEST_ENABLED="true"
           
           RELEASE_TAG=${GITHUB_REF#refs/tags/}
+          SHORT_RELEASE_TAG=${RELEASE_TAG/v/}
           RELEASE_TAG_ENABLED="false"
           if [[ "${GITHUB_REF}" =~ refs/tags ]] && [[ "${RELEASE_TAG}" != "main" ]]; then
             RELEASE_TAG_ENABLED="true"
@@ -53,6 +54,9 @@ jobs:
           
           echo "Release tag: ${RELEASE_TAG}"
           echo "release-tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+          
+          echo "Short release tag: ${SHORT_RELEASE_TAG}"
+          echo "short-release-tag=$SHORT_RELEASE_TAG" >> $GITHUB_OUTPUT
           
           echo "Release tag enabled: $RELEASE_TAG_ENABLED"
           echo "release-tag-enabled=$RELEASE_TAG_ENABLED" >> $GITHUB_OUTPUT
@@ -70,6 +74,7 @@ jobs:
           # Docker tags based on the following events/attributes
           tags: |
             type=raw,value=${{ steps.variables.outputs.release-tag }},enable=${{ steps.variables.outputs.release-tag-enabled }}
+            type=raw,value=${{ steps.variables.outputs.short-release-tag }},enable=${{ steps.variables.outputs.release-tag-enabled }}
             type=raw,value=latest,enable=${{ steps.variables.outputs.latest-enabled }}
 
       - name: Build and push

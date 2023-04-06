@@ -29,7 +29,7 @@ jobs:
 
       - name: Update chart version
         run: |
-          TAG_NAME="${{ steps.create-release.outputs.tag_name }}"
+          TAG_NAME=$(echo "${{ steps.create-release.outputs.tag_name }}" | sed "s/v//g")
           cat chart/mob-assist-ui/Chart.yaml | sed "s/appVersion:.*/appVersion: \"${TAG_NAME}\"/g" > /tmp/Chart.yaml
           cp /tmp/Chart.yaml chart/mob-assist-ui/Chart.yaml
           

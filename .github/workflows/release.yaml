@@ -1,0 +1,47 @@
+name: Release module
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ main ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - uses: actions/checkout@v3
+
+      # Drafts your next Release notes as Pull Requests are merged into "main"
+      - name: Create release
+        id: create-release
+        uses: release-drafter/release-drafter@v5
+        with:
+          # (Optional) specify config name to use, relative to .github/. Default: release-drafter.yml
+          config-name: release-drafter.yaml
+          publish: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update chart version
+        run: |
+          TAG_NAME="${{ steps.create-release.outputs.tag_name }}"
+          cat chart/mob-assist-ui/Chart.yaml | sed "s/appVersion:.*/appVersion: \"${TAG_NAME}\"/g" > /tmp/Chart.yaml
+          cp /tmp/Chart.yaml chart/mob-assist-ui/Chart.yaml
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish release
+        id: publish-release
+        uses: eregon/publish-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          release_id: ${{ steps.create-release.outputs.id }}

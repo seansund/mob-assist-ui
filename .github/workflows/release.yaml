@@ -30,13 +30,16 @@ jobs:
       - name: Update chart version
         run: |
           TAG_NAME=$(echo "${{ steps.create-release.outputs.tag_name }}" | sed "s/v//g")
-          cat chart/mob-assist-ui/Chart.yaml | sed "s/appVersion:.*/appVersion: \"${TAG_NAME}\"/g" > /tmp/Chart.yaml
+          cat chart/mob-assist-ui/Chart.yaml | \
+            sed "s/appVersion:.*/appVersion: \"${TAG_NAME}\"/g" | \
+            sed "s/version:.*/version: \"${TAG_NAME}\"/g" \
+            > /tmp/Chart.yaml
           cp /tmp/Chart.yaml chart/mob-assist-ui/Chart.yaml
           
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add chart/mob-assist-ui/Chart.yaml
-          git commit -m "Add changes"
+          git commit -m "Update appVersion to ${TAG_NAME} in chart"
 
       - name: Push changes
         uses: ad-m/github-push-action@master

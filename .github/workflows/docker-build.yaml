@@ -43,7 +43,7 @@ jobs:
         run: |
           LATEST_ENABLED="true"
           
-          RELEASE_TAG=${GITHUB_REF#refs/tags/}
+          RELEASE_TAG=${{ github.event.release.tag_name }}
           SHORT_RELEASE_TAG=${RELEASE_TAG/v/}
           RELEASE_TAG_ENABLED="false"
           if [[ "${GITHUB_REF}" =~ refs/tags ]] && [[ "${RELEASE_TAG}" != "main" ]]; then

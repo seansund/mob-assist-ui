@@ -32,6 +32,11 @@ jobs:
           TAG_NAME="${{ steps.create-release.outputs.tag_name }}"
           cat chart/mob-assist-ui/Chart.yaml | sed "s/appVersion:.*/appVersion: \"${TAG_NAME}\"/g" > /tmp/Chart.yaml
           cp /tmp/Chart.yaml chart/mob-assist-ui/Chart.yaml
+          
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add chart/mob-assist-ui/Chart.yaml
+          git commit -m "Add changes"
 
       - name: Push changes
         uses: ad-m/github-push-action@master

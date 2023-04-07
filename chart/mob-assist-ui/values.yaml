@@ -83,7 +83,6 @@ tolerations: []
 affinity: {}
 
 serverUrl: "http://mob-assist-api"
-graphqlUrl: "ws://mob-assist-api"
 
 route:
   enabled: true

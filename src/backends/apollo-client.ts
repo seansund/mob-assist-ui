@@ -3,20 +3,19 @@ import {getMainDefinition} from '@apollo/client/utilities';
 import {GraphQLWsLink} from '@apollo/client/link/subscriptions';
 import {createClient} from 'graphql-ws';
 
-const protocol = window.location.protocol
 const hostname = window.location.hostname
 const port = window.location.port
 
-const uri = `${protocol}//${hostname}:${port}/graphql`
+const subscriptionUrl = `ws://${hostname}:${port}/subscription`
 
-console.log('GraphQL uri: ' + uri)
+console.log('Subscription uri: ' + subscriptionUrl)
 
 const httpLink = new HttpLink({
-  uri
+  uri: '/graphql'
 });
 
 const wsLink = new GraphQLWsLink(createClient({
-  url: `ws://${hostname}:${port}/subscription`,
+  url: subscriptionUrl,
 }));
 
 // The split function takes three parameters:

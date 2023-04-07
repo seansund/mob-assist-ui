@@ -6,6 +6,9 @@ metadata:
     {{ include "mob-assist-ui.labels" . | nindent 4 }}
 data:
   proxy.conf: |
-    location /api {
+    location /graphql {
       proxy_pass {{ .Values.serverUrl }};
+    }
+    location /subscription {
+      proxy_pass {{ .Values.graphqlUrl }};
     }

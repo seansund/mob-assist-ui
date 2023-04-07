@@ -8,7 +8,7 @@ import {MemberModel} from "../../models";
 const LIST_MEMBERS = gql`query ListMembers { listMembers { phone lastName firstName email preferredContact } }`;
 const GET_MEMBER_BY_PHONE = gql`query GetMemberByPhone($phone: ID!) { getMemberByPhone(phone: $phone) { phone lastName firstName email preferredContact } }`;
 const ADD_UPDATE_MEMBER = gql`mutation AddUpdateMember($phone: ID!, $firstName: String!, $lastName: String!, $email: String, $preferredContact: String) { addUpdateMember(phone: $phone, firstName: $firstName, lastName: $lastName, email: $email, preferredContact: $preferredContact) { phone lastName firstName email preferredContact } }`;
-const DELETE_MEMBER = gql`query DeleteMember($phone: ID!) { removeMember(phone: $phone) { result } }`;
+const DELETE_MEMBER = gql`mutation DeleteMember($phone: ID!) { removeMember(phone: $phone) { result } }`;
 const MEMBERS_SUBSCRIPTION = gql`subscription { members { phone lastName firstName email preferredContact } }`
 
 export class MembersGraphql implements MembersApi {

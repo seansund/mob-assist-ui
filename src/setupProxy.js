@@ -8,7 +8,7 @@ module.exports = function(app) {
             createProxyMiddleware(
                 '/graphql',
                 {
-                    target: `http://localhost:${backendPort}`,
+                    target: `https://mob-assist-api-mob-assist-dev.toolkit-dev-gitops-42-2ab66b053c14936810608de9a1deac9c-0000.us-east.containers.appdomain.cloud`,
                     changeOrigin: true,
                 }
             )
@@ -17,7 +17,7 @@ module.exports = function(app) {
             createProxyMiddleware(
                 '/subscription',
                 {
-                    target: `ws://localhost:${backendPort}`,
+                    target: `ws://mob-assist-api-mob-assist-dev.toolkit-dev-gitops-42-2ab66b053c14936810608de9a1deac9c-0000.us-east.containers.appdomain.cloud`,
                     changeOrigin: true,
                     ws: true,
                 }

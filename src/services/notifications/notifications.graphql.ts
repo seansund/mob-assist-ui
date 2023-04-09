@@ -4,9 +4,9 @@ import {NotificationsApi} from "./notifications.api";
 import {getApolloClient} from "../../backends";
 import {NotificationResultModel, SignupModel} from "../../models";
 
-const MUTATION_SIGNUP_REQUEST = gql`mutation SendSignupRequest($id: ID) { sendSignupRequest(id: $id) { type channels { channel count } } } `;
-const MUTATION_SIGNUP_CHECKIN = gql`mutation SendSignupCheckin($id: ID) { sendSignupCheckin(id: $id) { type channels { channel count } } } `;
-const MUTATION_SIGNUP_ASSIGNMENT = gql`mutation SendSignupAssignments($id: ID) { sendSignupAssignments(id: $id) { type channels { channel count } } } `;
+const MUTATION_SIGNUP_REQUEST = gql`mutation SendSignupRequest($id: ID!) { sendSignupRequest(id: $id) { type channels { channel count } } } `;
+const MUTATION_SIGNUP_CHECKIN = gql`mutation SendSignupCheckin($id: ID!) { sendSignupCheckin(id: $id) { type channels { channel count } } } `;
+const MUTATION_SIGNUP_ASSIGNMENT = gql`mutation SendSignupAssignments($id: ID!) { sendSignupAssignments(id: $id) { type channels { channel count } } } `;
 
 export class NotificationsGraphql implements NotificationsApi {
     client: ApolloClient<any>

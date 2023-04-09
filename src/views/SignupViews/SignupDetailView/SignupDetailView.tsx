@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {useAtomValue, useSetAtom} from "jotai";
-import {Accordion, AccordionDetails, AccordionSummary, Button, Stack, Typography} from "@mui/material";
+import {Accordion, AccordionDetails, AccordionSummary, Box, Button, Stack, Typography} from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import {SignupResponseTable} from "./SignupResponseTable";
@@ -156,7 +156,7 @@ const NotificationView = (props: NotificationViewProps) => {
             <div>
                 <div>{notification.type}</div>
                 {notification.channels.map(channel => {
-                    return (<div>{channel.channel}: {channel.count}</div>)
+                    return (<div key={channel.channel}>{channel.channel}: {channel.count}</div>)
                 })}
             </div>
         )
@@ -169,19 +169,25 @@ export const SignupDetailView = (props: SignupDetailViewProps) => {
     const sendSignupAssignments = useSetAtom(signupAssignmentNotificationAtom)
     const sendSignupCheckin = useSetAtom(signupCheckinNotificationAtom)
 
+    if (!currentSignup || !currentSignup.title) {
+        return (<></>)
+    }
+
     return (<div>
         <Stack>
             <div>{currentSignup.date}</div>
             <div>{currentSignup.title}</div>
         </Stack>
 
-        <Stack direction="row" spacing={2}>
-            <Button onClick={() => sendSignupRequest(currentSignup)}>Sign up</Button>
-            <Button onClick={() => sendSignupAssignments(currentSignup)}>Assignments</Button>
-            <Button onClick={() => sendSignupCheckin(currentSignup)}>Check in</Button>
-        </Stack>
-
-        <NotificationView />
+        <Box component="fieldset">
+            <legend>Send notification</legend>
+            <Stack direction="row" spacing={2}>
+                <Button onClick={() => sendSignupRequest(currentSignup)} variant="contained">Sign up</Button>
+                <Button onClick={() => sendSignupAssignments(currentSignup)} variant="contained">Assignments</Button>
+                <Button onClick={() => sendSignupCheckin(currentSignup)} variant="contained">Check in</Button>
+            </Stack>
+            <NotificationView />
+        </Box>
 
         <SignupResponseTableView currentSignup={currentSignup}></SignupResponseTableView>
     </div>)

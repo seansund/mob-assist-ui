@@ -5,8 +5,8 @@ import {SignupsApi} from "./signups.api";
 import {getApolloClient} from "../../backends";
 import {MemberModel, SignupModel, SignupScope} from "../../models";
 
-const LIST_SIGNUPS = gql`query ListSignups($scope: String) { listSignups(scope:$scope) { id date title options { id name options { id value declineOption } } responses { option { id value declineOption } count assignments } } }`;
-const GET_SIGNUP_BY_ID = gql`query GetSignupById($id: ID!) { getSignupById(id: $id) { id date title options { id name options { id value declineOption } } responses { option { id value declineOption } count assignments } assignmentSet { id name assignments { id group name row } } } }`;
+const LIST_SIGNUPS = gql`query ListSignups($scope: String) { listSignups(scope:$scope) { id date title options { id name options { id value declineOption sortIndex } } responses { option { id value declineOption } count assignments } } }`;
+const GET_SIGNUP_BY_ID = gql`query GetSignupById($id: ID!) { getSignupById(id: $id) { id date title options { id name options { id value declineOption sortIndex } } responses { option { id value declineOption } count assignments } assignmentSet { id name assignments { id group name row } } } }`;
 const ADD_UPDATE_SIGNUP = gql`mutation AddUpdateSignup($id: ID, $date: String!, $title: String!, $optionSetId: ID!, $assignmentSetId: ID) { addUpdateSignup(id: $id, date: $date, title: $title, optionSetId: $optionSetId, assignmentSetId: $assignmentSetId) { id date title options { id } assignmentSet { id } } } `;
 const DELETE_SIGNUP = gql`query DeleteSignup($id: ID!) { removeSignup(id: $id) { result } }`;
 const SIGNUPS_SUBSCRIPTION = gql`subscription { signups { id date title options { id name options { id value declineOption } } responses { option { id value declineOption } count assignments } } }`;

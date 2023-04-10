@@ -9,7 +9,7 @@ import {AssignmentDialog, MemberResponseDialog} from "../../../components";
 import {
     AssignmentModel, MemberModel,
     MemberResponseModel, NotificationResultModel,
-    SignupModel,
+    SignupModel, signupOptionBySortIndex,
     SignupOptionModel,
     simpleAssignmentSorter
 } from "../../../models";
@@ -130,7 +130,7 @@ const SignupResponseTableView = (props: SignupResponseTableViewProps) => {
     return (<div>
         <MemberResponseDialog open={openResponseDialog} onClose={onClose} baseType={currentSignup} />
         <AssignmentDialog open={openAssignmentDialog} onClose={onClose} baseType={currentSignup} />
-        {options.map((option?: SignupOptionModel) => (
+        {options.sort(signupOptionBySortIndex).map((option?: SignupOptionModel) => (
             <SignupResponseAccordion key={option?.value || 'no-response'} responses={filterResponses(option, (loadableResponses as any).data)} showAssignmentDialog={showAssignmentDialog} showMemberResponseDialog={showMemberResponseDialog} option={option} baseType={currentSignup} />
         ))}
     </div>)

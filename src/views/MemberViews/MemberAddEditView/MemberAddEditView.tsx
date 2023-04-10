@@ -97,6 +97,7 @@ export const MemberAddEditView = (props: MemberAddEditViewProps) => {
                 >
                     <FormControlLabel value="text" control={<Radio />} label="Text" />
                     <FormControlLabel value="email" control={<Radio />} label="Email" />
+                    <FormControlLabel value="none" control={<Radio />} label="None" />
                 </RadioGroup>
             </FormControl>
             <Button variant="outlined" onClick={cancelAction}>Cancel</Button>

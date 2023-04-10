@@ -25,7 +25,7 @@ import {currentSignupAtom, memberResponsesAtom, signupListAtomLoadable} from "..
 import {
     createEmptySignup,
     lookupSignupScope,
-    SignupModel,
+    SignupModel, signupOptionBySortIndex, SignupOptionModel,
     SignupOptionResponseModel,
     SignupScope
 } from "../../../models";
@@ -36,6 +36,15 @@ export interface SignupListViewProps {
     navAddEdit: string
     navDelete: string
     navDetail: string
+}
+
+interface SignupOptionSummaryProps {
+    options: SignupOptionModel[]
+}
+
+const SignupOptionSummary = (props: SignupOptionSummaryProps) => {
+    const options = [...props.options]
+    return (<>{options.sort(signupOptionBySortIndex).filter(v => !!v).map(s => s.value).join(', ')}</>)
 }
 
 export const SignupListView = (props: SignupListViewProps) => {
@@ -159,7 +168,7 @@ export const SignupListView = (props: SignupListViewProps) => {
                             </TableCell>
                             <TableCell sx={pastSignupSx(signup.date)}>{signup.date}</TableCell>
                             <TableCell sx={pastSignupSx(signup.date)}>{signup.title}</TableCell>
-                            <TableCell sx={pastSignupSx(signup.date)}>{signup.options.options.filter(v => !!v).map(s => s.value).join(', ')}</TableCell>
+                            <TableCell sx={pastSignupSx(signup.date)}><SignupOptionSummary options={signup.options.options} /></TableCell>
                             <TableCell sx={pastSignupSx(signup.date)}>{signup.responses.reduce(totalResponses, 0)}</TableCell>
                             <TableCell sx={pastSignupSx(signup.date)}><SignupListMenu onDuplicate={() => duplicateSignup(signup)} onDelete={() => deleteSignup(signup)} onUpdate={() => showUpdateView(signup)} onDetail={() => showDetailView(signup)}></SignupListMenu></TableCell>
                         </TableRow>

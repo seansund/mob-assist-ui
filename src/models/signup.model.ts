@@ -31,7 +31,10 @@ export interface SignupOptionModel {
     id: string
     value: string
     declineOption?: boolean
+    sortIndex?: number
 }
+
+export const signupOptionBySortIndex = (a?: SignupOptionModel, b?: SignupOptionModel) => (a?.sortIndex || 0) - (b?.sortIndex || 0)
 
 export const isSignedUp = (response: SignupOptionModel | undefined): boolean => {
     if (!response) {

@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {useAtomValue, useSetAtom} from "jotai";
-import {Accordion, AccordionDetails, AccordionSummary, Stack, Typography} from "@mui/material";
+import {Accordion, AccordionDetails, AccordionSummary, Box, Button, Stack, Typography} from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 import {SignupResponseTable} from "./SignupResponseTable";
@@ -8,12 +8,17 @@ import {currentSignupAtom, memberResponsesAtomLoadable, signupListAtom} from "..
 import {AssignmentDialog, MemberResponseDialog} from "../../../components";
 import {
     AssignmentModel, MemberModel,
-    MemberResponseModel,
-    SignupModel,
+    MemberResponseModel, NotificationResultModel,
+    SignupModel, signupOptionBySortIndex,
     SignupOptionModel,
     simpleAssignmentSorter
 } from "../../../models";
 import {first, Optional} from "../../../util";
+import {
+    notificationAtomLoadable,
+    signupAssignmentNotificationAtom, signupCheckinNotificationAtom,
+    signupRequestNotificationAtom
+} from "../../../atoms/notification.atom";
 
 export interface SignupDetailViewProps {
     nav: string
@@ -125,20 +130,64 @@ const SignupResponseTableView = (props: SignupResponseTableViewProps) => {
     return (<div>
         <MemberResponseDialog open={openResponseDialog} onClose={onClose} baseType={currentSignup} />
         <AssignmentDialog open={openAssignmentDialog} onClose={onClose} baseType={currentSignup} />
-        {options.map((option?: SignupOptionModel) => (
+        {options.sort(signupOptionBySortIndex).map((option?: SignupOptionModel) => (
             <SignupResponseAccordion key={option?.value || 'no-response'} responses={filterResponses(option, (loadableResponses as any).data)} showAssignmentDialog={showAssignmentDialog} showMemberResponseDialog={showMemberResponseDialog} option={option} baseType={currentSignup} />
         ))}
     </div>)
 }
 
+interface NotificationViewProps {}
+
+const NotificationView = (props: NotificationViewProps) => {
+    const notificationResult = useAtomValue(notificationAtomLoadable)
+
+    if (notificationResult.state === 'loading') {
+        return (<div>Sending notifications</div>)
+    } else if (notificationResult.state === 'hasError') {
+        return (<div>Error sending notifications</div>)
+    } else {
+        const notification: NotificationResultModel | undefined = notificationResult.data
+
+        if (!notification) {
+            return (<></>)
+        }
+
+        return (
+            <div>
+                <div>{notification.type}</div>
+                {notification.channels.map(channel => {
+                    return (<div key={channel.channel}>{channel.channel}: {channel.count}</div>)
+                })}
+            </div>
+        )
+    }
+}
+
 export const SignupDetailView = (props: SignupDetailViewProps) => {
     const currentSignup: SignupModel = useAtomValue(currentSignupAtom)
+    const sendSignupRequest = useSetAtom(signupRequestNotificationAtom)
+    const sendSignupAssignments = useSetAtom(signupAssignmentNotificationAtom)
+    const sendSignupCheckin = useSetAtom(signupCheckinNotificationAtom)
+
+    if (!currentSignup || !currentSignup.title) {
+        return (<></>)
+    }
 
     return (<div>
         <Stack>
             <div>{currentSignup.date}</div>
             <div>{currentSignup.title}</div>
         </Stack>
+
+        <Box component="fieldset">
+            <legend>Send notification</legend>
+            <Stack direction="row" spacing={2}>
+                <Button onClick={() => sendSignupRequest(currentSignup)} variant="contained">Sign up</Button>
+                <Button onClick={() => sendSignupAssignments(currentSignup)} variant="contained">Assignments</Button>
+                <Button onClick={() => sendSignupCheckin(currentSignup)} variant="contained">Check in</Button>
+            </Stack>
+            <NotificationView />
+        </Box>
 
         <SignupResponseTableView currentSignup={currentSignup}></SignupResponseTableView>
     </div>)

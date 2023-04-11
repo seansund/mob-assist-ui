@@ -1,4 +1,3 @@
-import {useElementSize} from 'usehooks-ts'
 
 export interface AssignmentDiagramProps {
     parentWidth: number

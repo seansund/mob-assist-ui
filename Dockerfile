@@ -2,7 +2,7 @@ FROM registry.access.redhat.com/ubi9/nodejs-18:1-35 as builder
 
 COPY --chown=default . .
 
-RUN npm install && npm run build
+RUN npm ci && npm run build
 
 FROM registry.access.redhat.com/ubi9/nginx-120:1-95
 

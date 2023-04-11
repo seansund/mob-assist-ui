@@ -17,7 +17,7 @@ import {first, Optional} from "../../../util";
 import {
     notificationAtomLoadable,
     signupAssignmentNotificationAtom, signupCheckinNotificationAtom,
-    signupRequestNotificationAtom
+    signupRequestNotificationAtom, signupRequestToNoResponseNotificationAtom
 } from "../../../atoms/notification.atom";
 
 export interface SignupDetailViewProps {
@@ -166,6 +166,7 @@ const NotificationView = (props: NotificationViewProps) => {
 export const SignupDetailView = (props: SignupDetailViewProps) => {
     const currentSignup: SignupModel = useAtomValue(currentSignupAtom)
     const sendSignupRequest = useSetAtom(signupRequestNotificationAtom)
+    const sendSignupRequestNoResponse = useSetAtom(signupRequestToNoResponseNotificationAtom)
     const sendSignupAssignments = useSetAtom(signupAssignmentNotificationAtom)
     const sendSignupCheckin = useSetAtom(signupCheckinNotificationAtom)
 
@@ -183,6 +184,7 @@ export const SignupDetailView = (props: SignupDetailViewProps) => {
             <legend>Send notification</legend>
             <Stack direction="row" spacing={2}>
                 <Button onClick={() => sendSignupRequest(currentSignup)} variant="contained">Sign up</Button>
+                <Button onClick={() => sendSignupRequestNoResponse(currentSignup)} variant="contained">Sign up no response</Button>
                 <Button onClick={() => sendSignupAssignments(currentSignup)} variant="contained">Assignments</Button>
                 <Button onClick={() => sendSignupCheckin(currentSignup)} variant="contained">Check in</Button>
             </Stack>

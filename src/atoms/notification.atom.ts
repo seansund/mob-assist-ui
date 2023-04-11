@@ -20,6 +20,17 @@ export const signupRequestNotificationAtom = atom(
     }
 )
 
+export const signupRequestToNoResponseNotificationAtom = atom(
+    get => get(notificationAtom),
+    async (_get, set, signup: SignupModel) => {
+        const result: Promise<NotificationResultModel> = service.sendSignupRequestToNoResponse(signup)
+
+        set(notificationAtom, result)
+
+        return result
+    }
+)
+
 export const signupAssignmentNotificationAtom = atom(
     get => get(notificationAtom),
     async (_get, set, signup: SignupModel) => {

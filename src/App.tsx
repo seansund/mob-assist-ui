@@ -11,6 +11,7 @@ import {
     SignupAddEditView, SignupDeleteView, SignupDetailView,
     SignupListView
 } from "./views";
+import {AssignmentDiagramView} from "./views/AssignmentDiagramView";
 
 function App() {
   return (
@@ -30,6 +31,9 @@ function App() {
                   <Route path="addEdit" element={<SignupAddEditView nav="/signups" />}></Route>
                   <Route path="delete" element={<SignupDeleteView nav="/signups" />}></Route>
               </Route>
+          </Route>
+          <Route path="/assignment" element={<AssignmentDiagramView />}>
+              <Route path=":assignment" element={<AssignmentDiagramView />} />
           </Route>
       </Routes>
     </div>

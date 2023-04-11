@@ -5,6 +5,7 @@ import {getApolloClient} from "../../backends";
 import {NotificationResultModel, SignupModel} from "../../models";
 
 const MUTATION_SIGNUP_REQUEST = gql`mutation SendSignupRequest($id: ID!) { sendSignupRequest(id: $id) { type channels { channel count } } } `;
+const MUTATION_SIGNUP_REQUEST_NO_RESPONSE = gql`mutation SendSignupRequestToNoResponse($id: ID!) { sendSignupRequestToNoResponse(id: $id) { type channels { channel count } } } `;
 const MUTATION_SIGNUP_CHECKIN = gql`mutation SendSignupCheckin($id: ID!) { sendSignupCheckin(id: $id) { type channels { channel count } } } `;
 const MUTATION_SIGNUP_ASSIGNMENT = gql`mutation SendSignupAssignments($id: ID!) { sendSignupAssignments(id: $id) { type channels { channel count } } } `;
 
@@ -43,6 +44,16 @@ export class NotificationsGraphql implements NotificationsApi {
                 variables: {id: signup.id},
             })
             .then(async (result: FetchResult<{sendSignupRequest: NotificationResultModel}>) => await result.data?.sendSignupRequest || {type: '', channels: []})
+    }
+
+    async sendSignupRequestToNoResponse(signup: SignupModel): Promise<NotificationResultModel> {
+
+        return this.client
+            .mutate<{sendSignupRequestToNoResponse: NotificationResultModel}>({
+                mutation: MUTATION_SIGNUP_REQUEST_NO_RESPONSE,
+                variables: {id: signup.id},
+            })
+            .then(async (result: FetchResult<{sendSignupRequestToNoResponse: NotificationResultModel}>) => await result.data?.sendSignupRequestToNoResponse || {type: '', channels: []})
     }
 
 }

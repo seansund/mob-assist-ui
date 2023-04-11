@@ -6,4 +6,6 @@ export abstract class NotificationsApi {
     abstract sendSignupAssignments(signup: SignupModel): Promise<NotificationResultModel>
 
     abstract sendSignupCheckin(signup: SignupModel): Promise<NotificationResultModel>
+
+    abstract sendSignupRequestToNoResponse(signup: SignupModel): Promise<NotificationResultModel>
 }

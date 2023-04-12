@@ -2,13 +2,13 @@ apiVersion: v1
 entries:
   mob-assist-ui:
   - apiVersion: v2
-    appVersion: 0.5.1
-    created: "2023-04-11T17:05:00.059719581Z"
+    appVersion: 0.5.2
+    created: "2023-04-12T03:32:19.109182538Z"
     description: A Helm chart for Kubernetes
-    digest: 1027b417b51bc56eade4181c078cbb5843a94f4c8d3f12d045261f469f068731
+    digest: e1cd9be69ca5eeb813108a597469b3904b8912ea2495fc1596f217515abcc1ae
     name: mob-assist-ui
     type: application
     urls:
-    - https://github.com/seansund/mob-assist-ui/releases/download/v0.5.1/mob-assist-ui-0.5.1.tgz
-    version: 0.5.1
-generated: "2023-04-11T17:05:00.059063687Z"
+    - https://github.com/seansund/mob-assist-ui/releases/download/v0.5.2/mob-assist-ui-0.5.2.tgz
+    version: 0.5.2
+generated: "2023-04-12T03:32:19.108419445Z"

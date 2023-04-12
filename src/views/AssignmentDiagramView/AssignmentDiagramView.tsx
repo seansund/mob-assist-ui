@@ -1,5 +1,5 @@
 import {AssignmentDiagram} from "../../components/AssignmentDiagram";
-import {useParams} from "react-router-dom";
+import {useLocation, useParams} from "react-router-dom";
 import {useEffect, useRef, useState} from "react";
 
 export interface AssignmentDiagramViewProps {
@@ -10,6 +10,8 @@ export const AssignmentDiagramView = (props: AssignmentDiagramViewProps) => {
     const [height, setHeight] = useState(0);
 
     const { assignment } = useParams();
+    const { hash } = useLocation();
+
     const canvasRef = useRef<any>(null)
     useEffect(() => {
         const resizeObserver = new ResizeObserver((event) => {
@@ -20,7 +22,16 @@ export const AssignmentDiagramView = (props: AssignmentDiagramViewProps) => {
         resizeObserver.observe(canvasRef.current)
     }, [canvasRef]);
 
-    const layers = assignment ? assignment.toLowerCase().split(",") : []
+    const layers = [assignment ? assignment.toLowerCase().split(',') : [], hash ? hash.toLowerCase().replace('#', '').split(',') : []]
+        .reduce((result: string[], current: string[]) => {
+            current.forEach(val => {
+                if (!result.includes(val)) {
+                    result.push(val)
+                }
+            })
+
+            return result
+        }, [])
 
     return (
         <div style={{width: '100%'}} ref={canvasRef}>

@@ -40,7 +40,7 @@ export const SignupResponseTable = (props: SignupResponseTableProps) => {
 
     return (<>
         <MemberResponseDialog open={openResponseDialog} onClose={onClose} baseType={props.baseType} />
-        <AssignmentDialog open={openAssignmentDialog} onClose={onClose} baseType={props.baseType} />
+        <AssignmentDialog open={openAssignmentDialog} onClose={onClose} baseType={props.baseType} currentAssignments={[]} />
         <TableContainer>
         <Table sx={{minWidth: 650}} aria-label={"response table"}>
             <TableHead>

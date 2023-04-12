@@ -32,6 +32,7 @@ export interface AssignmentDialogProps {
     open: boolean
     onClose: () => void
     baseType: SignupModel | MemberModel
+    currentAssignments: AssignmentModel[]
 }
 
 export const AssignmentDialog = (props: AssignmentDialogProps) => {
@@ -103,6 +104,10 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
         return first((response.assignments || []).filter(current => current.name === assignment.name)).isPresent()
     }
 
+    const isDisabled = (assignment: AssignmentModel): boolean => {
+        return !isChecked(assignment) && props.currentAssignments.map(assn => assn.name).includes(assignment.name)
+    }
+
     const getDirection = (group: string): 'row' | 'row-reverse' => {
         return getGroupIndex(group) % 2 === 0 ? 'row-reverse' : 'row'
     }
@@ -123,7 +128,7 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
                     <FormControlLabel
                         labelPlacement="top"
                         control={
-                            <Checkbox defaultChecked={isChecked(assignment)} name={assignment.name} value={assignment.name}/>
+                            <Checkbox defaultChecked={isChecked(assignment)} disabled={isDisabled(assignment)} name={assignment.name} value={assignment.name}/>
                         }
                         label={assignment.name}
                         key={assignment.group + '-' + assignment.name}

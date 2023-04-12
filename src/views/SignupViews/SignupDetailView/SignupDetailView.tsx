@@ -36,7 +36,7 @@ const ResponseTable = ({option, responses, showAssignmentDialog, showResponseDia
 interface SignupResponseAccordionProps {
     option?: SignupOptionModel
     responses: MemberResponseModel[]
-    showAssignmentDialog: () => void
+    showAssignmentDialog: (responses: MemberResponseModel[]) => void
     showMemberResponseDialog: () => void
     baseType: SignupModel | MemberModel
 }
@@ -55,7 +55,7 @@ const SignupResponseAccordion = (props: SignupResponseAccordionProps) => {
                 <Typography sx={{color: 'text.secondary', textAlign: 'right', width: '66%'}}>{props.responses.length} response{props.responses.length !== 1 ? 's' : ''}</Typography>
             </AccordionSummary>
             <AccordionDetails>
-                <ResponseTable option={props.option} responses={props.responses} showAssignmentDialog={props.showAssignmentDialog} showResponseDialog={props.showMemberResponseDialog} baseType={props.baseType} />
+                <ResponseTable option={props.option} responses={props.responses} showAssignmentDialog={() => props.showAssignmentDialog(props.responses)} showResponseDialog={props.showMemberResponseDialog} baseType={props.baseType} />
             </AccordionDetails>
         </Accordion>
     )
@@ -68,6 +68,7 @@ interface SignupResponseTableViewProps {
 const SignupResponseTableView = (props: SignupResponseTableViewProps) => {
     const [openResponseDialog, setOpenResponseDialog] = useState(false)
     const [openAssignmentDialog, setOpenAssignmentDialog] = useState(false)
+    const [currentAssignments, setCurrentAssignments] = useState<AssignmentModel[]>([])
     const loadableResponses = useAtomValue(memberResponsesAtomLoadable)
     const loadSignups = useSetAtom(signupListAtom)
 
@@ -76,6 +77,12 @@ const SignupResponseTableView = (props: SignupResponseTableViewProps) => {
     if (loadableResponses.state === 'loading') {
         return (<div>Loading...</div>)
     }
+
+    if (loadableResponses.state === 'hasError') {
+        return (<div>Error loading signups...</div>)
+    }
+
+    const responses: MemberResponseModel[] = loadableResponses.data
 
     const isResponseForOption = (option?: SignupOptionModel) => {
         return (resp: MemberResponseModel): boolean => {
@@ -123,15 +130,28 @@ const SignupResponseTableView = (props: SignupResponseTableViewProps) => {
         setOpenResponseDialog(true)
     }
 
-    const showAssignmentDialog = () => {
+    const showAssignmentDialog = (responses: MemberResponseModel[]) => {
+
+        const assignments: AssignmentModel[] = responses
+            .reduce((result: AssignmentModel[], response: MemberResponseModel) => {
+
+                const currentAssignments = response.assignments
+                if (currentAssignments) {
+                    result.push(...currentAssignments)
+                }
+
+                return result;
+            }, [])
+
+        setCurrentAssignments(assignments)
         setOpenAssignmentDialog(true)
     }
 
     return (<div>
         <MemberResponseDialog open={openResponseDialog} onClose={onClose} baseType={currentSignup} />
-        <AssignmentDialog open={openAssignmentDialog} onClose={onClose} baseType={currentSignup} />
+        <AssignmentDialog open={openAssignmentDialog} onClose={onClose} baseType={currentSignup} currentAssignments={currentAssignments} />
         {options.sort(signupOptionBySortIndex).map((option?: SignupOptionModel) => (
-            <SignupResponseAccordion key={option?.value || 'no-response'} responses={filterResponses(option, (loadableResponses as any).data)} showAssignmentDialog={showAssignmentDialog} showMemberResponseDialog={showMemberResponseDialog} option={option} baseType={currentSignup} />
+            <SignupResponseAccordion key={option?.value || 'no-response'} responses={filterResponses(option, responses)} showAssignmentDialog={showAssignmentDialog} showMemberResponseDialog={showMemberResponseDialog} option={option} baseType={currentSignup} />
         ))}
     </div>)
 }

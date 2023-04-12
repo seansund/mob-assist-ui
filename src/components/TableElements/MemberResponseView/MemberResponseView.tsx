@@ -3,7 +3,7 @@ import {useSetAtom} from "jotai";
 
 import './MemberResponseView.css';
 import {selectedMemberResponseAtom} from "../../../atoms";
-import {MemberResponseModel, SignupOptionModel} from "../../../models";
+import {MemberResponseModel, signupOptionBySortIndex, SignupOptionModel} from "../../../models";
 
 export interface MemberResponseViewProps {
     response: MemberResponseModel;
@@ -29,7 +29,7 @@ export const MemberResponseView = (props: MemberResponseViewProps) => {
         props.onClick()
     }
 
-    return (<div onClick={onClick}>{options.options.map(option => (
+    return (<div onClick={onClick}>{options.options.sort(signupOptionBySortIndex).map(option => (
         <span key={option.value} className={`signup-response ${isSelected(option) ? "active": ""}`}>{option.value}</span>
     ))}</div>)
 }

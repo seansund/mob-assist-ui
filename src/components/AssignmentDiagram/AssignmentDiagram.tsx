@@ -33,7 +33,7 @@ export const AssignmentDiagram = (props: AssignmentDiagramProps) => {
             {layers
                 .map(layer => "/images/assignments/sanctuary-layer.svg".replace("layer", layer))
                 .map(image =>
-                    <image href={image} x="0" y="0" z={zValue++} width={width} height={height} />
+                    <image key={image} href={image} x="0" y="0" z={zValue++} width={width} height={height} />
             )}
         </svg>
         </div>

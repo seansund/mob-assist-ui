@@ -3,6 +3,7 @@ import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "
 
 import {AssignmentsView, CheckInView, MemberResponseView} from "../../../../components";
 import {
+    AssignmentModel,
     getMemberResponseId,
     isSignedUp,
     MemberModel,

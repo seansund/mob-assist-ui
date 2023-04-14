@@ -25,6 +25,10 @@ export const CheckInView = (props: CheckInViewProps) => {
 
     const service: SignupResponsesApi = Container.get(SignupResponsesApi)
     const toggleCheckin = async () => {
+        if (!props.response.id) {
+            return
+        }
+
         console.log('Toggle checkin')
         if (props.response.checkedIn) {
             await service.removeCheckIn(props.response.id)

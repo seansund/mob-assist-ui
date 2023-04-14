@@ -1,7 +1,17 @@
 import React, {FormEvent} from "react";
 import {useNavigate} from "react-router-dom";
 import {useAtomValue, useSetAtom} from "jotai";
-import {Button, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, Stack, TextField} from "@mui/material";
+import {
+    Button,
+    FormControl,
+    FormControlLabel,
+    FormHelperText,
+    FormLabel,
+    Radio,
+    RadioGroup,
+    Stack,
+    TextField
+} from "@mui/material";
 import isEqual from 'lodash.isequal'
 import {Container} from "typescript-ioc";
 
@@ -51,7 +61,7 @@ export const MemberAddEditView = (props: MemberAddEditViewProps) => {
         }
     }
 
-    return (<div>
+    return (<div style={{padding: '15px'}}>
         <form onSubmit={(event: FormEvent<HTMLFormElement>) => submitAction(event) }>
             <Stack spacing={3}>
             <TextField
@@ -87,7 +97,7 @@ export const MemberAddEditView = (props: MemberAddEditViewProps) => {
                 onChange={updateMember}
             />
             <FormControl>
-                <FormLabel id="preferred-contact-label">Preferred contact</FormLabel>
+                <FormLabel id="preferred-contact-label" style={{textAlign: 'left'}}>Preferred contact</FormLabel>
                 <RadioGroup
                     row
                     aria-labelledby="preferred-contact-label"
@@ -99,9 +109,12 @@ export const MemberAddEditView = (props: MemberAddEditViewProps) => {
                     <FormControlLabel value="email" control={<Radio />} label="Email" />
                     <FormControlLabel value="none" control={<Radio />} label="None" />
                 </RadioGroup>
+                <FormHelperText>Reminder notifications will be sent prior to the event either via text messages or email, depending on your selection. If you would not like a reminder, select "none". This selection can be changed at any time.</FormHelperText>
             </FormControl>
-            <Button variant="outlined" onClick={cancelAction}>Cancel</Button>
-            <Button variant="contained" type="submit">Submit</Button>
+                <Stack direction="row" spacing={2} style={{margin: '0 auto', paddingTop: '10px'}}>
+                    <Button variant="outlined" onClick={cancelAction}>Cancel</Button>
+                    <Button variant="contained" type="submit">Submit</Button>
+                </Stack>
             </Stack>
         </form>
     </div>)

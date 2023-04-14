@@ -1,10 +1,12 @@
 import {
     Box,
     Button,
+    Checkbox,
     Dialog,
     DialogTitle,
     FormControl,
     FormControlLabel,
+    FormGroup,
     FormLabel,
     Grid,
     Radio,
@@ -24,8 +26,9 @@ export interface SimpleSelectionDialogProps<T extends SimpleModel> {
     title: string;
     label: string;
     options: T[];
-    selectedValue: T;
-    onClose: (value?: T) => void;
+    selectedValues: T[];
+    onClose: (value?: T[]) => void;
+    multiSelect: boolean
 }
 
 export const SimpleSelectionDialog = (props: SimpleSelectionDialogProps<any>) => {
@@ -35,15 +38,45 @@ export const SimpleSelectionDialog = (props: SimpleSelectionDialogProps<any>) =>
 
         const formData = new FormData(e.currentTarget as any)
 
-        const value: FormDataEntryValue | null = formData.get(props.label)
-        const selectedOption = first(props.options.filter(option => option.value === value))
-            .orElse(undefined)
+        const values: string[] = props.multiSelect
+            ? props.options.map(option => option.label || option.value).map(label => formData.get(label) ? label : undefined).filter(val => !!val).map(val => val.toString())
+            : ([formData.get(props.label)] || []).filter(val => !!val).map(val => (val as any).toString())
 
-        props.onClose(selectedOption)
+        const selectedOptions = props.options.filter(option => values.includes(option.value))
+
+        console.log('Result: ', {values, selectedOptions})
+
+        props.onClose(selectedOptions)
     }
 
     const handleClose = () => {
         props.onClose()
+    }
+
+    const ControlGroup = ({labelId}: {labelId: string}) => {
+        if (props.multiSelect) {
+            const valuesOfSelectedValues: string[] = props.selectedValues.map(v => v.value);
+
+            return (
+                <FormGroup>
+                    {props.options.map(option => (
+                        <FormControlLabel key={option.label || option.value} control={<Checkbox defaultChecked={valuesOfSelectedValues.includes(option.value)} />} label={option.label || option.value} name={option.label || option.value} />
+                    ))}
+                </FormGroup>
+            )
+        }
+
+        return (
+            <RadioGroup
+                aria-labelledby={labelId}
+                name={props.label}
+                defaultValue={props.selectedValues && props.selectedValues.length > 0 ? props.selectedValues[0].value : ''}
+            >
+                {props.options.map(option => (
+                    <FormControlLabel key={option.label || option.value} control={<Radio />} label={option.label || option.value} value={option.value} />
+                ))}
+            </RadioGroup>
+        )
     }
 
     return (<Dialog open={props.open} onClose={handleClose} >
@@ -52,15 +85,7 @@ export const SimpleSelectionDialog = (props: SimpleSelectionDialogProps<any>) =>
         <form onSubmit={handleSubmit}>
             <FormControl>
                 <FormLabel id={props.id + '-label'}>{props.label}</FormLabel>
-                <RadioGroup
-                    aria-labelledby={props.id + '-label'}
-                    name={props.label}
-                    defaultValue={props.selectedValue ? props.selectedValue.value : ''}
-                >
-                    {props.options.map(option => (
-                        <FormControlLabel key={option.label || option.value} control={<Radio />} label={option.label || option.value} value={option.value} />
-                    ))}
-                </RadioGroup>
+                <ControlGroup labelId={props.id + '-label'} />
             </FormControl>
             <Grid container>
                 <Grid item xs={6}><Button variant="outlined" onClick={handleClose}>Cancel</Button></Grid>

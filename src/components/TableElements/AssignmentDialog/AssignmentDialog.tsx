@@ -113,7 +113,7 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
     }
 
     return (<Dialog open={props.open} onClose={handleClose} >
-        <DialogTitle>Update assignments</DialogTitle>
+        <DialogTitle>Update assignments: {response.member.firstName} {response.member.lastName}</DialogTitle>
         <Box sx={{padding: '10px'}}>
             <form onSubmit={handleSubmit}>
         <FormControl>

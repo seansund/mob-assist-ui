@@ -2,7 +2,7 @@ import {AssignmentModel, SignupModel, SignupOptionModel} from "./signup.model";
 import {MemberModel} from "./member.model";
 
 export interface MemberResponseModel {
-    id: string
+    id?: string
     signup: SignupModel
     member: MemberModel
     selectedOption?: SignupOptionModel

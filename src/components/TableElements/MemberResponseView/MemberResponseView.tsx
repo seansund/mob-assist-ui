@@ -1,9 +1,15 @@
 import React from "react";
-import {useSetAtom} from "jotai";
+import {useAtomValue, useSetAtom} from "jotai";
 
 import './MemberResponseView.css';
-import {selectedMemberResponseAtom} from "../../../atoms";
-import {MemberResponseModel, signupOptionBySortIndex, SignupOptionModel} from "../../../models";
+import {selectedMemberResponseAtom, signupListAtomLoadable} from "../../../atoms";
+import {
+    MemberResponseModel,
+    populateSignup,
+    SignupModel,
+    signupOptionBySortIndex,
+    SignupOptionModel, SignupOptionSetModel
+} from "../../../models";
 
 export interface MemberResponseViewProps {
     response: MemberResponseModel;
@@ -11,10 +17,16 @@ export interface MemberResponseViewProps {
 }
 
 export const MemberResponseView = (props: MemberResponseViewProps) => {
+    const loadableSignupList = useAtomValue(signupListAtomLoadable)
     const setSelectedMemberResponse = useSetAtom(selectedMemberResponseAtom)
 
-    const selectedOption = props.response.selectedOption
-    const options = props.response.signup.options
+    if (loadableSignupList.state === 'loading' || loadableSignupList.state === 'hasError') {
+        return (<></>)
+    }
+
+    const selectedOption: SignupOptionModel | undefined = props.response.selectedOption
+    const signup: SignupModel = populateSignup(loadableSignupList.data, props.response.signup)
+    const options: SignupOptionSetModel = signup.options
 
     const isSelected = (option: SignupOptionModel): boolean => {
         if (!selectedOption) {
@@ -29,7 +41,7 @@ export const MemberResponseView = (props: MemberResponseViewProps) => {
         props.onClick()
     }
 
-    return (<div onClick={onClick}>{options.options.sort(signupOptionBySortIndex).map(option => (
+    return (<div onClick={onClick}>{[...options.options].sort(signupOptionBySortIndex).map(option => (
         <span key={option.value} className={`signup-response ${isSelected(option) ? "active": ""}`}>{option.value}</span>
     ))}</div>)
 }

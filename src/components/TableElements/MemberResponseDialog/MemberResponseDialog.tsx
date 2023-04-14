@@ -2,9 +2,14 @@ import React from "react";
 import {useAtomValue, useSetAtom} from "jotai";
 import {Container} from "typescript-ioc";
 
-import {loadableSelectedMemberResponseAtom, memberResponsesAtom, memberResponsesAtomLoadable} from "../../../atoms";
+import {
+    loadableSelectedMemberResponseAtom,
+    memberResponsesAtom,
+    memberResponsesAtomLoadable,
+    signupListAtomLoadable
+} from "../../../atoms";
 import {SimpleSelectionDialog} from "../../index";
-import {MemberModel, MemberResponseModel, SignupModel, SignupOptionModel} from "../../../models";
+import {MemberModel, MemberResponseModel, populateSignup, SignupModel, SignupOptionModel} from "../../../models";
 import {SignupResponsesApi} from "../../../services";
 import {first} from "../../../util";
 
@@ -15,6 +20,7 @@ export interface MemberResponseDialogProps {
 }
 
 export const MemberResponseDialog = (props: MemberResponseDialogProps) => {
+    const loadableSignupList = useAtomValue(signupListAtomLoadable)
     const loadableMemberResponses = useAtomValue(memberResponsesAtomLoadable)
     const loadableSelectedMemberResponse = useAtomValue(loadableSelectedMemberResponseAtom)
     const loadResponses = useSetAtom(memberResponsesAtom)
@@ -24,6 +30,10 @@ export const MemberResponseDialog = (props: MemberResponseDialogProps) => {
     }
 
     if (loadableSelectedMemberResponse.state === 'loading' || loadableSelectedMemberResponse.state === 'hasError') {
+        return (<></>)
+    }
+
+    if (loadableSignupList.state === 'loading' || loadableSignupList.state === 'hasError') {
         return (<></>)
     }
 
@@ -73,7 +83,7 @@ export const MemberResponseDialog = (props: MemberResponseDialogProps) => {
                                    open={props.open}
                                    title="Update Signup Response"
                                    label="Response"
-                                   options={selectedMemberResponse.signup.options.options}
+                                   options={populateSignup(loadableSignupList.data, selectedMemberResponse.signup).options.options}
                                    selectedValues={filteredMemberResponses.map(resp => resp.selectedOption).filter(opt => !!opt)}
                                    multiSelect={true}
                                    onClose={handleSelection} />)

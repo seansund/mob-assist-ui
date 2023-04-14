@@ -1,8 +1,8 @@
-import {useSetAtom} from "jotai";
+import {useAtomValue, useSetAtom} from "jotai";
 import {Container} from "typescript-ioc";
 
-import {memberResponsesAtom} from "../../../atoms";
-import {isEligibleForCheckIn, MemberModel, MemberResponseModel, SignupModel} from "../../../models";
+import {memberResponsesAtom, signupListAtomLoadable} from "../../../atoms";
+import {isEligibleForCheckIn, MemberModel, MemberResponseModel, populateSignup, SignupModel} from "../../../models";
 import {SignupResponsesApi} from "../../../services";
 
 export interface CheckInViewProps {
@@ -13,12 +13,13 @@ export interface CheckInViewProps {
 
 export const CheckInView = (props: CheckInViewProps) => {
     const loadResponses = useSetAtom(memberResponsesAtom)
+    const signupListLoadable = useAtomValue(signupListAtomLoadable)
 
-    if (!props.signedUp) {
+    if (!props.signedUp || signupListLoadable.state === 'loading' || signupListLoadable.state === 'hasError') {
         return (<></>)
     }
 
-    const signup = props.response.signup
+    const signup = populateSignup(signupListLoadable.data, props.response.signup)
     if (!isEligibleForCheckIn(signup)) {
         return (<></>)
     }

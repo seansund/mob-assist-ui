@@ -10,7 +10,14 @@ import {
     MemberResponseDialog,
     MemberResponseView
 } from "../../../../components";
-import {getMemberResponseId, isSignedUp, MemberModel, MemberResponseModel, SignupModel} from "../../../../models";
+import {
+    getMemberResponseId,
+    isSignedUp,
+    MemberModel,
+    MemberResponseModel,
+    populateSignup,
+    SignupModel
+} from "../../../../models";
 
 export interface SignupResponseTableProps {
     baseType: MemberModel | SignupModel
@@ -54,18 +61,22 @@ export const SignupResponseTable = (props: SignupResponseTableProps) => {
                 </TableRow>
             </TableHead>
             <TableBody>
-                {(loadableResponses as any).data.map((response: MemberResponseModel) => (
-                    <TableRow
-                        key={getMemberResponseId(response)}
-                    >
-                        <TableCell>{response.signup.date}</TableCell>
-                        <TableCell>{response.signup.title}</TableCell>
-                        <TableCell><MemberResponseView response={response} onClick={showMemberResponseDialog} /></TableCell>
-                        <TableCell><AssignmentsView  response={response} signedUp={isSignedUp(response.selectedOption)} onClick={showAssignmentDialog} /></TableCell>
-                        <TableCell><CheckInView signedUp={isSignedUp(response.selectedOption)} response={response} baseType={props.baseType} /></TableCell>
-                        <TableCell></TableCell>
-                    </TableRow>
-                ))}
+                {(loadableResponses as any).data.map((response: MemberResponseModel) => {
+                    const signup: SignupModel = populateSignup([], response.signup)
+
+                    return (
+                        <TableRow
+                            key={getMemberResponseId(response)}
+                        >
+                            <TableCell>{signup.date}</TableCell>
+                            <TableCell>{signup.title}</TableCell>
+                            <TableCell><MemberResponseView response={response} onClick={showMemberResponseDialog} /></TableCell>
+                            <TableCell><AssignmentsView  response={response} signedUp={isSignedUp(response.selectedOption)} onClick={showAssignmentDialog} /></TableCell>
+                            <TableCell><CheckInView signedUp={isSignedUp(response.selectedOption)} response={response} baseType={props.baseType} /></TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                    )
+                })}
             </TableBody>
         </Table>
     </TableContainer>

@@ -44,6 +44,10 @@ export const isSignedUp = (response: SignupOptionModel | undefined): boolean => 
     return !response.declineOption
 }
 
+export const populateSignup = (signups: SignupModel[], signup: SignupModel) => {
+    return first([...signups].filter(s => s.id === signup.id)).orElse(signup)
+}
+
 export interface SignupOptionResponseModel {
     option?: SignupOptionModel
     count: number

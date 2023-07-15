@@ -39,5 +39,5 @@ export const CheckInView = (props: CheckInViewProps) => {
         loadResponses(props.baseType)
     }
 
-    return (<div onClick={toggleCheckin}>{props.response.checkedIn ? 'Check out' : 'Check in'}</div>)
+    return (<div onClick={toggleCheckin}>{props.response.checkedIn ? 'Checked in' : 'Not checked in'}</div>)
 }

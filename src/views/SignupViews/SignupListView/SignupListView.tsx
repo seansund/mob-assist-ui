@@ -185,7 +185,9 @@ export const SignupListView = (props: SignupListViewProps) => {
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {signup.responses.map(response => (
+                                            {[...signup.responses]
+                                                .sort((a, b) => (a.option?.sortIndex || 10000) - (b.option?.sortIndex || 10000))
+                                                .map(response => (
                                                 <TableRow key={response.option?.value || 'no-response'}>
                                                     <TableCell component="th" scope="row">
                                                         {response.option?.value || 'No response'}

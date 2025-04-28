@@ -1,7 +1,10 @@
-import {Optional} from '../optional/optional';
 import {isUndefined} from '../object-util/object-util';
+import {Optional} from '../optional/optional';
 
-export class ArrayUtil<T = any> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DefaultType = any;
+
+export class ArrayUtil<T = DefaultType> {
   public readonly value: T[];
 
   private constructor(value?: T[]) {
@@ -31,7 +34,7 @@ export class ArrayUtil<T = any> {
       if (Array.isArray(currentValue)) {
         result.push(...currentValue);
       } else {
-        result.push(currentValue as any);
+        result.push(currentValue as DefaultType);
       }
 
       return result;

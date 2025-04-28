@@ -1,5 +1,5 @@
 import {BaseApi} from "./base.api";
-import {Comparator, first, invertFilter, timer} from "../util";
+import {Comparator, first, invertFilter, timer} from "@/util";
 
 export abstract class BaseMock<T> extends BaseApi<T> {
     protected constructor(private values: T[] | Promise<T[]>) {
@@ -20,14 +20,14 @@ export abstract class BaseMock<T> extends BaseApi<T> {
         const values: T[] = await this.values
 
         return first(values.filter(this.filter(id)))
-            .orElse(undefined as any)
+            .orElse(undefined as T)
     }
 
     async addUpdate(toUpdate: T): Promise<T> {
         const values: T[] = await this.values
 
         return first(values.filter(this.filter(this.getId(toUpdate))))
-            .ifPresent(val => Object.assign(val as any, toUpdate))
+            .ifPresent(val => Object.assign(val as never, toUpdate))
             .orElseGet(() => {
                 console.log('Adding new value: ', toUpdate)
                 values.push(toUpdate)

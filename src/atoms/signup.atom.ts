@@ -1,34 +1,38 @@
 import {atom} from "jotai";
-import {atomWithDefault, loadable} from "jotai/utils";
-import {Container} from "typescript-ioc";
+import {atomWithQuery} from 'jotai-tanstack-query'
 
-import {createEmptySignup, SignupModel, SignupScope} from "../models";
-import {SignupsApi} from "../services";
+import {SignupModel, SignupScope} from "@/models";
+import {signupsApi, SignupsApi} from "@/services";
 import {signupScopeAtom} from "./signup-scope.atom";
 
-export const currentSignupAtom = atom<SignupModel>(createEmptySignup())
+const service: SignupsApi = signupsApi();
 
-const service: SignupsApi = Container.get(SignupsApi)
+export const currentSignupIdAtom = atom<string>()
 
-const baseAtom = atomWithDefault<Promise<SignupModel[]>>(async (get) => {
-    const scope: SignupScope = get(signupScopeAtom)
-
-    return service.list(scope)
-})
-
-export const signupListAtom = atom(
-    get => get(baseAtom),
-    async (get, set, update: SignupModel[] | Promise<SignupModel[]> | undefined) => {
+export const listSignupsAtom = atomWithQuery<SignupModel[]>(get => ({
+    queryKey: ['signups'],
+    queryFn: async () => {
         const scope: SignupScope = get(signupScopeAtom)
 
-        if (!update) {
-            update = await service.list(scope)
+        return service.list(scope);
+    }
+}));
+
+export const currentSignupAtom = atomWithQuery<SignupModel>(get => ({
+    queryKey: ['signup', get(currentSignupIdAtom)],
+    queryFn: async () => {
+        const id = get(currentSignupIdAtom);
+
+        if (!id) {
+            return {} as SignupModel;
         }
 
-        set(baseAtom, await update)
+        const result = await service.get(id);
 
-        return update
+        if (!result) {
+            throw new Error(`Signup not found: ${id}`);
+        }
+
+        return result;
     }
-)
-
-export const signupListAtomLoadable = loadable(signupListAtom)
+}));

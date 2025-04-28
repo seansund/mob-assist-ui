@@ -2,9 +2,9 @@ import {Observable, Subject} from "rxjs";
 
 import {SignupsApi} from "./signups.api";
 import {BaseMock} from "../base.mock";
-import {createAssignment, SignupModel} from "../../models";
+import {createAssignment, SignupModel} from "@/models";
 
-let signups: SignupModel[] = [{
+const signups: SignupModel[] = [{
     id: '1',
     date: '03/19/2023',
     title: 'Communion',
@@ -191,8 +191,7 @@ export class SignupsMock extends BaseMock<SignupModel> implements SignupsApi {
         return Object.assign({}, val, {id: val.id || `${val.title}-${val.date}`})
     }
 
-    observeList(skipQuery?: boolean): Observable<SignupModel[]> {
+    observeList(): Observable<SignupModel[]> {
         return new Subject();
     }
 }
-

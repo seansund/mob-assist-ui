@@ -3,19 +3,22 @@ import {isDefinedAndNotNull} from '../object-util';
 export class NoSuchElement extends Error {
 }
 
-export class Optional<T = any> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DefaultType = any;
+
+export class Optional<T = DefaultType> {
   private constructor(public readonly value: T | undefined) {
   }
 
-  static of<T = any>(value?: T): Optional<T> {
+  static of<T = DefaultType>(value?: T): Optional<T> {
     return new Optional(value as T);
   }
 
-  static ofNullable<T = any>(value?: T): Optional<T> {
+  static ofNullable<T = DefaultType>(value?: T): Optional<T> {
     return new Optional(value as T);
   }
 
-  static empty<T = any>(): Optional<T> {
+  static empty<T = DefaultType>(): Optional<T> {
     return new Optional<T>(undefined);
   }
 
@@ -75,6 +78,7 @@ export class Optional<T = any> {
     if (this.value !== undefined && this.value !== null) {
       return Optional.of(f(this.value));
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return this as any;
     }
   }
@@ -88,10 +92,10 @@ export class Optional<T = any> {
   }
 }
 
-export function of<T = any>(value?: T): Optional<T> {
+export function of<T = DefaultType>(value?: T): Optional<T> {
   return Optional.of<T>(value);
 }
 
-export function empty<T = any>(): Optional<T> {
+export function empty<T = DefaultType>(): Optional<T> {
   return Optional.empty<T>();
 }

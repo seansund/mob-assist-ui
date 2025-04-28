@@ -1,12 +1,9 @@
 import React from "react";
-import {useAtomValue, useSetAtom} from "jotai";
-import {Container} from "typescript-ioc";
+import {useAtomValue} from "jotai";
 
-import {loadableSelectedMemberResponseAtom, memberResponsesAtom, memberResponsesAtomLoadable} from "../../../atoms";
-import {SimpleSelectionDialog} from "../../index";
-import {MemberModel, MemberResponseModel, SignupModel, SignupOptionModel} from "../../../models";
-import {SignupResponsesApi} from "../../../services";
-import {first} from "../../../util";
+import {addUpdateDeleteMemberResponsesAtom, memberResponsesAtom, selectedMemberResponseAtom} from "@/atoms";
+import {SimpleSelectionDialog} from "@/components";
+import {MemberModel, MemberResponseModel, SignupModel, SignupOptionModel} from "@/models";
 
 export interface MemberResponseDialogProps {
     open: boolean
@@ -15,20 +12,13 @@ export interface MemberResponseDialogProps {
 }
 
 export const MemberResponseDialog = (props: MemberResponseDialogProps) => {
-    const loadableMemberResponses = useAtomValue(memberResponsesAtomLoadable)
-    const loadableSelectedMemberResponse = useAtomValue(loadableSelectedMemberResponseAtom)
-    const loadResponses = useSetAtom(memberResponsesAtom)
+    const {data: memberResponses, status: memberResponsesStatus} = useAtomValue(memberResponsesAtom)
+    const selectedMemberResponse = useAtomValue(selectedMemberResponseAtom)
+    const {mutate: addUpdateDelete} = useAtomValue(addUpdateDeleteMemberResponsesAtom)
 
-    if (loadableMemberResponses.state === 'loading' || loadableMemberResponses.state === 'hasError') {
+    if (memberResponsesStatus === 'pending' || memberResponsesStatus === 'error') {
         return (<></>)
     }
-
-    if (loadableSelectedMemberResponse.state === 'loading' || loadableSelectedMemberResponse.state === 'hasError') {
-        return (<></>)
-    }
-
-    const selectedMemberResponse: MemberResponseModel | undefined = loadableSelectedMemberResponse.data
-    const memberResponses: MemberResponseModel[] = loadableMemberResponses.data;
 
     const filteredMemberResponses: MemberResponseModel[] = memberResponses.filter(resp => resp.member.phone === selectedMemberResponse?.member.phone)
 
@@ -38,34 +28,23 @@ export const MemberResponseDialog = (props: MemberResponseDialogProps) => {
 
     const handleSelection = (options?: SignupOptionModel[]) => {
         handleMemberResponseChange(selectedMemberResponse, filteredMemberResponses, options)
-
-        props.onClose()
+            .finally(() => {
+                props.onClose();
+            })
     }
-
 
     const handleMemberResponseChange = async (selectedResponse: MemberResponseModel, responses: MemberResponseModel[], options?: SignupOptionModel[]) => {
         if (options) {
-            const service: SignupResponsesApi = Container.get(SignupResponsesApi)
-
             const existingOptionValues: string[] = responses
                 .map(resp => resp.selectedOption as SignupOptionModel)
                 .filter(opt => !!opt)
                 .map(opt => opt.value)
-            const newOptions: SignupOptionModel[] = options.filter(opt => !existingOptionValues.includes(opt.value))
 
+            const newOptions: SignupOptionModel[] = options.filter(opt => !existingOptionValues.includes(opt.value))
             const optionValues: string[] = options.map(opt => opt.value)
             const missingResponses: MemberResponseModel[] = responses.filter(resp => !!resp.selectedOption && !optionValues.includes(resp.selectedOption.value))
 
-            await Promise.all(newOptions.map(opt => {
-                const newResponse: MemberResponseModel = {signup: selectedResponse.signup, member: selectedResponse.member, selectedOption: opt}
-                return service.addUpdate(newResponse)
-            }))
-
-            await Promise.all(missingResponses.map(resp => {
-                return service.delete(resp)
-            }))
-
-            loadResponses(props.baseType)
+            addUpdateDelete({newOptions, missingResponses, selectedResponse})
         }
     }
 

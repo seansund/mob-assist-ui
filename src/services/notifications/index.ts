@@ -1,7 +1,12 @@
-import {Container} from "typescript-ioc";
 import {NotificationsApi} from "./notifications.api";
 import {NotificationsGraphql} from "./notifications.graphql";
 
 export * from './notifications.api'
 
-Container.bind(NotificationsApi).to(NotificationsGraphql)
+let _instance: NotificationsApi;
+export const notificationsApi = (): NotificationsApi => {
+    if (!_instance) {
+        _instance = new NotificationsGraphql();
+    }
+    return _instance;
+}

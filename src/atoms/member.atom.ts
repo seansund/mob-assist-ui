@@ -1,27 +1,38 @@
 import {atom} from "jotai";
-import {atomWithDefault, loadable} from "jotai/utils";
-import {Container} from "typescript-ioc";
+import {atomWithMutation, atomWithQuery} from "jotai-tanstack-query";
+import {MemberModel} from "@/models";
+import {membersApi, MembersApi} from "@/services";
+import {getQueryClient} from "@/util";
 
-import {createEmptyMember, MemberModel} from "../models";
-import {MembersApi} from "../services";
+const service: MembersApi = membersApi();
 
-export const currentMemberAtom = atom<MemberModel>(createEmptyMember())
+export const selectedMemberAtom = atom<MemberModel>()
 
-const service: MembersApi = Container.get(MembersApi)
-
-const baseAtom = atomWithDefault<Promise<MemberModel[]>>(async () => service.list())
-export const memberListAtom = atom(
-    get => get(baseAtom),
-    async (_get, set, update: MemberModel[] | Promise<MemberModel[]>) => {
-
-        if (!update) {
-            update = await service.list()
-        }
-
-        set(baseAtom, await update)
-
-        return update
+export const listMembersAtom = atomWithQuery(() => ({
+    queryKey: ['members'],
+    queryFn: async () => {
+        return service.list();
     }
-)
+}))
 
-export const memberListAtomLoadable = loadable(memberListAtom)
+export const addUpdateMemberAtom = atomWithMutation(() => ({
+    mutationFn: async (member: MemberModel) => {
+        return service.delete(member);
+    },
+    onSuccess: async () => {
+        const client = getQueryClient();
+
+        await client.invalidateQueries({queryKey: ['members']})
+    }
+}))
+
+export const deleteMemberAtom = atomWithMutation(() => ({
+    mutationFn: async (member: MemberModel) => {
+        return service.delete(member);
+    },
+    onSuccess: async () => {
+        const client = getQueryClient();
+
+        await client.invalidateQueries({queryKey: ['members']})
+    }
+}))

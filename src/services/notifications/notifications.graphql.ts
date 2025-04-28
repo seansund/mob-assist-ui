@@ -10,6 +10,7 @@ const MUTATION_SIGNUP_CHECKIN = gql`mutation SendSignupCheckin($id: ID!) { sendS
 const MUTATION_SIGNUP_ASSIGNMENT = gql`mutation SendSignupAssignments($id: ID!) { sendSignupAssignments(id: $id) { type channels { channel count } } } `;
 
 export class NotificationsGraphql implements NotificationsApi {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     client: ApolloClient<any>
 
     constructor() {

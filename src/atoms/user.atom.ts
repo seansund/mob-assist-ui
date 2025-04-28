@@ -1,21 +1,7 @@
 import {atom} from "jotai";
-import {atomWithDefault, loadable} from "jotai/utils";
-import {Container} from "typescript-ioc";
+import {User} from "next-auth";
 
-import {UserModel} from "../models";
-import {UsersApi} from "../services";
+export type UserStatus = 'unauthenticated' | 'authenticated' | 'loading';
 
-const service: UsersApi = Container.get(UsersApi)
-
-const baseAtom = atomWithDefault<Promise<UserModel>>(async () => service.current())
-export const currentUserAtom = atom(
-    get => get(baseAtom),
-    async (_get, set, inUser: UserModel | Promise<UserModel> | undefined) => {
-        const newUser = (!inUser) ? service.current() : inUser
-
-        set(baseAtom, await newUser)
-
-        return newUser
-    }
-)
-export const currentUserAtomLoadable = loadable(currentUserAtom)
+export const currentUserAtom = atom<User | undefined>();
+export const currentUserStatusAtom = atom<UserStatus | undefined>();

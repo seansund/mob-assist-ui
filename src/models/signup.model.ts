@@ -1,4 +1,4 @@
-import {first} from "../util";
+import {first} from "@/util";
 
 export interface SignupModelBase {
     id: string
@@ -19,11 +19,14 @@ export interface SignupOptionSetModel {
     options: SignupOptionModel[]
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isSignupModel = (val: any): val is SignupModel => {
     return !!val && !!val.id && !!val.date && !!val.title && !!val.options
 }
 
 export const isEligibleForCheckIn = (signup: SignupModel): boolean => {
+    // TODO implement
+    console.log('Checking if eligible for check in: ', signup)
     return true
 }
 
@@ -187,6 +190,7 @@ export interface AssignmentSetModel {
     assignments: AssignmentModel[]
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isAssignmentSet = (value: any): value is AssignmentSetModel => {
     return !!value && !!(value.name) && !!(value.assignments)
 }

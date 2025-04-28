@@ -1,56 +1,51 @@
 import {atom} from "jotai";
-import {loadable} from "jotai/utils";
-import {Container} from "typescript-ioc";
+import {atomWithMutation} from "jotai-tanstack-query";
+import {LoadingStateModel, NotificationResultModel, SignupModel} from "@/models";
+import {notificationsApi, NotificationsApi} from "@/services";
+import {getQueryClient} from "@/util";
 
-import {NotificationResultModel, SignupModel} from "../models";
-import {NotificationsApi} from "../services";
+const queryClient = getQueryClient();
+const service: NotificationsApi = notificationsApi();
 
-const service: NotificationsApi = Container.get(NotificationsApi)
+export const notificationAtom = atom<NotificationResultModel>()
+export const notificationStateAtom = atom<LoadingStateModel>()
 
-export const notificationAtom = atom<Promise<NotificationResultModel | undefined>>(Promise.resolve(undefined))
-
-export const signupRequestNotificationAtom = atom(
-    get => get(notificationAtom),
-    async (_get, set, signup: SignupModel) => {
-        const result: Promise<NotificationResultModel> = service.sendSignupRequest(signup)
-
-        set(notificationAtom, result)
-
-        return result
+export const sendSignupRequestAtom = atomWithMutation(() => ({
+    mutationFn: async (signup: SignupModel) => {
+        return service.sendSignupRequest(signup);
+    },
+    onSuccess: async () => {
+        await queryClient.invalidateQueries({queryKey: ['signups']})
+        await queryClient.invalidateQueries({queryKey: ['members']})
     }
-)
+}))
 
-export const signupRequestToNoResponseNotificationAtom = atom(
-    get => get(notificationAtom),
-    async (_get, set, signup: SignupModel) => {
-        const result: Promise<NotificationResultModel> = service.sendSignupRequestToNoResponse(signup)
-
-        set(notificationAtom, result)
-
-        return result
+export const sendSignupRequestToNoResponseAtom = atomWithMutation(() => ({
+    mutationFn: async (signup: SignupModel) => {
+        return service.sendSignupRequestToNoResponse(signup);
+    },
+    onSuccess: async () => {
+        await queryClient.invalidateQueries({queryKey: ['signups']})
+        await queryClient.invalidateQueries({queryKey: ['members']})
     }
-)
+}))
 
-export const signupAssignmentNotificationAtom = atom(
-    get => get(notificationAtom),
-    async (_get, set, signup: SignupModel) => {
-        const result: Promise<NotificationResultModel> = service.sendSignupAssignments(signup)
-
-        set(notificationAtom, result)
-
-        return result
+export const sendSignupAssignmentsAtom = atomWithMutation(() => ({
+    mutationFn: async (signup: SignupModel) => {
+        return service.sendSignupAssignments(signup);
+    },
+    onSuccess: async () => {
+        await queryClient.invalidateQueries({queryKey: ['signups']})
+        await queryClient.invalidateQueries({queryKey: ['members']})
     }
-)
+}))
 
-export const signupCheckinNotificationAtom = atom(
-    get => get(notificationAtom),
-    async (_get, set, signup: SignupModel) => {
-        const result: Promise<NotificationResultModel> = service.sendSignupCheckin(signup)
-
-        set(notificationAtom, result)
-
-        return result
+export const sendSignupCheckinAtom = atomWithMutation(() => ({
+    mutationFn: async (signup: SignupModel) => {
+        return service.sendSignupCheckin(signup);
+    },
+    onSuccess: async () => {
+        await queryClient.invalidateQueries({queryKey: ['signups']})
+        await queryClient.invalidateQueries({queryKey: ['members']})
     }
-)
-
-export const notificationAtomLoadable = loadable(notificationAtom)
+}))

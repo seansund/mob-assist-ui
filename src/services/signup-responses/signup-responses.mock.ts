@@ -1,19 +1,14 @@
-import {Container} from "typescript-ioc";
+import {BehaviorSubject, Observable} from "rxjs";
 
 import {BaseMock} from "../base.mock";
 import {SignupResponsesApi} from "./signup-responses.api";
-import {MembersApi} from "../members";
-import {SignupsApi} from "../signups";
-import {getMemberResponseId, MemberModel, MemberResponseModel, SignupModel} from "../../models";
-import {first, timer} from "../../util";
-import {BehaviorSubject, Observable} from "rxjs";
+import {MembersApi, membersApi as membersApiBuilder} from "../members";
+import {SignupsApi, signupsApi as signupsApiBuilder} from "../signups";
+import {getMemberResponseId, isMemberModel, MemberModel, MemberResponseModel, SignupModel} from "@/models";
+import {first, timer} from "@/util";
 
-const membersApi: MembersApi = Container.get(MembersApi)
-const signupsApi: SignupsApi = Container.get(SignupsApi)
-
-const getMemberId = (member: MemberModel): string => {
-    return member.phone
-}
+const membersApi: MembersApi = membersApiBuilder();
+const signupsApi: SignupsApi = signupsApiBuilder();
 
 const loadResponsesByUser = async (): Promise<MemberResponseModel[]> => {
     const signups = await signupsApi.list()
@@ -38,6 +33,14 @@ export class SignupResponsesMock extends BaseMock<MemberResponseModel> implement
         super(loadResponsesByUser());
 
         this.subject = new BehaviorSubject<MemberResponseModel[]>([])
+    }
+
+    async listByType(parent: MemberModel | SignupModel): Promise<MemberResponseModel[]> {
+        if (isMemberModel(parent)) {
+            return this.listByUser(parent.phone)
+        } else {
+            return this.listBySignup(parent.id)
+        }
     }
 
     getId(val: MemberResponseModel): string {

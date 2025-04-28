@@ -1,59 +1,72 @@
 import {atom} from "jotai";
-import {loadable} from "jotai/utils";
-import {Container} from "typescript-ioc";
+import {atomWithMutation, atomWithQuery} from "jotai-tanstack-query";
+import {isMemberModel, MemberModel, MemberResponseModel, SignupModel, SignupOptionModel} from "@/models";
+import {SignupResponsesApi, signupResponsesApi} from "@/services";
+import {getQueryClient} from "@/util";
 
-import {isMemberModel, MemberModel, MemberResponseModel, SignupModel} from "../models";
-import {SignupResponsesApi} from "../services";
+const service: SignupResponsesApi = signupResponsesApi()
 
-const service: SignupResponsesApi = Container.get(SignupResponsesApi)
+export const currentSelectionAtom = atom<MemberModel | SignupModel>();
 
+const idValue = (val?: MemberModel | SignupModel): string => {
+    if (!val) {
+        return 'unknown';
+    }
 
-const baseAtom = atom<Promise<MemberResponseModel[]>>(Promise.resolve([]))
-
-const getIdValue = (idType: MemberModel | SignupModel): {id: string, name: 'listByUser' | 'listBySignup'} => {
-    if (isMemberModel(idType)) {
-        return {id: idType.phone, name: 'listByUser'}
+    if (isMemberModel(val)) {
+        return val.phone;
     } else {
-        return {id: idType.id, name: 'listBySignup'}
+        return val.id;
     }
 }
-export const memberResponsesAtom = atom(
-    get => get(baseAtom),
-    async (get, set, idType: MemberModel | SignupModel) => {
-        const config = getIdValue(idType)
 
-        const update: Promise<MemberResponseModel[]> = service[config.name](config.id)
+export const memberResponsesAtom = atomWithQuery<MemberResponseModel[]>(get => ({
+    queryKey: ['member-responses', idValue(get(currentSelectionAtom))],
+    queryFn: async () => {
+        const val = get(currentSelectionAtom);
 
-        set(baseAtom, update)
-
-        return update
-    }
-)
-
-export const memberResponsesAtomLoadable = loadable(memberResponsesAtom)
-
-const baseSelectedMemberResponseAtom = atom<Promise<MemberResponseModel | undefined>>(Promise.resolve(undefined))
-
-export const selectedMemberResponseAtom = atom(
-    async get => get(baseSelectedMemberResponseAtom),
-    async (_get, set, update: Promise<MemberResponseModel | undefined> | MemberResponseModel) => {
-        set(baseSelectedMemberResponseAtom, Promise.resolve(update))
-    }
-)
-
-export const loadableSelectedMemberResponseAtom = loadable(selectedMemberResponseAtom)
-
-export const checkedInAtom = atom(
-    async get => (await get(selectedMemberResponseAtom))?.checkedIn,
-    async (get, set, value: boolean | Promise<boolean>) => {
-        const response: MemberResponseModel | undefined = await get(selectedMemberResponseAtom)
-
-        if (!response) {
-            return
+        if (!val) {
+            return [];
         }
 
-        response.checkedIn = !!(await value);
-
-        await set(selectedMemberResponseAtom, response)
+        return service.listByType(val);
     }
-)
+}));
+
+export const selectedMemberResponseAtom = atom<MemberResponseModel>()
+
+export interface AddUpdateDeleteMemberResponsesInput {
+    selectedResponse: MemberResponseModel,
+    newOptions: SignupOptionModel[],
+    missingResponses: MemberResponseModel[]
+}
+
+export const addUpdateDeleteMemberResponsesAtom = atomWithMutation(get => ({
+    mutationFn: async ({selectedResponse, newOptions, missingResponses}: AddUpdateDeleteMemberResponsesInput) => {
+        // TODO move to BFF
+        await Promise.all(newOptions.map(opt => {
+            const newResponse: MemberResponseModel = {signup: selectedResponse.signup, member: selectedResponse.member, selectedOption: opt}
+            return service.addUpdate(newResponse)
+        }))
+
+        await Promise.all(missingResponses.map(resp => {
+            return service.delete(resp)
+        }))
+    },
+    onSuccess: async () => {
+        const client = getQueryClient();
+
+        await client.invalidateQueries({queryKey: ['member-responses', idValue(get(currentSelectionAtom))]})
+    }
+}))
+
+export const addUpdateMemberResponseAtom = atomWithMutation(get => ({
+    mutationFn: async (response: MemberResponseModel) => {
+        await service.addUpdate(response)
+    },
+    onSuccess: async () => {
+        const client = getQueryClient();
+
+        await client.invalidateQueries({queryKey: ['member-responses', idValue(get(currentSelectionAtom))]})
+    }
+}))

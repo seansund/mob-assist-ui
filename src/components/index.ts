@@ -1,5 +1,5 @@
 export * from './BasicModal'
-export * from './UIShell'
-export * from './ViewShell'
 export * from './SimpleSelectionDialog'
 export * from './TableElements'
+export * from './AssignmentDiagram'
+export * from './SignupResponseTable'

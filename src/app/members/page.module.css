@@ -1,0 +1,14 @@
+
+.membersContainer {
+    margin: 0 auto;
+}
+
+.membersActionContainer {
+    padding-top: 10px;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+.membersTable {
+    min-width: 650px;
+}

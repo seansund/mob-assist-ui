@@ -1,9 +1,9 @@
 import {ApolloClient, FetchResult, gql} from "@apollo/client";
 import {BehaviorSubject, Observable} from "rxjs";
 
+import {getApolloClient} from "@/backends";
+import {SignupModel, SignupScope} from "@/models";
 import {SignupsApi} from "./signups.api";
-import {getApolloClient} from "../../backends";
-import {MemberModel, SignupModel, SignupScope} from "../../models";
 
 const LIST_SIGNUPS = gql`query ListSignups($scope: String) { listSignups(scope:$scope) { id date title options { id name options { id value declineOption sortIndex } } responses { option { id value declineOption } count assignments } } }`;
 const GET_SIGNUP_BY_ID = gql`query GetSignupById($id: ID!) { getSignupById(id: $id) { id date title options { id name options { id value declineOption sortIndex } } responses { option { id value declineOption } count assignments } assignmentSet { id name assignments { id group name row } } } }`;
@@ -12,6 +12,7 @@ const DELETE_SIGNUP = gql`query DeleteSignup($id: ID!) { removeSignup(id: $id) {
 const SIGNUPS_SUBSCRIPTION = gql`subscription { signups { id date title options { id name options { id value declineOption } } responses { option { id value declineOption } count assignments } } }`;
 
 export class SignupsGraphql implements SignupsApi {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     client: ApolloClient<any>
     subject: BehaviorSubject<SignupModel[]>
 
@@ -20,7 +21,7 @@ export class SignupsGraphql implements SignupsApi {
         this.subject = new BehaviorSubject<SignupModel[]>([])
     }
 
-    list(scope?: SignupScope): Promise<Array<SignupModel>> {
+    list(scope?: SignupScope): Promise<SignupModel[]> {
         console.log('Loading signups with scope: ', {scope})
 
         return this.client
@@ -32,7 +33,7 @@ export class SignupsGraphql implements SignupsApi {
             .catch(err => {
                 console.log('Error querying members: ', err)
                 throw err
-            }) as any
+            })
     }
 
     get(id: string): Promise<SignupModel | undefined> {
@@ -45,7 +46,8 @@ export class SignupsGraphql implements SignupsApi {
     }
 
     async addUpdate(signup: SignupModel): Promise<SignupModel | undefined> {
-        const refetchQueries: any[] = [{query: LIST_SIGNUPS}]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const refetchQueries: Array<{query: any, variables?: {[key: string]: string}}> = [{query: LIST_SIGNUPS}]
         if (signup.id) {
             refetchQueries.push({query: GET_SIGNUP_BY_ID, variables: {id: signup.id}});
         }
@@ -57,12 +59,12 @@ export class SignupsGraphql implements SignupsApi {
                 refetchQueries,
                 awaitRefetchQueries: true
             })
-            .then(async (result: FetchResult<{addUpdateSignup: SignupModel}>) => await result.data?.addUpdateSignup || undefined)
+            .then(async (result: FetchResult<{addUpdateSignup: SignupModel}>) => result.data?.addUpdateSignup || undefined)
     }
 
-    delete(signup: SignupModel): Promise<boolean> {
+    async delete(signup: SignupModel): Promise<boolean> {
         return this.client
-            .mutate<{removeSignup: {}}>({
+            .mutate<{removeSignup: unknown}>({
                 mutation: DELETE_SIGNUP,
                 variables: {id: signup.id},
                 refetchQueries: [{query: LIST_SIGNUPS}, {query: GET_SIGNUP_BY_ID, variables: {id: signup.id}}],

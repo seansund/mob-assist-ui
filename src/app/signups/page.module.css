@@ -1,0 +1,34 @@
+
+.actionContainer {
+    padding: 10px 10px 0 10px;
+}
+
+.actionFilter {
+    text-align: left;
+}
+
+.actionAdd {
+    text-align: right;
+}
+
+.signupTable {
+    min-width: 650px;
+}
+
+.signupRow {
+    &:last-child td, &:last-child th {
+        border: 0;
+    }
+    & > * {
+        border-bottom: unset;
+    }
+}
+
+.pastSignup {
+    color: lightgray;
+}
+
+.signupDetails {
+    padding-bottom: 0;
+    padding-top: 0;
+}

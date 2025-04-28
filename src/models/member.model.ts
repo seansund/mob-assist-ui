@@ -15,6 +15,7 @@ export const createEmptyMember = (): MemberModel => ({
     preferredContact: 'text'
 })
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isMemberModel = (val: any): val is MemberModel => {
     return !!val && !!val.phone
 }

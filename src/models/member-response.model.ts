@@ -1,5 +1,5 @@
-import {AssignmentModel, SignupModel, SignupOptionModel} from "./signup.model";
 import {MemberModel} from "./member.model";
+import {AssignmentModel, SignupModel, SignupOptionModel} from "./signup.model";
 
 export interface MemberResponseModel {
     id?: string

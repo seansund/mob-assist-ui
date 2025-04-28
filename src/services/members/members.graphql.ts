@@ -2,8 +2,8 @@ import {ApolloClient, FetchResult, gql} from "@apollo/client";
 import {BehaviorSubject, Observable} from "rxjs";
 
 import {MembersApi} from "./members.api";
-import {getApolloClient} from "../../backends";
-import {MemberModel} from "../../models";
+import {getApolloClient} from "@/backends";
+import {MemberModel} from "@/models";
 
 const LIST_MEMBERS = gql`query ListMembers { listMembers { phone lastName firstName email preferredContact } }`;
 const GET_MEMBER_BY_PHONE = gql`query GetMemberByPhone($phone: ID!) { getMemberByPhone(phone: $phone) { phone lastName firstName email preferredContact } }`;
@@ -12,6 +12,7 @@ const DELETE_MEMBER = gql`mutation DeleteMember($phone: ID!) { removeMember(phon
 const MEMBERS_SUBSCRIPTION = gql`subscription { members { phone lastName firstName email preferredContact } }`
 
 export class MembersGraphql implements MembersApi {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     client: ApolloClient<any>
     subject: BehaviorSubject<MemberModel[]>
 
@@ -20,7 +21,7 @@ export class MembersGraphql implements MembersApi {
         this.subject = new BehaviorSubject<MemberModel[]>([])
     }
 
-    list(): Promise<Array<MemberModel>> {
+    async list(): Promise<MemberModel[]> {
         return this.client
             .query<{listMembers: MemberModel[]}>({
                 query: LIST_MEMBERS,
@@ -29,10 +30,10 @@ export class MembersGraphql implements MembersApi {
             .catch(err => {
                 console.log('Error querying members: ', err)
                 throw err
-            }) as any
+            })
     }
 
-    get(phone: string): Promise<MemberModel> {
+    async get(phone: string): Promise<MemberModel> {
         return this.client
             .query<{getMemberByPhone: MemberModel}>({
                 query: GET_MEMBER_BY_PHONE,
@@ -52,9 +53,9 @@ export class MembersGraphql implements MembersApi {
             .then(async (result: FetchResult<{addUpdateMember: MemberModel}>) => await result.data?.addUpdateMember || undefined)
     }
 
-    delete(member: MemberModel): Promise<boolean> {
+    async delete(member: MemberModel): Promise<boolean> {
         return this.client
-            .mutate<{removeMember: {}}>({
+            .mutate<{removeMember: unknown}>({
                 mutation: DELETE_MEMBER,
                 variables: {phone: member.phone},
                 refetchQueries: [{query: LIST_MEMBERS}, {query: GET_MEMBER_BY_PHONE, variables: {phone: member.phone}}],

@@ -1,5 +1,5 @@
 import React, {FormEvent} from "react";
-import {useAtomValue, useSetAtom} from "jotai";
+import {useAtomValue} from "jotai";
 import {
     Box,
     Button,
@@ -12,9 +12,8 @@ import {
     FormLabel,
     Grid
 } from "@mui/material";
-import {Container} from "typescript-ioc";
 
-import {currentSignupAtom, loadableSelectedMemberResponseAtom, memberResponsesAtom} from "../../../atoms";
+import {addUpdateMemberResponseAtom, currentSignupAtom, selectedMemberResponseAtom} from "@/atoms";
 import {
     AssignmentGroup,
     AssignmentModel,
@@ -22,11 +21,9 @@ import {
     getGroupIndex,
     groupAssignments,
     MemberModel,
-    MemberResponseModel,
     SignupModel
-} from "../../../models";
-import {SignupResponsesApi} from "../../../services";
-import {first} from "../../../util";
+} from "@/models";
+import {first} from "@/util";
 
 export interface AssignmentDialogProps {
     open: boolean
@@ -36,15 +33,13 @@ export interface AssignmentDialogProps {
 }
 
 export const AssignmentDialog = (props: AssignmentDialogProps) => {
-    const loadableResponse = useAtomValue(loadableSelectedMemberResponseAtom)
-    const signup = useAtomValue(currentSignupAtom)
-    const loadResponses = useSetAtom(memberResponsesAtom)
+    const {data: signup, status} = useAtomValue(currentSignupAtom)
+    const response = useAtomValue(selectedMemberResponseAtom)
+    const {mutate: addUpdate} = useAtomValue(addUpdateMemberResponseAtom)
 
-    if (loadableResponse.state === 'loading' || loadableResponse.state === 'hasError') {
+    if (status === 'pending' || status === 'error') {
         return (<></>)
     }
-
-    const response: MemberResponseModel | undefined = loadableResponse.data
 
     if (!response || !signup?.assignmentSet) {
         return (<></>)
@@ -64,14 +59,14 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
 
     const lookupAssignment = (name: string): AssignmentModel | undefined => {
         return first(assignmentSet.assignments.filter(assignment => assignment.name === name))
-            .orElse(undefined as any)
+            .orElse(undefined as never)
     }
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault()
         e.stopPropagation()
 
-        const formData = new FormData(e.currentTarget as any)
+        const formData = new FormData(e.currentTarget as never)
 
         const assignments: AssignmentModel[] = Object.values(formDataToObject(formData))
             .map(lookupAssignment)
@@ -88,13 +83,9 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
 
     const handleAssignmentChange = async (assignments?: AssignmentModel[]) => {
         if (assignments) {
-            response.assignments = assignments
+            response.assignments = assignments;
 
-            const service: SignupResponsesApi = Container.get(SignupResponsesApi)
-
-            await service.addUpdate(response)
-
-            loadResponses(props.baseType)
+            addUpdate(response);
         }
     }
 
@@ -119,12 +110,12 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
         <FormControl>
             <Grid container sx={{pr: '15px'}}>
             {assignmentsByGroup.map(group => (
-                <Grid key={group.group} item xs={6}>
+                <Grid key={group.group} size={{xs: 6}}>
                 <FormLabel component="div" style={{textAlign: 'center', width: '100%'}}>{group.group}</FormLabel>
                 <FormGroup>
                     <Grid container direction={getDirection(group.group)}>
                 {group.assignments.map(assignment => (
-                    <Grid key={assignment.group + '-' + assignment.name} item xs={2}>
+                    <Grid key={assignment.group + '-' + assignment.name} size={{xs: 2}}>
                     <FormControlLabel
                         labelPlacement="top"
                         control={
@@ -142,8 +133,8 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
             </Grid>
         </FormControl>
                 <Grid container sx={{paddingTop: '5px'}}>
-                    <Grid item xs={6}><Button variant="outlined" onClick={handleClose}>Cancel</Button></Grid>
-                    <Grid item xs={6}><Button variant="contained" type="submit">Submit</Button></Grid>
+                    <Grid size={{xs: 6}}><Button variant="outlined" onClick={handleClose}>Cancel</Button></Grid>
+                    <Grid size={{xs: 6}}><Button variant="contained" type="submit">Submit</Button></Grid>
                 </Grid>
 
             </form>

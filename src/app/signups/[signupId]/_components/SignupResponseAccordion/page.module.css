@@ -1,0 +1,12 @@
+
+.summaryLeft {
+    width: 33%;
+    flex-shrink: 0;
+    text-align: left;
+}
+
+.summaryRight {
+    width: 66%;
+    text-align: right;
+    color: 'text.secondary';
+}

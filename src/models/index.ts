@@ -4,3 +4,4 @@ export * from './user.model'
 export * from './member-response.model'
 export * from './signup-scope'
 export * from './notification.model'
+export * from './loading-state.model';

@@ -1,0 +1,10 @@
+
+.signupResponse {
+    padding: 0 5px;
+    color: darkgray;
+}
+
+.active {
+    color: darkgoldenrod;
+    font-weight: bold;
+}

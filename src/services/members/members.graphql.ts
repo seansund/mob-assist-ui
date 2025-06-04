@@ -1,15 +1,47 @@
-import {ApolloClient, FetchResult, gql} from "@apollo/client";
-import {BehaviorSubject, Observable} from "rxjs";
+import {ApolloClient, gql} from "@apollo/client";
+import {BehaviorSubject} from "rxjs";
 
 import {MembersApi} from "./members.api";
 import {getApolloClient} from "@/backends";
-import {MemberModel} from "@/models";
+import {MemberIdentity, MemberModel} from "@/models";
 
 const LIST_MEMBERS = gql`query ListMembers { listMembers { phone lastName firstName email preferredContact } }`;
-const GET_MEMBER_BY_PHONE = gql`query GetMemberByPhone($phone: ID!) { getMemberByPhone(phone: $phone) { phone lastName firstName email preferredContact } }`;
-const ADD_UPDATE_MEMBER = gql`mutation AddUpdateMember($phone: ID!, $firstName: String!, $lastName: String!, $email: String, $preferredContact: String) { addUpdateMember(phone: $phone, firstName: $firstName, lastName: $lastName, email: $email, preferredContact: $preferredContact) { phone lastName firstName email preferredContact } }`;
-const DELETE_MEMBER = gql`mutation DeleteMember($phone: ID!) { removeMember(phone: $phone) { result } }`;
-const MEMBERS_SUBSCRIPTION = gql`subscription { members { phone lastName firstName email preferredContact } }`
+interface ListMembersQuery {
+    listMembers: MemberModel[];
+}
+
+const GET_MEMBER = gql`query GetMember($memberId: MemberIdentityInput!) { getMember(memberId: $memberId) { phone lastName firstName email preferredContact } }`;
+interface GetMemberQuery {
+    getMember: MemberModel
+}
+interface GetMemberVariables {
+    memberId: MemberIdentity;
+}
+
+const CREATE_MEMBER = gql`mutation CreateMember($member: MemberInput!) { createMember(member: $member) { phone lastName firstName email preferredContact } }`;
+interface CreateMemberMutation {
+    createMember: MemberModel
+}
+interface CreateMemberVariables {
+    member: Omit<MemberModel, 'id'>;
+}
+
+const UPDATE_MEMBER = gql`mutation UpdateMember($memberId: ID!, $member: MemberUpdateInput!) { updateMember(member: $member, memberId: $memberId) { phone lastName firstName email preferredContact } }`;
+interface UpdateMemberMutation {
+    updateMember: MemberModel
+}
+interface UpdateMemberVariables {
+    member: MemberModel;
+    memberId: string;
+}
+
+const DELETE_MEMBER = gql`mutation DeleteMember($memberId: MemberIdentityInput!) { deleteMember(memberId: $memberId) { phone lastName firstName email preferredContact } }`;
+interface DeleteMemberMutation {
+    deleteMember: unknown
+}
+interface DeleteMemberVariables {
+    memberId: MemberIdentity;
+}
 
 export class MembersGraphql implements MembersApi {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,7 +55,7 @@ export class MembersGraphql implements MembersApi {
 
     async list(): Promise<MemberModel[]> {
         return this.client
-            .query<{listMembers: MemberModel[]}>({
+            .query<ListMembersQuery>({
                 query: LIST_MEMBERS,
             })
             .then(result => result.data.listMembers)
@@ -33,61 +65,66 @@ export class MembersGraphql implements MembersApi {
             })
     }
 
-    async get(phone: string): Promise<MemberModel> {
+    async get(id: string): Promise<MemberModel | undefined> {
         return this.client
-            .query<{getMemberByPhone: MemberModel}>({
-                query: GET_MEMBER_BY_PHONE,
-                variables: {phone}
+            .query<GetMemberQuery, GetMemberVariables>({
+                query: GET_MEMBER,
+                variables: {memberId: {id}}
             })
-            .then(result => result.data.getMemberByPhone)
+            .then(result => result.data.getMember)
     }
 
-    async addUpdate(member: MemberModel): Promise<MemberModel | undefined> {
+    async getByIdentity(memberId: MemberIdentity): Promise<MemberModel | undefined> {
         return this.client
-            .mutate<{addUpdateMember: MemberModel}>({
-                mutation: ADD_UPDATE_MEMBER,
-                variables: member,
-                refetchQueries: [{query: LIST_MEMBERS}, {query: GET_MEMBER_BY_PHONE, variables: {phone: member.phone}}],
+            .query<GetMemberQuery, GetMemberVariables>({
+                query: GET_MEMBER,
+                variables: {memberId}
+            })
+            .then(result => result.data?.getMember)
+    }
+
+    async create(member: Omit<MemberModel, 'id'> & {id?: string}): Promise<MemberModel | undefined> {
+        delete member.id;
+
+        return this.client
+            .mutate<CreateMemberMutation, CreateMemberVariables>({
+                mutation: CREATE_MEMBER,
+                variables: {member},
+                refetchQueries: [{query: LIST_MEMBERS}],
                 awaitRefetchQueries: true
             })
-            .then(async (result: FetchResult<{addUpdateMember: MemberModel}>) => await result.data?.addUpdateMember || undefined)
+            .then(result => result.data?.createMember)
+    }
+
+    async update(member: MemberModel): Promise<MemberModel | undefined> {
+        return this.client
+            .mutate<UpdateMemberMutation, UpdateMemberVariables>({
+                mutation: UPDATE_MEMBER,
+                variables: {memberId: member.id, member},
+                refetchQueries: [{query: LIST_MEMBERS}, ...getMemberRefetchQueryies(member)],
+                awaitRefetchQueries: true
+            })
+            .then(result => result.data?.updateMember)
     }
 
     async delete(member: MemberModel): Promise<boolean> {
         return this.client
-            .mutate<{removeMember: unknown}>({
+            .mutate<DeleteMemberMutation, DeleteMemberVariables>({
                 mutation: DELETE_MEMBER,
-                variables: {phone: member.phone},
-                refetchQueries: [{query: LIST_MEMBERS}, {query: GET_MEMBER_BY_PHONE, variables: {phone: member.phone}}],
+                variables: {memberId: {id: member.id}},
+                refetchQueries: [{query: LIST_MEMBERS}, ...getMemberRefetchQueryies(member)],
                 awaitRefetchQueries: true
             })
             .then(() => true)
     }
 
-    observeList(skipQuery: boolean = false): Observable<MemberModel[]> {
-        if (skipQuery) {
-            return this.subject
-        }
+}
 
-        this.client
-            .subscribe<{members: MemberModel[]}>({
-                query: MEMBERS_SUBSCRIPTION
-            })
-            .map((config: FetchResult<{members: MemberModel[]}>) => config.data?.members)
-            .subscribe({
-                next: (val: MemberModel[]) => {
-                    this.subject.next(val)
-                },
-                complete: () => {
-                    console.log('Complete subscription!!!!')
-                },
-                error: err => {
-                    console.log('Error with subscription', err)
-                    this.subject.error(err)
-                }
-            })
-
-        return this.subject;
-    }
-
+// eslint-disable-next-line
+const getMemberRefetchQueryies = (member: MemberModel): Array<{query: any, variables: GetMemberVariables}> => {
+    return [
+        {query: GET_MEMBER, variables: {memberId: {id: member.id}}},
+        {query: GET_MEMBER, variables: {memberId: {email: member.email}}},
+        {query: GET_MEMBER, variables: {memberId: {phone: member.phone}}},
+    ]
 }

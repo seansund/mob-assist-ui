@@ -1,10 +1,7 @@
-import {Observable} from "rxjs";
-
 import {BaseApi} from "../base.api";
-import {SignupModel, SignupScope} from "../../models";
+import {SignupFilterModel, SignupModel} from "@/models";
 
 export abstract class SignupsApi extends BaseApi<SignupModel> {
-    abstract observeList(skipQuery?: boolean): Observable<SignupModel[]>
-
-    abstract list(scope?: SignupScope): Promise<Array<SignupModel>>;
+    abstract list(filter?: SignupFilterModel): Promise<SignupModel[]>;
+    abstract listUserSignups(memberId: string, filter?: SignupFilterModel): Promise<SignupModel[]>;
 }

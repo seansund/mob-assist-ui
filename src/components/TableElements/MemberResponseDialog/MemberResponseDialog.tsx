@@ -36,24 +36,25 @@ export const MemberResponseDialog = (props: MemberResponseDialogProps) => {
     const handleMemberResponseChange = async (selectedResponse: MemberResponseModel, responses: MemberResponseModel[], options?: SignupOptionModel[]) => {
         if (options) {
             const existingOptionValues: string[] = responses
-                .map(resp => resp.selectedOption as SignupOptionModel)
+                .map(resp => resp.option as SignupOptionModel)
                 .filter(opt => !!opt)
                 .map(opt => opt.value)
 
             const newOptions: SignupOptionModel[] = options.filter(opt => !existingOptionValues.includes(opt.value))
             const optionValues: string[] = options.map(opt => opt.value)
-            const missingResponses: MemberResponseModel[] = responses.filter(resp => !!resp.selectedOption && !optionValues.includes(resp.selectedOption.value))
+            const missingResponses: MemberResponseModel[] = responses.filter(resp => !!resp.option && !optionValues.includes(resp.option.value))
 
             addUpdateDelete({newOptions, missingResponses, selectedResponse})
         }
     }
 
-    return (<SimpleSelectionDialog id={'signup-response-selection'}
-                                   open={props.open}
-                                   title="Update Signup Response"
-                                   label="Response"
-                                   options={selectedMemberResponse.signup.options.options}
-                                   selectedValues={filteredMemberResponses.map(resp => resp.selectedOption).filter(opt => !!opt)}
-                                   multiSelect={true}
-                                   onClose={handleSelection} />)
+    return <SimpleSelectionDialog
+        id={'signup-response-selection'}
+        open={props.open}
+        title="Update Signup Response"
+        label="Response"
+        options={selectedMemberResponse.signup.options.options}
+        selectedValues={filteredMemberResponses.map(resp => resp.option).filter(opt => !!opt)}
+        multiSelect={true}
+        onClose={handleSelection} />
 }

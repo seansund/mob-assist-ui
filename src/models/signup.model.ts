@@ -1,16 +1,53 @@
 import {first} from "@/util";
+import {SignupScope} from "@/models/signup-scope";
 
 export interface SignupModelBase {
     id: string
     date: string
     title: string
     description?: string
+    group?: string
+}
+
+export interface UserSignupModel extends SignupModelBase {
+    responses: UserSignupOptionResponse[]
+    checkedIn?: boolean
+}
+
+export const userSignupOptionBySortIndex = (a?: SignupOptionResponseModel, b?: SignupOptionResponseModel) => {
+    return (a?.option?.sortIndex || 0) - (b?.option?.sortIndex || 0)
+}
+
+export interface UserSignupOptionResponse {
+    signupId: string;
+    signupOption: SignupOptionModel
+    response?: boolean
+    assignments?: AssignmentModel[]
+}
+
+export interface SignupOptionModel {
+    id: string
+    value: string
+    declineOption?: boolean
+    sortIndex?: number
+}
+
+export interface AssignmentModel {
+    id: string
+    name: string
+    group: string
+    row: number
+}
+
+export interface SignupFilterModel {
+    scope?: SignupScope;
 }
 
 export interface SignupModel extends SignupModelBase {
-    assignmentSet?: AssignmentSetModel
-    options: SignupOptionSetModel
-    responses: SignupOptionResponseModel[]
+    assignmentSet?: AssignmentSetModel;
+    assignments?: AssignmentModel[];
+    options: SignupOptionModel[];
+    responses: SignupOptionResponseModel[];
 }
 
 export interface SignupOptionSetModel {
@@ -30,13 +67,6 @@ export const isEligibleForCheckIn = (signup: SignupModel): boolean => {
     return true
 }
 
-export interface SignupOptionModel {
-    id: string
-    value: string
-    declineOption?: boolean
-    sortIndex?: number
-}
-
 export const signupOptionBySortIndex = (a?: SignupOptionModel, b?: SignupOptionModel) => (a?.sortIndex || 0) - (b?.sortIndex || 0)
 
 export const isSignedUp = (response: SignupOptionModel | undefined): boolean => {
@@ -51,14 +81,6 @@ export interface SignupOptionResponseModel {
     option?: SignupOptionModel
     count: number
     assignments?: number
-}
-
-export interface AssignmentModel {
-
-    id: string
-    name: string
-    group: string
-    row: number
 }
 
 export const createAssignment = ({name, group, row}: {name: string, group: string, row: number}): AssignmentModel => {
@@ -200,10 +222,6 @@ export const createEmptySignup = (): SignupModel => ({
     date: '',
     title: '',
     description: '',
-    options: {
-        id: '',
-        name: '',
-        options: []
-    },
+    options: [],
     responses: []
 })

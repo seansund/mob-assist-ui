@@ -12,17 +12,13 @@ import {
     Stack,
     TextField
 } from "@mui/material";
-import {useAtomValue} from "jotai";
+import {useAtom, useAtomValue} from "jotai";
 import {addUpdateMemberAtom, selectedMemberAtom} from "@/atoms";
 import {isDeepStrictEqual} from "util";
+import {hideAddUpdateDialogAtom} from "@/app/members/_atoms";
 
-interface AddUpdateMemberDialogProps {
-    display: boolean;
-    onCancel: () => void;
-    onSave: () => void;
-}
-
-export const AddUpdateMemberDialog = ({display, onCancel, onSave}: AddUpdateMemberDialogProps) => {
+export const AddUpdateMemberDialog = () => {
+    const [display, hideDialog] = useAtom(hideAddUpdateDialogAtom);
     const currentMember = useAtomValue(selectedMemberAtom)
     const {mutateAsync: addUpdate, isPending} = useAtomValue(addUpdateMemberAtom)
     const [member, setMember] = useState({...currentMember})
@@ -44,7 +40,7 @@ export const AddUpdateMemberDialog = ({display, onCancel, onSave}: AddUpdateMemb
         // TODO test that member is valid MemberModel first
         // TODO handle error (validation error?)
         addUpdate(member as MemberModel)
-            .then(() => onSave())
+            .then(() => hideDialog())
     }
 
     if (!display) {
@@ -108,7 +104,7 @@ export const AddUpdateMemberDialog = ({display, onCancel, onSave}: AddUpdateMemb
                     <FormHelperText>Reminder notifications will be sent prior to the event either via text messages or email, depending on your selection. If you would not like a reminder, select &quot;none&quot;. This selection can be changed at any time.</FormHelperText>
                 </FormControl>
                 <Stack direction="row" spacing={2} style={{margin: '0 auto', paddingTop: '10px'}}>
-                    <Button variant="outlined" onClick={() => onCancel} disabled={isPending}>Cancel</Button>
+                    <Button variant="outlined" onClick={hideDialog} disabled={isPending}>Cancel</Button>
                     <Button variant="contained" type="submit" disabled={isPending}>Submit</Button>
                 </Stack>
             </Stack>

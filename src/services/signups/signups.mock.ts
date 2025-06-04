@@ -2,7 +2,7 @@ import {Observable, Subject} from "rxjs";
 
 import {SignupsApi} from "./signups.api";
 import {BaseMock} from "../base.mock";
-import {createAssignment, SignupModel} from "@/models";
+import {createAssignment, SignupModel, SignupScope, UserSignupModel} from "@/models";
 
 const signups: SignupModel[] = [{
     id: '1',
@@ -181,6 +181,41 @@ const signups: SignupModel[] = [{
 export class SignupsMock extends BaseMock<SignupModel> implements SignupsApi {
     constructor() {
         super(signups);
+    }
+
+    async listUserSignups(): Promise<UserSignupModel[]> {
+        const result: UserSignupModel[] = [{
+            id: '1',
+            title: 'Communion',
+            date: '20250503',
+            responses: [{
+                signupId: '1',
+                option: {
+                    id: '1',
+                    value: '9am',
+                    sortIndex: 1
+                },
+                response: true
+            }, {
+                signupId: '1',
+                option: {
+                    id: '2',
+                    value: '10:30am',
+                    sortIndex: 2
+                }
+            }, {
+                signupId: '1',
+                option: {
+                    id: '3',
+                    value: 'No',
+                    declineOption: true,
+                    sortIndex: 3
+                }
+            }],
+            checkedIn: false
+        }]
+
+        return result;
     }
 
     getId(val: SignupModel): string {

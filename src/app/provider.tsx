@@ -2,13 +2,13 @@
 
 import {ReactNode} from 'react';
 import {Session} from "next-auth";
-import {SessionProvider} from "next-auth/react";
+import {SessionProvider, signOut} from "next-auth/react";
 import {Provider as StateProvider} from "jotai";
 import {ThemeProvider} from "@mui/material";
 import {AppRouterCacheProvider} from '@mui/material-nextjs/v15-appRouter';
 
 import {theme} from "@/app/theme";
-import {QueryProvider, LayoutProvider, UserStateProvider} from '@/app/_providers';
+import {AuthenticationProvider, LayoutProvider, QueryProvider, UserStateProvider} from '@/app/_providers';
 
 interface BaseProviderProps {
     children: ReactNode;
@@ -21,7 +21,13 @@ const links: {[page: string]: string} = {
     'Members': '/members',
     'Signups': '/signups'
 }
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings: Array<{label: string, onClick: () => void}> = [{
+    label: 'Profile',
+    onClick: () => {}
+}, {
+    label: 'Logout',
+    onClick: () => signOut()
+}];
 
 
 export default function Provider({children, session}: BaseProviderProps) {
@@ -32,7 +38,9 @@ export default function Provider({children, session}: BaseProviderProps) {
                     <AppRouterCacheProvider>
                         <ThemeProvider theme={theme}>
                             <LayoutProvider pages={pages} links={links} settings={settings}>
-                                {children}
+                                <AuthenticationProvider>
+                                    {children}
+                                </AuthenticationProvider>
                             </LayoutProvider>
                         </ThemeProvider>
                     </AppRouterCacheProvider>

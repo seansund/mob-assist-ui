@@ -38,12 +38,12 @@ export const SignupResponseTableView = (props: SignupResponseTableViewProps) => 
 
     const isResponseForOption = (option?: SignupOptionModel) => {
         return (resp: MemberResponseModel): boolean => {
-            if (!option && !resp.selectedOption) {
+            if (!option && !resp.option) {
                 return true
-            } else if (!option || !resp.selectedOption) {
+            } else if (!option || !resp.option) {
                 return false
             } else {
-                return option.id === resp.selectedOption.id
+                return option.id === resp.option.id
             }
         }
     }

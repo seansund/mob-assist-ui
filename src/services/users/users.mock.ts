@@ -5,7 +5,10 @@ import {UserModel} from "../../models";
 const users: UserModel[] = [{
     phone: '5126536654',
     email: 'sean@thesundbergs.net',
+    emailVerified: true,
     role: 'admin',
+    roles: ['admin'],
+    name: 'Sean Sundberg',
     firstName: 'Sean',
     lastName: 'Sundberg'
 }]

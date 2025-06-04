@@ -1,6 +1,11 @@
 
+.signupsContainer {
+    margin: 0 100px;
+    padding-top: 20px;
+}
+
 .actionContainer {
-    padding: 10px 10px 0 10px;
+    padding: 10px;
 }
 
 .actionFilter {

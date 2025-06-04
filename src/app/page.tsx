@@ -1,25 +1,102 @@
+"use client"
+
+import {MouseEvent} from "react";
+import {Grid, ToggleButton, ToggleButtonGroup} from "@mui/material";
+import {DataGrid, GridColDef} from "@mui/x-data-grid";
+import {useAtom, useAtomValue} from "jotai";
+
+import {listUserSignupsAtom, signupScopeAtom} from "@/atoms";
+import {lookupSignupScope, SignupModel, SignupScope} from "@/models";
+
+import styles from "./page.module.css";
+import {UserSignupOptionSummary} from "@/app/_components";
+
 export default function Home() {
-  return (<div>Home</div>);
+  const {data: signups, isPending} = useAtomValue(listUserSignupsAtom)
+
+  return <div className={styles.signupsContainer}>
+    <DataGrid
+        rows={signups || []}
+        columns={buildColumns()}
+        pageSizeOptions={[10, 30, 50, 100]}
+        initialState={initialDataGridState(10)}
+        showToolbar
+        loading={isPending}
+        slots={{toolbar: GridToolbar, noRowsOverlay: GridNoSignupsOverlay}}
+        disableRowSelectionOnClick
+    />
+  </div>
 }
 
-/*
-          <Route path="/" element={<UIShell />}>
-              <Route index element={<HomeView />} />
-              <Route path="members" element={<ViewShell />}>
-                  <Route index element={<MemberListView navAddEdit="/members/addEdit" navDelete="/members/delete" navDetail="/members/detail" />}></Route>
-                  <Route path="detail" element={<MemberDetailView nav="/members" />}></Route>
-                  <Route path="addEdit" element={<MemberAddEditView nav="/members" />}></Route>
-                  <Route path="delete" element={<MemberDeleteView nav="/members" />}></Route>
-              </Route>
-              <Route path="signups" element={<ViewShell />}>
-                  <Route index element={<SignupListView navAddEdit="/signups/addEdit" navDelete="/signups/delete" navDetail="/signups/detail" />}></Route>
-                  <Route path="detail" element={<SignupDetailView nav="/signups" />}></Route>
-                  <Route path="addEdit" element={<SignupAddEditView nav="/signups" />}></Route>
-                  <Route path="delete" element={<SignupDeleteView nav="/signups" />}></Route>
-              </Route>
-          </Route>
-          <Route path="/assignment" element={<AssignmentDiagramView />}>
-              <Route path=":assignment" element={<AssignmentDiagramView />} />
-          </Route>
+const buildColumns = (): GridColDef<SignupModel>[] => {
+  return [
+    {
+      field: 'date',
+      headerName: 'Date',
+      minWidth: 100,
+      flex: 1
+    },
+    {
+      field: 'title',
+      headerName: 'Title',
+      minWidth: 175,
+      flex: 1
+    },
+    {
+      field: 'group',
+      headerName: 'Group',
+      minWidth: 100,
+      flex: 1
+    },
+    {
+      field: 'responses',
+      headerName: 'Responses',
+      minWidth: 150,
+      flex: 1,
+      sortable: false,
+      renderCell: ({row: value}) => (<UserSignupOptionSummary responses={value.responses} />)
+    },
+    {
+      field: 'checkedIn',
+      headerName: 'Checked In?',
+      minWidth: 300,
+      flex: 1,
+      renderCell: ({value: checkedIn}) => (checkedIn === true ? <>Yes</> : <>No</>),
+    }
+  ]
+}
 
- */
+const initialDataGridState = (pageSize: number) => ({
+  pagination: {
+    paginationModel: {
+      pageSize
+    }
+  }
+})
+
+const GridNoSignupsOverlay = () => {
+  return <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+    No signups
+  </div>
+}
+
+const GridToolbar = () => {
+  const [signupScope, setSignupScope] = useAtom(signupScopeAtom)
+
+  const handleScope = (event: MouseEvent<HTMLElement>, value: string) => {
+    const newScope: SignupScope = lookupSignupScope(value)
+
+    setSignupScope(newScope)
+  }
+
+  return <Grid container className={styles.actionContainer}>
+    <Grid size={{xs: 6}} className={styles.actionFilter}>
+      <ToggleButtonGroup value={signupScope} exclusive onChange={handleScope} aria-label="signup scope">
+        <ToggleButton value={SignupScope.UPCOMING} aria-label="upcoming" size="small">Upcoming</ToggleButton>
+        <ToggleButton value={SignupScope.FUTURE} aria-label="future" size="small">Future</ToggleButton>
+        <ToggleButton value={SignupScope.ALL} aria-label="all" size="small">All</ToggleButton>
+      </ToggleButtonGroup>
+    </Grid>
+    <Grid size={{xs: 6}} className={styles.actionAdd}></Grid>
+  </Grid>
+}

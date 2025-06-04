@@ -37,7 +37,7 @@ export class SignupResponsesMock extends BaseMock<MemberResponseModel> implement
 
     async listByType(parent: MemberModel | SignupModel): Promise<MemberResponseModel[]> {
         if (isMemberModel(parent)) {
-            return this.listByUser(parent.phone)
+            return this.listByMember(parent.phone)
         } else {
             return this.listBySignup(parent.id)
         }
@@ -51,7 +51,7 @@ export class SignupResponsesMock extends BaseMock<MemberResponseModel> implement
         return val;
     }
 
-    async listByUser(phone: string): Promise<MemberResponseModel[]> {
+    async listByMember(phone: string): Promise<MemberResponseModel[]> {
         await timer(1000)
 
         console.log('Looking up by user: ' + phone)
@@ -101,7 +101,7 @@ export class SignupResponsesMock extends BaseMock<MemberResponseModel> implement
     }
 
     subscribeToUserResponses(phone: string): Observable<MemberResponseModel[]> {
-        this.listByUser(phone).then((result: MemberResponseModel[]) => this.subject.next(result));
+        this.listByMember(phone).then((result: MemberResponseModel[]) => this.subject.next(result));
 
         return this.subject;
     }

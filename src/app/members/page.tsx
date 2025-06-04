@@ -1,125 +1,107 @@
 "use client"
 
-import {useState} from "react";
 import {useRouter} from "next/navigation";
-import {Button, Grid, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material";
+import {Button} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import {DataGrid, GridColDef} from '@mui/x-data-grid';
 import {useAtomValue, useSetAtom} from "jotai";
 
 import {listMembersAtom, selectedMemberAtom} from "@/atoms";
+import {showAddUpdateDialogAtom, showDeleteDialogAtom} from "./_atoms";
 import {AddUpdateMemberDialog, DeleteMemberDialog, MemberListMenu} from "./_components";
 import {createEmptyMember, MemberModel} from "@/models";
 
 import styles from './page.module.css';
+import {formatPhone} from "@/util";
 
 export default function MembersPage() {
     const {data: members, isPending, isError} = useAtomValue(listMembersAtom);
     const setSelectedMember = useSetAtom(selectedMemberAtom);
-    const [showAddUpdateDialog, setShowAddUpdateDialog] = useState(false);
-    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
+    const showDeleteDialog = useSetAtom(showDeleteDialogAtom);
 
     const router = useRouter();
-
-    const showAddView = () => {
-        setSelectedMember(createEmptyMember());
-        setShowAddUpdateDialog(true);
-    }
-
-    const showDetails = (phone: string) => {
-        router.push(`/members/${phone}`);
-    }
-
-    if (isPending) {
-        return <Skeleton />
-    }
 
     if (isError) {
         return <div>Error loading members...</div>
     }
 
-    return <div className={styles.membersContainer}>
-        <AddUpdateMemberDialog
-            display={showAddUpdateDialog}
-            onCancel={() => setShowAddUpdateDialog(false)}
-            onSave={() => setShowAddUpdateDialog(false)}
-        />
-        <DeleteMemberDialog
-            display={showDeleteDialog}
-            onCancel={() => setShowDeleteDialog(false)}
-            onDelete={() => setShowDeleteDialog(false)}
-        />
-        <Grid container className={styles.membersActionContainer}>
-            <Grid size={{xs: 6}}>&nbsp;</Grid>
-            <Grid size={{xs: 6}}>
-                <Button variant="outlined" aria-label="add member" startIcon={<AddIcon />} onClick={showAddView}>
-                    Add
-                </Button>
-            </Grid>
-        </Grid>
-        <TableContainer>
-            <Table aria-label="member table" className={styles.memberTable} stickyHeader>
-                <TableHead>
-                    <TableRow>
-                        <TableCell style={{width: '40px', maxWidth: '40px'}}>First Name</TableCell>
-                        <TableCell style={{width: '40px', maxWidth: '40px'}}>Last Name</TableCell>
-                        <TableCell style={{width: '40px', maxWidth: '40px'}}>Phone</TableCell>
-                        <TableCell style={{width: '40px', maxWidth: '40px'}}>Email</TableCell>
-                        <TableCell style={{width: '40px', maxWidth: '40px'}}>Preferred contact</TableCell>
-                        <TableCell style={{width: '40px', maxWidth: '40px'}}></TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    <MemberRows members={members || []} showDelete={() => setShowDeleteDialog(true)} showUpdate={() => setShowAddUpdateDialog(true)} showDetails={showDetails} />
-                </TableBody>
-            </Table>
-        </TableContainer>
-    </div>
-}
-
-interface MemberActions {
-    showDelete: () => void;
-    showUpdate: () => void;
-    showDetails: (phone: string) => void;
-}
-
-interface MemberRowsProps extends MemberActions {
-    members: MemberModel[];
-}
-
-const MemberRows = ({members, showDelete, showUpdate, showDetails}: MemberRowsProps) => {
-    return <>
-    {members.map(member => <MemberRow key={member.phone} member={member} showDelete={showDelete} showUpdate={showUpdate} showDetails={showDetails} />)}
-    </>
-}
-
-interface MemberRowProps extends MemberActions {
-    member: MemberModel;
-}
-
-const MemberRow = ({member, showDelete, showUpdate, showDetails}: MemberRowProps) => {
-    const setSelectedMember = useSetAtom(selectedMemberAtom)
+    const showUpdateMember = (member: MemberModel) => {
+        setSelectedMember(member);
+        showAddUpdateDialog();
+    }
 
     const deleteMember = (member: MemberModel) => {
         setSelectedMember(member);
-        showDelete();
-    }
-
-    const showUpdateMember = (member: MemberModel) => {
-        setSelectedMember(member);
-        showUpdate();
+        showDeleteDialog();
     }
 
     const showMemberDetails = (member: MemberModel) => {
         setSelectedMember(member);
-        showDetails(member.phone);
+        router.push(`/members/${member.phone}`);
     }
 
-    return <TableRow>
-        <TableCell>{member.firstName}</TableCell>
-        <TableCell>{member.lastName}</TableCell>
-        <TableCell>{member.phone}</TableCell>
-        <TableCell>{member.email}</TableCell>
-        <TableCell>{member.preferredContact}</TableCell>
-        <TableCell><MemberListMenu onDelete={() => deleteMember(member)} onUpdate={() => showUpdateMember(member)} onDetail={() => showMemberDetails(member)}></MemberListMenu></TableCell>
-    </TableRow>
+    return <div className={styles.membersContainer}>
+        <AddUpdateMemberDialog />
+        <DeleteMemberDialog />
+        <DataGrid
+            rows={members || []}
+            columns={buildColumns({deleteRow: deleteMember, showUpdateRow: showUpdateMember, showRowDetails: showMemberDetails})}
+            pageSizeOptions={[10, 30, 60, 100]}
+            initialState={initialDataGridState(10)}
+            loading={isPending}
+            disableRowSelectionOnClick
+            getRowId={(row) => row.phone}
+            showToolbar
+            slots={{toolbar: GridToolbar}}
+        />
+    </div>
+}
+
+interface BuildColumnsParams<T> {
+    deleteRow: (member: T) => void;
+    showUpdateRow: (member: T) => void;
+    showRowDetails: (member: T) => void;
+}
+
+const buildColumns = ({deleteRow, showUpdateRow, showRowDetails}: BuildColumnsParams<MemberModel>): GridColDef<MemberModel>[] => {
+    return [
+        {field: 'firstName', headerName: 'First Name', minWidth: 100, flex: 1},
+        {field: 'lastName', headerName: 'Last Name', minWidth: 175, flex: 1},
+        {field: 'phone', headerName: 'Phone', minWidth: 150, flex: 1, valueGetter: (value) => formatPhone(value)},
+        {field: 'email', headerName: 'Email', minWidth: 300, flex: 1},
+        {field: 'preferredContact', headerName: 'Preferred Contact', width: 150, align: 'center'},
+        {
+            field: '',
+            headerName: 'Actions',
+            width: 100,
+            align: 'center',
+            sortable: false,
+            renderCell: ({row: member}) => (<MemberListMenu onDelete={() => deleteRow(member)} onUpdate={() => showUpdateRow(member)} onDetail={() => showRowDetails(member)}></MemberListMenu>)
+        }
+    ]
+}
+
+const initialDataGridState = (pageSize: number) => ({
+    pagination: {
+        paginationModel: {
+            pageSize
+        }
+    }
+})
+
+const GridToolbar = () => {
+    const setSelectedMember = useSetAtom(selectedMemberAtom);
+    const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
+
+    const showAddMember = () => {
+        setSelectedMember(createEmptyMember());
+        showAddUpdateDialog();
+    }
+
+    return <div className={styles.membersActionContainer}>
+        <Button variant="outlined" aria-label="add member" startIcon={<AddIcon />} onClick={showAddMember} sx={{float: 'right'}}>
+            Add
+        </Button>
+    </div>
 }

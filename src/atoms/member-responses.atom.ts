@@ -45,7 +45,7 @@ export const addUpdateDeleteMemberResponsesAtom = atomWithMutation(get => ({
     mutationFn: async ({selectedResponse, newOptions, missingResponses}: AddUpdateDeleteMemberResponsesInput) => {
         // TODO move to BFF
         await Promise.all(newOptions.map(opt => {
-            const newResponse: MemberResponseModel = {signup: selectedResponse.signup, member: selectedResponse.member, selectedOption: opt}
+            const newResponse: MemberResponseModel = {signup: selectedResponse.signup, member: selectedResponse.member, option: opt}
             return service.addUpdate(newResponse)
         }))
 

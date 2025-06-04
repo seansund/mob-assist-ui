@@ -1,14 +1,11 @@
 import {Box, Button, Dialog, DialogTitle, LinearProgress} from "@mui/material";
-import {useAtomValue} from "jotai";
+import {useAtom, useAtomValue} from "jotai";
 import {deleteMemberAtom, selectedMemberAtom} from "@/atoms";
+import {hideDeleteDialogAtom} from "../../_atoms";
 
-interface DeleteMemberDialogProps {
-    display: boolean;
-    onCancel: () => void;
-    onDelete: () => void;
-}
 
-export const DeleteMemberDialog = ({display, onCancel, onDelete}: DeleteMemberDialogProps) => {
+export const DeleteMemberDialog = () => {
+    const [display, hideDialog] = useAtom(hideDeleteDialogAtom)
     const member = useAtomValue(selectedMemberAtom)
     const {mutateAsync: deleteMember, isPending} = useAtomValue(deleteMemberAtom);
 
@@ -24,7 +21,7 @@ export const DeleteMemberDialog = ({display, onCancel, onDelete}: DeleteMemberDi
     const yesAction = async (event: {preventDefault: () => void}) => {
         event.preventDefault()
 
-        deleteMember(member).finally(() => onDelete())
+        deleteMember(member).finally(hideDialog)
     }
 
     return (
@@ -33,7 +30,7 @@ export const DeleteMemberDialog = ({display, onCancel, onDelete}: DeleteMemberDi
             <Box>
                 <div>{member.firstName} {member.lastName}</div>
                 <LinearProgress sx={{visibility: isPending ? 'visible' : 'hidden'}}/>
-                <Button variant="outlined" onClick={onCancel} disabled={isPending}>Cancel</Button>
+                <Button variant="outlined" onClick={hideDialog} disabled={isPending}>Cancel</Button>
                 <Button variant="contained" onClick={yesAction} disabled={isPending}>Yes</Button>
             </Box>
         </Dialog>

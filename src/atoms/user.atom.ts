@@ -1,7 +1,16 @@
 import {atom} from "jotai";
-import {User} from "next-auth";
+import {atomWithQuery} from "jotai-tanstack-query";
+import {usersApi} from "@/services";
+import {UserModel} from "@/models";
 
 export type UserStatus = 'unauthenticated' | 'authenticated' | 'loading';
 
-export const currentUserAtom = atom<User | undefined>();
 export const currentUserStatusAtom = atom<UserStatus | undefined>();
+export const currentUserAtom = atom<UserModel | undefined>();
+
+export const loggedInUserAtom = atomWithQuery(() => ({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+        return usersApi().current();
+    }
+}))

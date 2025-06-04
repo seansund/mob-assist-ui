@@ -38,8 +38,8 @@ export const SignupResponseTable = (props: SignupResponseTableProps) => {
                     <TableRow key={getMemberResponseId(response)}>
                         <TableCell>{response.member.firstName} {response.member.lastName}</TableCell>
                         <TableCell><MemberResponseView response={response} onClick={props.showMemberResponseDialog} /></TableCell>
-                        <TableCell><AssignmentsView  response={response} signedUp={isSignedUp(response.selectedOption)} onClick={props.showAssignmentDialog} /></TableCell>
-                        <TableCell><CheckInView signedUp={isSignedUp(response.selectedOption)} response={response} baseType={props.baseType} /></TableCell>
+                        <TableCell><AssignmentsView response={response} signedUp={isSignedUp(response.option)} onClick={props.showAssignmentDialog} /></TableCell>
+                        <TableCell><CheckInView signedUp={isSignedUp(response.option)} response={response} baseType={props.baseType} /></TableCell>
                         <TableCell></TableCell>
                     </TableRow>
                 ))}

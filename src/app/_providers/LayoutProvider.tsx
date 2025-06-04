@@ -19,7 +19,7 @@ import {useRouter} from "next/navigation";
 interface ThemeProviderProps {
     pages: string[];
     links: {[key: string]: string};
-    settings: string[];
+    settings: Array<{label: string, onClick: () => void}>;
     children: ReactNode;
 }
 
@@ -160,9 +160,9 @@ export const LayoutProvider = ({pages, links, settings, children}: ThemeProvider
                             open={!!anchorElUser}
                             onClose={handleCloseUserMenu}
                         >
-                            {settings.map((setting) => (
-                                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    <Typography textAlign="center">{setting}</Typography>
+                            {settings.map(({label, onClick}) => (
+                                <MenuItem key={label} onClick={handleCloseUserMenu}>
+                                    <Typography textAlign="center" onClick={onClick}>{label}</Typography>
                                 </MenuItem>
                             ))}
                         </Menu>
@@ -171,6 +171,8 @@ export const LayoutProvider = ({pages, links, settings, children}: ThemeProvider
                 </Toolbar>
             </Container>
         </AppBar>
-        {children}
+        <div style={{padding: '0 10px', margin: '0 auto'}}>
+            {children}
+        </div>
     </div>)
 }

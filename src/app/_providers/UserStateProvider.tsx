@@ -1,11 +1,10 @@
 "use client"
 
-import {ReactNode, useEffect} from "react";
+import {ReactNode, useEffect, useState} from "react";
 import {User} from "next-auth";
 import {useSession} from "next-auth/react";
-import {useAtom} from "jotai";
-
-import {currentUserAtom, currentUserStatusAtom} from "@/atoms";
+import {useAtom, useAtomValue, useSetAtom} from "jotai";
+import {currentUserAtom, currentUserStatusAtom, loggedInUserAtom} from "@/atoms";
 
 const handleSessionUser = (user?: User, currentUser?: User): {user?: User, change: boolean} => {
 
@@ -36,21 +35,41 @@ interface UserStateProviderProps {
 }
 
 export const UserStateProvider = ({children}: UserStateProviderProps) => {
-    const [currentUser, setCurrentUser] = useAtom(currentUserAtom);
     const [currentUserStatus, setCurrentUserStatus] = useAtom(currentUserStatusAtom);
     const {data: session, status} = useSession();
 
     useEffect(() => {
-        const {user, change: userChange} = handleSessionUser(session?.user as User, currentUser);
         const {status: newStatus, change: statusChange} = handleSessionStatus(status, currentUserStatus);
 
-        if (userChange) {
-            setCurrentUser(user);
-        }
         if (statusChange) {
             setCurrentUserStatus(newStatus)
         }
-    })
+    }, [session?.user, status, currentUserStatus, setCurrentUserStatus])
+
+    if (currentUserStatus === 'authenticated') {
+        return <AuthenticatedUserState>{children}</AuthenticatedUserState>
+    }
+
+    return <>{children}</>
+}
+
+interface AuthenticatedUserStateProps {
+    children: ReactNode;
+}
+
+const AuthenticatedUserState = ({children}: AuthenticatedUserStateProps) => {
+    const {data: user, isLoading, isError} = useAtomValue(loggedInUserAtom);
+    const setCurrentUser = useSetAtom(currentUserAtom);
+
+    useEffect(() => {
+        setCurrentUser(user);
+    }, [user, setCurrentUser])
+
+    if (isLoading) return <></>
+    if (isError) {
+        console.log('Error loading user')
+        return <></>
+    }
 
     return <>{children}</>
 }

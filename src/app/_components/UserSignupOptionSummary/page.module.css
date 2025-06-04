@@ -1,0 +1,16 @@
+
+.signupOptionContainer {
+    margin: 0 auto;
+}
+
+.signupOption {
+    padding: 0 5px;
+}
+
+.selected {
+    color: darkgoldenrod;
+}
+
+.notSelected {
+    color: gray;
+}

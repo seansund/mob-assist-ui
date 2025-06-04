@@ -1,11 +1,17 @@
 import {MemberModel} from "./member.model";
 import {AssignmentModel, SignupModel, SignupOptionModel} from "./signup.model";
 
+export interface MemberResponseFilterModel {
+    signupId?: string
+    memberId?: string
+}
+
 export interface MemberResponseModel {
-    id?: string
+    id: string
     signup: SignupModel
     member: MemberModel
-    selectedOption?: SignupOptionModel
+    option?: SignupOptionModel
+    signedUp?: boolean
     message?: string
     assignments?: AssignmentModel[]
     checkedIn?: boolean

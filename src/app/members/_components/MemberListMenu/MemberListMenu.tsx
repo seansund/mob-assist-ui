@@ -5,7 +5,7 @@ import UpdateIcon from '@mui/icons-material/Update';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DetailIcon from '@mui/icons-material/Details';
 
-import {currentUserAtom} from "../../../../atoms";
+import {currentUserAtom, loggedInUserAtom} from "../../../../atoms";
 
 export interface MemberListMenuProps {
     onDelete: () => void
@@ -14,8 +14,10 @@ export interface MemberListMenuProps {
 }
 
 export const MemberListMenu = (props: MemberListMenuProps) => {
-    const currentUser = useAtomValue(currentUserAtom)
+    const {data: currentUser} = useAtomValue(loggedInUserAtom)
     const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
+
+    console.log('Current user: ', currentUser)
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -30,7 +32,7 @@ export const MemberListMenu = (props: MemberListMenuProps) => {
 
     if (currentUser?.role !== 'admin') {
         return (<div>
-            <Button aria-describedby={id} variant="contained" size="small" onClick={props.onDetail}>
+            <Button aria-describedby={id} variant="outlined" size="small" onClick={props.onDetail}>
                 Details
             </Button>
         </div>)
@@ -38,7 +40,7 @@ export const MemberListMenu = (props: MemberListMenuProps) => {
 
     return (
         <div>
-            <Button aria-describedby={id} variant="contained" onClick={handleClick}>
+            <Button aria-describedby={id} variant="outlined" onClick={handleClick}>
                 ...
             </Button>
             <Popover

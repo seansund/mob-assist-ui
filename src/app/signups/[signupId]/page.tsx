@@ -26,7 +26,7 @@ interface SignupResolverPageProps {
     params: Promise<SignupResolverPageQueryParams>;
 }
 
-export default function SignupResolverPage({params}: SignupResolverPageProps) {
+export default function SignupResolverPage({params}: Readonly<SignupResolverPageProps>) {
     const currentSignupId = useAtomValue(currentSignupIdAtom);
     const [signupId, setSignupId] = useState<string>();
     const [loading, setLoading] = useState<boolean>(true);
@@ -48,7 +48,7 @@ export default function SignupResolverPage({params}: SignupResolverPageProps) {
     if (loading || !signupId) return <></>
 
     if (match === false) {
-        console.log('signupId param does not match state');
+        console.log('signupId param does not match state', {currentSignupId, signupId});
         router.push('/signups')
         return <></>
     }

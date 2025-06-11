@@ -1,5 +1,5 @@
 import {FormEvent, useState } from "react";
-import { MemberModel } from "@/models";
+import {MemberDataModel, MemberModel} from "@/models";
 import {
     Button,
     Dialog,
@@ -24,8 +24,10 @@ export const AddUpdateMemberDialog = () => {
     const [member, setMember] = useState({...currentMember})
 
     const updateMember = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const partialMember: Partial<MemberModel> = {}
-        partialMember[event.target.name as keyof MemberModel] = event.target.value
+        const partialMember: Partial<MemberDataModel> = {}
+
+        const key = event.target.name as keyof MemberDataModel
+        partialMember[key] = event.target.value
 
         const newMember = Object.assign({}, member, partialMember)
 

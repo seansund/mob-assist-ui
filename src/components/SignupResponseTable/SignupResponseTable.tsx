@@ -1,26 +1,18 @@
 import React from "react";
 import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow} from "@mui/material";
 
-import {AssignmentsView, CheckInView, MemberResponseView} from "@/components";
-import {
-    getMemberResponseId,
-    isSignedUp,
-    MemberModel,
-    MemberResponseModel,
-    SignupModel,
-    SignupOptionModel
-} from "@/models";
+import {AssignmentsView, CheckInView} from "@/components";
+import {MemberModel, MemberSignupResponseModel, SignupModel} from "@/models";
+import {SignupOptionSummary} from "../SignupOptionSummary";
 
 export interface SignupResponseTableProps {
-    option?: SignupOptionModel
-    responses: MemberResponseModel[]
-    showMemberResponseDialog: () => void
-    showAssignmentDialog: () => void
-    baseType: SignupModel | MemberModel
+    responses: MemberSignupResponseModel[];
+    showAssignmentDialog: () => void;
+    baseType: SignupModel | MemberModel;
+    refetch: () => Promise<void>;
 }
 
-export const SignupResponseTable = (props: SignupResponseTableProps) => {
-    const responses = props.responses
+export const SignupResponseTable = ({responses, refetch, showAssignmentDialog, baseType}: Readonly<SignupResponseTableProps>) => {
 
     return (<TableContainer>
         <Table sx={{minWidth: 650}} aria-label={"response table"}>
@@ -34,12 +26,12 @@ export const SignupResponseTable = (props: SignupResponseTableProps) => {
                 </TableRow>
             </TableHead>
             <TableBody>
-                {responses.map((response: MemberResponseModel) => (
-                    <TableRow key={getMemberResponseId(response)}>
+                {responses.map((response: MemberSignupResponseModel) => (
+                    <TableRow key={response.id}>
                         <TableCell>{response.member.firstName} {response.member.lastName}</TableCell>
-                        <TableCell><MemberResponseView response={response} onClick={props.showMemberResponseDialog} /></TableCell>
-                        <TableCell><AssignmentsView response={response} signedUp={isSignedUp(response.option)} onClick={props.showAssignmentDialog} /></TableCell>
-                        <TableCell><CheckInView signedUp={isSignedUp(response.option)} response={response} baseType={props.baseType} /></TableCell>
+                        <TableCell><SignupOptionSummary response={response} options={response.signup.options} signup={response.signup} member={response.member} refetch={refetch} /></TableCell>
+                        <TableCell><AssignmentsView response={response} signedUp={response.signedUp} onClick={showAssignmentDialog} /></TableCell>
+                        <TableCell><CheckInView signedUp={response.signedUp} response={response} baseType={baseType} /></TableCell>
                         <TableCell></TableCell>
                     </TableRow>
                 ))}

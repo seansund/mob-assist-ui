@@ -1,5 +1,5 @@
 import {isUndefined} from '../object-util/object-util';
-import {Optional} from '../optional/optional';
+import {OptionalValue} from '../optional/optional';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DefaultType = any;
@@ -67,12 +67,12 @@ export class ArrayUtil<T = DefaultType> {
     return this;
   }
 
-  first(): Optional<T> {
+  first(): OptionalValue<T> {
     if (!this.value || this.value.length === 0) {
-      return Optional.empty();
+      return OptionalValue.empty();
     }
 
-    return Optional.of(this.value[0]);
+    return OptionalValue.of(this.value[0]);
   }
 
   get length(): number {

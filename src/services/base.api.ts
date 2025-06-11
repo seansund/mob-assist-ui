@@ -1,10 +1,12 @@
+import {ModelRef} from "@/models";
+
 // eslint-disable-next-line
-export abstract class BaseApi<T extends {id: string}, F = any> {
+export abstract class BaseApi<T extends ModelRef, F = any, C = Omit<T, 'id'>> {
     abstract list(filter?: F): Promise<Array<T>>;
 
     abstract get(id: string): Promise<T | undefined>;
 
-    abstract create(member: Omit<T, 'id'>): Promise<T | undefined>;
+    abstract create(member: C): Promise<T | undefined>;
 
     abstract update(member: Partial<T> & {id: string}): Promise<T | undefined>;
 

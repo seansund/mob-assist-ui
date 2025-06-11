@@ -2,13 +2,13 @@ import React from "react";
 import {useSetAtom} from "jotai";
 
 import {selectedMemberResponseAtom} from "@/atoms";
-import {MemberResponseModel, signupOptionBySortIndex, SignupOptionModel, SignupOptionSetModel} from "@/models";
+import {MemberSignupResponseModel, OptionModel} from "@/models";
 
 import styles from './page.module.css';
 import {classnames} from "@/util";
 
 export interface MemberResponseViewProps {
-    response: MemberResponseModel;
+    response: MemberSignupResponseModel;
     onClick: () => void;
 }
 
@@ -16,9 +16,9 @@ export const MemberResponseView = ({response, onClick}: MemberResponseViewProps)
     const setSelectedMemberResponse = useSetAtom(selectedMemberResponseAtom)
 
     const selectedOption = response.option
-    const options: SignupOptionSetModel = response.signup.options
+    const options: OptionModel[] = response.signup.options
 
-    const isSelected = (option: SignupOptionModel): boolean => {
+    const isSelected = (option: OptionModel): boolean => {
         if (!selectedOption) {
             return false
         }
@@ -31,7 +31,7 @@ export const MemberResponseView = ({response, onClick}: MemberResponseViewProps)
         onClick()
     }
 
-    return (<div onClick={handleClick}>{[...options.options].sort(signupOptionBySortIndex).map(option => (
+    return (<div onClick={handleClick}>{options.map(option => (
         <span key={option.value} className={classnames(styles.signupResponse, isSelected(option) ? styles.active: "")}>{option.value}</span>
     ))}</div>)
 }

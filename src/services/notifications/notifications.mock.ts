@@ -1,23 +1,23 @@
 import {NotificationsApi} from "@/services";
-import {NotificationResultModel, SignupModel} from "@/models";
+import {NotificationResultModel} from "@/models";
 
 export class NotificationsMock implements NotificationsApi {
-    async sendSignupAssignments(signup: SignupModel): Promise<NotificationResultModel> {
+    async sendSignupAssignments(): Promise<NotificationResultModel> {
         // eslint-disable-next-line
         return undefined as any;
     }
 
-    async sendSignupCheckin(signup: SignupModel): Promise<NotificationResultModel> {
+    async sendSignupCheckin(): Promise<NotificationResultModel> {
         // eslint-disable-next-line
         return undefined as any;
     }
 
-    async sendSignupRequest(signup: SignupModel): Promise<NotificationResultModel> {
+    async sendSignupRequest(): Promise<NotificationResultModel> {
         // eslint-disable-next-line
         return undefined as any;
     }
 
-    async sendSignupRequestToNoResponse(signup: SignupModel): Promise<NotificationResultModel> {
+    async sendSignupRequestToNoResponse(): Promise<NotificationResultModel> {
         // eslint-disable-next-line
         return undefined as any;
     }

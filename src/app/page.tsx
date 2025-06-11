@@ -5,63 +5,79 @@ import {Grid, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {useAtom, useAtomValue} from "jotai";
 
-import {listUserSignupsAtom, signupScopeAtom} from "@/atoms";
-import {lookupSignupScope, SignupModel, SignupScope} from "@/models";
+import {currentUserMemberAtom, listUserSignupsAtom, signupScopeAtom} from "@/atoms";
+import {lookupSignupScope, MemberModel, SignupModel, SignupScope} from "@/models";
 
 import styles from "./page.module.css";
 import {UserSignupOptionSummary} from "@/app/_components";
+import {CheckedIn} from "@/app/_components/CheckedIn";
 
 export default function Home() {
-  const {data: signups, isPending} = useAtomValue(listUserSignupsAtom)
+  const {data: currentMember, isPending: memberPending} = useAtomValue(currentUserMemberAtom)
+  const {data: signups, isPending: signupsPending, refetch} = useAtomValue(listUserSignupsAtom)
+
+  if (!memberPending && !currentMember && !currentMember && !signups) {
+    console.log('No user data!')
+    return <div>Error</div>
+  }
+
+  const refetchSignups = async (): Promise<void> => {
+    return refetch().then(() => undefined)
+  }
 
   return <div className={styles.signupsContainer}>
     <DataGrid
         rows={signups || []}
-        columns={buildColumns()}
+        columns={buildColumns(refetchSignups, currentMember)}
         pageSizeOptions={[10, 30, 50, 100]}
         initialState={initialDataGridState(10)}
         showToolbar
-        loading={isPending}
+        loading={signupsPending || memberPending}
         slots={{toolbar: GridToolbar, noRowsOverlay: GridNoSignupsOverlay}}
         disableRowSelectionOnClick
     />
   </div>
 }
 
-const buildColumns = (): GridColDef<SignupModel>[] => {
+const buildColumns = (refetch: () => Promise<void>, currentMember?: MemberModel): GridColDef<SignupModel>[] => {
+
+  // eslint-disable-next-line
+  const member: MemberModel = currentMember ?? {id: ''} as any
+
   return [
     {
       field: 'date',
       headerName: 'Date',
-      minWidth: 100,
+      minWidth: 105,
       flex: 1
     },
     {
       field: 'title',
       headerName: 'Title',
-      minWidth: 175,
-      flex: 1
-    },
-    {
-      field: 'group',
-      headerName: 'Group',
-      minWidth: 100,
+      minWidth: 75,
       flex: 1
     },
     {
       field: 'responses',
-      headerName: 'Responses',
+      headerName: 'Response(s)',
       minWidth: 150,
       flex: 1,
       sortable: false,
-      renderCell: ({row: value}) => (<UserSignupOptionSummary responses={value.responses} />)
+      renderCell: ({row: signup}) => (<UserSignupOptionSummary responses={signup.responses} options={signup.options} signup={signup} member={member} refetch={refetch} />)
+    },
+    {
+      field: 'assignments',
+      headerName: 'Assignment(s)',
+      minWidth: 150,
+      flex: 1,
+      renderCell: () => (<>?</>),
     },
     {
       field: 'checkedIn',
       headerName: 'Checked In?',
-      minWidth: 300,
+      minWidth: 50,
       flex: 1,
-      renderCell: ({value: checkedIn}) => (checkedIn === true ? <>Yes</> : <>No</>),
+      renderCell: ({value: checkedIn}) => <CheckedIn enabled={false} checkedIn={checkedIn} />,
     }
   ]
 }

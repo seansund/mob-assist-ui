@@ -1,6 +1,6 @@
 import {ModelRef} from "./base.model";
 
-export interface OptionSetModel extends Partial<ModelRef> {
+export interface OptionSetModel extends ModelRef {
   name: string;
   options?: OptionModel[];
 }
@@ -12,5 +12,11 @@ export interface OptionDataModel {
   declineOption?: boolean;
 }
 
-export interface OptionModel extends Partial<ModelRef>, OptionDataModel {
+export interface OptionModel extends ModelRef, OptionDataModel {
+}
+
+export interface OptionSummaryModel {
+  count: number;
+  assignmentCount: number;
+  option?: OptionModel;
 }

@@ -1,8 +1,9 @@
 import {atom} from "jotai";
 import {atomWithMutation, atomWithQuery} from "jotai-tanstack-query";
-import {MemberModel} from "@/models";
+import {MemberEmailModel, MemberIdentifier, MemberModel, MemberPhoneModel, ModelRef, UserModel} from "@/models";
 import {membersApi, MembersApi} from "@/services";
 import {getQueryClient} from "@/util";
+import {currentUserAtom} from "@/atoms/user.atom";
 
 const service: MembersApi = membersApi();
 
@@ -37,10 +38,10 @@ export const deleteMemberAtom = atomWithMutation(() => ({
     }
 }))
 
-export const currentMemberIdAtom = atom<string>()
+export const currentMemberIdAtom = atom<MemberIdentifier>()
 
 export const currentMemberAtom = atomWithQuery(get => ({
-    queryKey: ['member', get(currentMemberIdAtom)],
+    queryKey: ['member', memberIdentifierString(get(currentMemberIdAtom))],
     queryFn: async () => {
         const id = get(currentMemberIdAtom);
 
@@ -48,6 +49,31 @@ export const currentMemberAtom = atomWithQuery(get => ({
             return {} as MemberModel;
         }
 
-        return service.get(id);
+        return service.getByIdentity(id);
     }
 }))
+
+export const currentUserMemberAtom = atomWithQuery(get => ({
+    queryKey: ['member', memberIdentifierString(get(currentUserAtom))],
+    queryFn: async () => {
+        const user: UserModel | undefined = get(currentUserAtom);
+
+        if (!user) {
+            return {} as MemberModel;
+        }
+
+        return service.getByIdentity({email: user.email, phone: user.phone});
+    }
+}))
+
+const memberIdentifierString = (id: MemberIdentifier = {id: ''}): string => {
+
+    const values: string[] = [(id as ModelRef).id, (id as MemberEmailModel).email, (id as MemberPhoneModel).phone]
+        .filter(v => !!v)
+
+    if (values.length === 0) {
+        return 'undefined'
+    }
+
+    return values[0]
+}

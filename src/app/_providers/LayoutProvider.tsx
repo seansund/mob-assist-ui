@@ -1,4 +1,6 @@
 import {ReactNode, useState} from "react";
+import {useAtomValue} from "jotai";
+import {useRouter} from "next/navigation";
 import {
     AppBar,
     Avatar,
@@ -14,16 +16,38 @@ import {
 } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
 import AdbIcon from '@mui/icons-material/Adb';
-import {useRouter} from "next/navigation";
+
+import {currentUserAtom} from "@/atoms";
+import { UserModel } from "@/models";
+
+export interface PageConfig {
+    name: string;
+    requiredRole?: string;
+}
 
 interface ThemeProviderProps {
-    pages: string[];
-    links: {[key: string]: string};
+    pages: PageConfig[];
+    links: {[name: string]: string};
     settings: Array<{label: string, onClick: () => void}>;
     children: ReactNode;
 }
 
+function filterPagesByUserRole(currentUser: UserModel | undefined, pages: PageConfig[]): string[] {
+    const userRoles: string[] = currentUser?.roles ?? ['default'];
+
+    console.log('Filtering pages: ', {userRoles, pages});
+
+    const filteredPages = pages
+        .filter(page => !page.requiredRole || userRoles.includes(page.requiredRole))
+        .map(page => page.name)
+
+    console.log('  After filter: ', {filteredPages})
+
+    return filteredPages;
+}
+
 export const LayoutProvider = ({pages, links, settings, children}: ThemeProviderProps) => {
+    const currentUser: UserModel | undefined = useAtomValue(currentUserAtom);
     const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
     const router = useRouter();
@@ -48,6 +72,10 @@ export const LayoutProvider = ({pages, links, settings, children}: ThemeProvider
         setAnchorElUser(null);
     };
 
+    console.log('Render LayoutProvider')
+
+    const filteredPages: string[] = filterPagesByUserRole(currentUser, pages);
+
     return (<div>
         <AppBar position="static">
             <Container maxWidth="xl">
@@ -68,7 +96,7 @@ export const LayoutProvider = ({pages, links, settings, children}: ThemeProvider
                             textDecoration: 'none',
                         }}
                     >
-                        LOGO
+                        Mob Assist
                     </Typography>
 
                     <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
@@ -100,7 +128,7 @@ export const LayoutProvider = ({pages, links, settings, children}: ThemeProvider
                                 display: { xs: 'block', md: 'none' },
                             }}
                         >
-                            {pages.map((page) => (
+                            {filteredPages.map((page: string) => (
                                 <MenuItem key={page} onClick={() => handleCloseNavMenu(page)}>
                                     <Typography textAlign="center">{page}</Typography>
                                 </MenuItem>
@@ -127,7 +155,7 @@ export const LayoutProvider = ({pages, links, settings, children}: ThemeProvider
                         LOGO
                     </Typography>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                        {pages.map((page) => (
+                        {filteredPages.map((page: string) => (
                             <Button
                                 key={page}
                                 onClick={() => handleCloseNavMenu(page)}
@@ -141,7 +169,7 @@ export const LayoutProvider = ({pages, links, settings, children}: ThemeProvider
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                                <Avatar>{userInitials(currentUser)}</Avatar>
                             </IconButton>
                         </Tooltip>
                         <Menu
@@ -175,4 +203,12 @@ export const LayoutProvider = ({pages, links, settings, children}: ThemeProvider
             {children}
         </div>
     </div>)
+}
+
+const userInitials = (user?: UserModel) => {
+    if (!user) {
+        return '--'
+    }
+
+    return user.firstName.charAt(0).toUpperCase() + user.lastName.charAt(0).toUpperCase();
 }

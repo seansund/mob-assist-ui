@@ -1,51 +1,30 @@
-import {ApolloClient, gql} from "@apollo/client";
+import {ApolloClient, DocumentNode} from "@apollo/client";
 import {BehaviorSubject} from "rxjs";
 
-import {getApolloClient} from "@/backends";
-import {SignupFilterModel, SignupModel} from "@/models";
 import {SignupsApi} from "./signups.api";
-
-const LIST_SIGNUPS = gql`query ListSignups($filter: SignupFilter, $memberId: String) { listSignups(filter: $filter, memberId: $memberId) { id date title options { id value declineOption sortIndex } responses { option { id value declineOption } member { id } } } }`;
-interface ListSignupsQuery {
-    listSignups: SignupModel[];
-}
-interface ListSignupsVariables {
-    filter?: SignupFilterModel;
-    memberId?: string;
-}
-
-const GET_SIGNUP_BY_ID = gql`query GetSignupById($signupId: ID!) { getSignup(signupId: $signupId) { id date title options { id value declineOption sortIndex } responses { option { id value declineOption } member { id } } } }`;
-interface GetSignupQuery {
-    getSignup: SignupModel
-}
-interface GetSignupVariables {
-    signupId: string;
-}
-
-const CREATE_SIGNUP = gql`mutation CreateSignup($signup: SignupInput!) { createSignup(signup: $signup) { id date title options { id } assignmentSet { id } } }`;
-interface CreateSignupMutation {
-    createSignup: SignupModel
-}
-interface CreateSignupVariables {
-    signup: Omit<SignupModel, 'id'>;
-}
-
-const UPDATE_SIGNUP = gql`mutation UpdateSignup($data: SignupUpdateModel!, $signupId: ID!) { updateSignup(signupId: $signupId, data: $data) { id date title options { id } assignmentSet { id } } }`;
-interface UpdateSignupMutation {
-    updateSignup: SignupModel
-}
-interface UpdateSignupVariables {
-    data: Omit<SignupModel, 'id'>;
-    signupId: string;
-}
-
-const DELETE_SIGNUP = gql`mutation DeleteSignup($signupId: ID!) { deleteSignup(signupId: $signupId) { id } }`;
-interface DeleteSignupMutation {
-    deleteSignup: unknown
-}
-interface DeleteSignupVariables {
-    signupId: string;
-}
+import {getApolloClient} from "@/backends";
+import {MemberSignupResponseInputModel, SignupFilterModel, SignupModel} from "@/models";
+import {
+    CREATE_SIGNUP,
+    CreateSignupMutation,
+    CreateSignupVariables,
+    DELETE_SIGNUP,
+    DeleteSignupMutation,
+    DeleteSignupVariables,
+    GET_SIGNUP_BY_ID,
+    GetSignupQuery,
+    GetSignupVariables,
+    LIST_SIGNUPS,
+    LIST_SIGNUPS_FOR_USER,
+    ListSignupsQuery,
+    ListSignupsVariables,
+    RESPOND_TO_SIGNUP,
+    RespondToSignupMutation,
+    RespondToSignupVariables,
+    UPDATE_SIGNUP,
+    UpdateSignupMutation,
+    UpdateSignupVariables
+} from "./signups.gql";
 
 export class SignupsGraphql implements SignupsApi {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,27 +37,18 @@ export class SignupsGraphql implements SignupsApi {
     }
 
     async list(filter?: SignupFilterModel): Promise<SignupModel[]> {
-        console.log('Loading signups with scope: ', {filter})
-
-        return this.client
-            .query<ListSignupsQuery, ListSignupsVariables>({
-                query: LIST_SIGNUPS,
-                variables: {filter}
-            })
-            .then(result => result.data.listSignups)
-            .catch(err => {
-                console.log('Error querying members: ', err)
-                throw err
-            })
+        return this.listInternal(LIST_SIGNUPS, filter)
     }
 
-    async listUserSignups(memberId: string, filter?: SignupFilterModel): Promise<SignupModel[]> {
-        console.log('Loading user signups with scope: ', {memberId, filter})
+    async listForUser(filter?: SignupFilterModel): Promise<SignupModel[]> {
+        return this.listInternal(LIST_SIGNUPS_FOR_USER, filter)
+    }
 
+    async listInternal(query: DocumentNode, filter?: SignupFilterModel): Promise<SignupModel[]> {
         return this.client
             .query<ListSignupsQuery, ListSignupsVariables>({
-                query: LIST_SIGNUPS,
-                variables: {memberId, filter}
+                query,
+                variables: {filter}
             })
             .then(result => result.data.listSignups)
             .catch(err => {
@@ -132,16 +102,39 @@ export class SignupsGraphql implements SignupsApi {
             .mutate<DeleteSignupMutation, DeleteSignupVariables>({
                 mutation: DELETE_SIGNUP,
                 variables: {signupId: signup.id},
-                refetchQueries: [listSignupsRefetchQuery(), getSignupRefetchQuery(signup.id)],
+                refetchQueries: [listSignupsRefetchQuery(), listUserSignupsRefetchQuery(), getSignupRefetchQuery(signup.id)],
                 awaitRefetchQueries: true
             })
             .then(() => true)
     }
 
+    async respondToSignup(data: MemberSignupResponseInputModel, filter?: SignupFilterModel): Promise<SignupModel | undefined> {
+        return this.client
+            .mutate<RespondToSignupMutation, RespondToSignupVariables>({
+                mutation: RESPOND_TO_SIGNUP,
+                variables: {data},
+                refetchQueries: [listUserSignupsRefetchQuery(filter), getSignupRefetchQuery(data.signupId)],
+                awaitRefetchQueries: true,
+            })
+            .then(result => result.data?.respondToSignup)
+    }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const listSignupsRefetchQuery = (): {query: any} => {
+const listSignupsRefetchQuery = (filter?: SignupFilterModel): {query: any, variables?: ListSignupsVariables} => {
+    if (filter) {
+        return {query: LIST_SIGNUPS, variables: {filter}}
+    }
+
+    return {query: LIST_SIGNUPS}
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const listUserSignupsRefetchQuery = (filter?: SignupFilterModel): {query: any, variables?: ListSignupsVariables} => {
+    if (filter) {
+        return {query: LIST_SIGNUPS_FOR_USER, variables: {filter}}
+    }
+
     return {query: LIST_SIGNUPS}
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

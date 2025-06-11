@@ -38,14 +38,17 @@ export const isMemberModel = (val: unknown): val is MemberModel => {
     && (val as MemberModel).lastName !== undefined;
 }
 
-export interface MemberModel extends Partial<ModelRef>, MemberDataModel {
+export interface MemberModel extends ModelRef, MemberDataModel {
+}
+
+export interface MemberModelEntity extends Partial<ModelRef>, MemberDataModel {
 }
 
 export interface MemberRoleDataModel {
   name: string;
 }
 
-export interface MemberRoleModel extends Partial<ModelRef>, MemberRoleDataModel {
+export interface MemberRoleModel extends ModelRef, MemberRoleDataModel {
 }
 
 export interface MemberMemberRoleDataModel {

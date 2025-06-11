@@ -1,0 +1,9 @@
+
+.checkedInContainer {
+    display: flex;
+    justify-content: space-around;
+}
+
+.disabled {
+    color: gray;
+}

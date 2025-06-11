@@ -17,17 +17,18 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 
-import {listSignupsAtom, selectedSignupAtom, signupScopeAtom} from "@/atoms";
-import {createEmptySignup, lookupSignupScope, SignupModel, SignupOptionResponseModel, SignupScope} from "@/models";
+import {currentSignupIdAtom, listSignupsAtom, selectedSignupAtom, signupScopeAtom} from "@/atoms";
+import {createEmptySignupInput, lookupSignupScope, OptionSummaryModel, SignupModel, SignupScope} from "@/models";
 
 import {showAddUpdateDialogAtom, showDeleteDialogAtom} from "./_atoms";
-import {SignupListMenu, SignupOptionSummary} from "./_components";
+import {SignupListMenu, SignupOptionSummary, SignupResponseSummary} from "./_components";
 
 import styles from './page.module.css';
 import {useRouter} from "next/navigation";
 
 export default function SignupsPage() {
     const {data: signups, isPending, isError} = useAtomValue(listSignupsAtom);
+    const setCurrentSignupId = useSetAtom(currentSignupIdAtom);
     const setSelectedSignup = useSetAtom(selectedSignupAtom);
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
     const showDeleteDialog = useSetAtom(showDeleteDialogAtom);
@@ -39,6 +40,7 @@ export default function SignupsPage() {
     }
 
     const showUpdateSignup = (signup: SignupModel) => {
+        setCurrentSignupId(signup.id);
         setSelectedSignup(signup);
         showAddUpdateDialog();
     }
@@ -51,11 +53,13 @@ export default function SignupsPage() {
     }
 
     const deleteSignup = (signup: SignupModel) => {
+        setCurrentSignupId(signup.id);
         setSelectedSignup(signup);
         showDeleteDialog();
     }
 
     const showSignupDetails = (signup: SignupModel) => {
+        setCurrentSignupId(signup.id);
         setSelectedSignup(signup);
         router.push(`/signups/${signup.id}`);
     }
@@ -90,8 +94,6 @@ interface BuildColumnsParams<T> {
     duplicateRow: (value: T) => void;
 }
 
-const totalResponses = (total: number, current: SignupOptionResponseModel) => current.option ? total + current.count : total;
-
 const buildColumns = ({deleteRow, showUpdateRow, showRowDetails, duplicateRow}: BuildColumnsParams<SignupModel>): GridColDef<SignupModel>[] => {
     return [
         {
@@ -112,14 +114,14 @@ const buildColumns = ({deleteRow, showUpdateRow, showRowDetails, duplicateRow}: 
             minWidth: 150,
             flex: 1,
             sortable: false,
-            renderCell: ({value: options}) => (<SignupOptionSummary options={options.options} />)
+            renderCell: ({value: options}) => <SignupOptionSummary options={options} />
         },
         {
-            field: 'responses',
+            field: 'responseSummaries',
             headerName: 'Total Responses',
-            minWidth: 300,
+            minWidth: 200,
             flex: 1,
-            valueGetter: (responses: SignupOptionResponseModel[]) => responses.reduce(totalResponses, 0)
+            renderCell: ({value: optionSummaries}) => <SignupResponseSummary optionSummaries={optionSummaries} />
         },
         {
             field: '',
@@ -153,7 +155,7 @@ const GridToolbar = () => {
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
 
     const showAddView = () => {
-        setSelectedSignup(createEmptySignup());
+        setSelectedSignup(createEmptySignupInput());
         showAddUpdateDialog();
     }
 
@@ -190,12 +192,12 @@ const DetailPanel = ({row: signup}: {row: SignupModel}) => {
                 </TableRow>
             </TableHead>
             <TableBody>
-                {signup.responses.map(response => (
+                {(signup.responseSummaries ?? []).map(response => (
                     <TableRow key={response.option?.value || 'no-response'}>
                         <TableCell component="th" scope="row">
                             {response.option?.value || 'No response'}
                         </TableCell>
-                        <TableCell align="center">{response.assignments || 0}</TableCell>
+                        <TableCell align="center">{response.assignmentCount ?? 0}</TableCell>
                         <TableCell align="right">{response.count}</TableCell>
                     </TableRow>
                 ))}

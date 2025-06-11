@@ -1,7 +1,7 @@
 import {ReactNode} from "react";
 import {useAtomValue} from "jotai";
-import {currentUserStatusAtom, UserStatus} from "@/atoms";
 import {signIn} from "next-auth/react";
+import {currentUserStatusAtom, UserStatus} from "@/atoms";
 
 interface AuthenticationProviderProps {
     children: ReactNode;
@@ -19,6 +19,8 @@ export const AuthenticationProvider = ({children}: AuthenticationProviderProps) 
         signIn('app_id').catch(console.error)
         return <></>
     }
+
+    console.log('Render AuthenticationProvider')
 
     return <>{children}</>
 }

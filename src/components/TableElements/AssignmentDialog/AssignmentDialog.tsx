@@ -15,12 +15,11 @@ import {
 
 import {addUpdateMemberResponseAtom, currentSignupAtom, selectedMemberResponseAtom} from "@/atoms";
 import {
-    AssignmentGroup,
+    AssignmentGroupModel,
     AssignmentModel,
-    AssignmentSetModel,
     getGroupIndex,
     groupAssignments,
-    MemberModel,
+    MemberModel, MemberSignupResponseModel,
     SignupModel
 } from "@/models";
 import {first} from "@/util";
@@ -34,18 +33,18 @@ export interface AssignmentDialogProps {
 
 export const AssignmentDialog = (props: AssignmentDialogProps) => {
     const {data: signup, status} = useAtomValue(currentSignupAtom)
-    const response = useAtomValue(selectedMemberResponseAtom)
+    const response: MemberSignupResponseModel = useAtomValue(selectedMemberResponseAtom)
     const {mutate: addUpdate} = useAtomValue(addUpdateMemberResponseAtom)
 
     if (status === 'pending' || status === 'error') {
         return (<></>)
     }
 
-    if (!response || !signup?.assignmentSet) {
+    if (!response || !signup?.assignments) {
         return (<></>)
     }
 
-    const assignmentSet: AssignmentSetModel = signup.assignmentSet
+    const assignments: AssignmentModel[] = signup.assignments
 
     const formDataToObject = (formData: FormData): {[name: string]: string} => {
         const result: {[name: string]: string} = {}
@@ -58,7 +57,7 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
     }
 
     const lookupAssignment = (name: string): AssignmentModel | undefined => {
-        return first(assignmentSet.assignments.filter(assignment => assignment.name === name))
+        return first(assignments.filter(assignment => assignment.name === name))
             .orElse(undefined as never)
     }
 
@@ -89,7 +88,7 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
         }
     }
 
-    const assignmentsByGroup: AssignmentGroup[] = groupAssignments(assignmentSet)
+    const assignmentsByGroup: AssignmentGroupModel[] = groupAssignments(assignments)
 
     const isChecked = (assignment: AssignmentModel): boolean => {
         return first((response.assignments || []).filter(current => current.name === assignment.name)).isPresent()

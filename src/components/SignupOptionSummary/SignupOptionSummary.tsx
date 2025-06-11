@@ -2,7 +2,7 @@ import React from "react";
 import {useAtomValue} from "jotai";
 import {ToggleButton} from "@mui/material";
 
-import {userSignupResponseAtom} from "@/atoms";
+import {addUpdateMemberResponseAtom} from "@/atoms";
 import {
     MemberModel,
     MemberSignupResponseInputModel,
@@ -17,12 +17,12 @@ interface UserSignupOptionSummaryProps {
     options: OptionModel[];
     member: MemberModel;
     signup: SignupModel;
-    responses?: MemberSignupResponseModel[];
+    response: MemberSignupResponseModel;
     refetch: () => void;
 }
 
-export const UserSignupOptionSummary = ({options, responses, member, signup, refetch}: Readonly<UserSignupOptionSummaryProps>) => {
-    const {mutateAsync} = useAtomValue(userSignupResponseAtom)
+export const SignupOptionSummary = ({options, response, member, signup, refetch}: Readonly<UserSignupOptionSummaryProps>) => {
+    const {mutateAsync} = useAtomValue(addUpdateMemberResponseAtom)
 
     const signupForOption = () => {
         return (option: OptionModel, signedUp: boolean) => {
@@ -46,7 +46,7 @@ export const UserSignupOptionSummary = ({options, responses, member, signup, ref
         .map((option: OptionModel) => <SignupOption
             key={option?.value ?? 'noresponse'}
             option={option}
-            signedUp={signupUpForOption(option, responses)}
+            signedUp={signupUpForOption(option, [response])}
             onClick={signupForOption()} />)}
     </div>)
 }

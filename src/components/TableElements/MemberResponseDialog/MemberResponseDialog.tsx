@@ -53,7 +53,7 @@ export const MemberResponseDialog = (props: MemberResponseDialogProps) => {
         open={props.open}
         title="Update Signup Response"
         label="Response"
-        options={selectedMemberResponse.signup.options.options}
+        options={selectedMemberResponse.signup.options}
         selectedValues={filteredMemberResponses.map(resp => resp.option).filter(opt => !!opt)}
         multiSelect={true}
         onClose={handleSelection} />

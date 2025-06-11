@@ -24,10 +24,12 @@ interface RootLayoutProps {
 export default async function RootLayout({children, params}: Readonly<RootLayoutProps>) {
   const {session} = await params;
 
+  console.log('Render RootLayout', {session})
+
   return (
       <html lang="en" className={fontFamily.variable}>
       <body>
-        <Provider session={session || undefined}>
+        <Provider>
           {children}
         </Provider>
       </body>

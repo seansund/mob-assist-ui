@@ -12,11 +12,7 @@ const splitLink = (): ApolloLink => {
         return _splitLink
     }
 
-    console.log('Creating split link')
-
     const subscriptionUrl = `ws://${APP_HOST}:${APP_PORT}/subscription`
-
-    console.log('Subscription uri: ' + subscriptionUrl)
 
     const httpLink = new HttpLink({
       uri: '/graphql'

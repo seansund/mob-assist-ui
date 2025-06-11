@@ -28,7 +28,7 @@ export const AssignmentsView = (props: AssignmentsViewProps) => {
         return (<div onClick={onClick}>No assignment(s) yet</div>)
     }
 
-    const assignmentsByGroup = groupAssignments(assignments, 'ascending')
+    const assignmentsByGroup = groupAssignments(assignments)
 
     return (<div onClick={onClick}>{assignmentsByGroup.map((assignment, index) => (
         <span key={assignment.group}>{index === 0 ? assignment.group + ' - ' : ', '}{assignment.assignments.map(val => val.name).join(', ')}</span>

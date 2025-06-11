@@ -1,6 +1,13 @@
 import {atom} from "jotai";
 import {atomWithMutation, atomWithQuery} from "jotai-tanstack-query";
-import {isMemberModel, MemberModel, MemberResponseModel, SignupModel, SignupOptionModel} from "@/models";
+import {
+    isMemberModel,
+    MemberModel, MemberSignupResponseFilterModel,
+    MemberSignupResponseInputModel,
+    MemberSignupResponseModel,
+    OptionModel,
+    SignupModel
+} from "@/models";
 import {SignupResponsesApi, signupResponsesApi} from "@/services";
 import {getQueryClient} from "@/util";
 
@@ -20,7 +27,7 @@ const idValue = (val?: MemberModel | SignupModel): string => {
     }
 }
 
-export const memberResponsesAtom = atomWithQuery<MemberResponseModel[]>(get => ({
+export const memberResponsesAtom = atomWithQuery<MemberSignupResponseModel[]>(get => ({
     queryKey: ['member-responses', idValue(get(currentSelectionAtom))],
     queryFn: async () => {
         const val = get(currentSelectionAtom);
@@ -29,24 +36,33 @@ export const memberResponsesAtom = atomWithQuery<MemberResponseModel[]>(get => (
             return [];
         }
 
-        return service.listByType(val);
+        const filter: MemberSignupResponseFilterModel = isMemberModel(val)
+            ? {memberId: val.id}
+            : {signupId: val.id};
+
+        return service.listAll(filter);
     }
 }));
 
-export const selectedMemberResponseAtom = atom<MemberResponseModel>()
+export const selectedMemberResponseAtom = atom<MemberSignupResponseModel>()
 
 export interface AddUpdateDeleteMemberResponsesInput {
-    selectedResponse: MemberResponseModel,
-    newOptions: SignupOptionModel[],
-    missingResponses: MemberResponseModel[]
+    selectedResponse: MemberSignupResponseModel,
+    newOptions: OptionModel[],
+    missingResponses: MemberSignupResponseModel[]
 }
 
 export const addUpdateDeleteMemberResponsesAtom = atomWithMutation(get => ({
     mutationFn: async ({selectedResponse, newOptions, missingResponses}: AddUpdateDeleteMemberResponsesInput) => {
         // TODO move to BFF
-        await Promise.all(newOptions.map(opt => {
-            const newResponse: MemberResponseModel = {signup: selectedResponse.signup, member: selectedResponse.member, option: opt}
-            return service.addUpdate(newResponse)
+        await Promise.all(newOptions.map((opt: OptionModel) => {
+            const newResponse: MemberSignupResponseInputModel = {
+                signedUp: true,
+                signupId: selectedResponse.signup.id,
+                memberId: selectedResponse.member.id,
+                optionId: opt.id
+            }
+            return service.signup(newResponse)
         }))
 
         await Promise.all(missingResponses.map(resp => {
@@ -61,12 +77,21 @@ export const addUpdateDeleteMemberResponsesAtom = atomWithMutation(get => ({
 }))
 
 export const addUpdateMemberResponseAtom = atomWithMutation(get => ({
-    mutationFn: async (response: MemberResponseModel) => {
-        await service.addUpdate(response)
+    mutationFn: async (response: MemberSignupResponseInputModel) => {
+        const val = get(currentSelectionAtom);
+
+        const filter: MemberSignupResponseFilterModel | undefined = isMemberModel(val)
+            ? {memberId: val.id}
+            : val
+                ? {signupId: val.id}
+                : undefined;
+
+        await service.signup(response, filter)
     },
     onSuccess: async () => {
         const client = getQueryClient();
 
+        // TODO invalidate more queries
         await client.invalidateQueries({queryKey: ['member-responses', idValue(get(currentSelectionAtom))]})
     }
 }))

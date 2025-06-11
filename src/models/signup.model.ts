@@ -1,9 +1,9 @@
 import {AssignmentModel} from './assignment.model';
 import {ModelRef} from './base.model';
 import {GroupModel} from './group.model';
-import {MemberIdentifier} from './member.model';
+import {MemberIdentifier, MemberModel} from './member.model';
 import {MemberSignupResponseModel} from './member-signup-response.model';
-import {OptionModel} from './option.model';
+import {OptionModel, OptionSummaryModel} from './option.model';
 
 export const validateDate = (date: string): boolean => {
   if (date.match(/^\d{4}-\d{2}-\d{2}$/) === null) {
@@ -18,9 +18,9 @@ export const formatDate = (date: Date): string => {
 }
 
 export enum SignupScope {
-  UPCOMING = 'upcoming',
-  FUTURE = 'future',
-  ALL = 'all'
+  UPCOMING = 'UPCOMING',
+  FUTURE = 'FUTURE',
+  ALL = 'ALL'
 }
 
 export const lookupSignupScope = (value: string): SignupScope => {
@@ -63,14 +63,31 @@ export interface SignupRelationsModel {
   options: OptionModel[];
   assignments: AssignmentModel[];
   responses?: MemberSignupResponseModel[];
+  responseSummaries?: OptionSummaryModel[];
+  members?: MemberModel[];
 }
 
-export interface SignupModel extends BaseSignupModel, SignupRelationsModel {
+export interface SignupModel extends ModelRef, SignupDataModel, SignupRelationsModel {
 }
 
-export type SignupModelWithId = SignupModel & ModelRef
+export interface SignupModelEntity extends BaseSignupModel, SignupRelationsModel {
+}
 
 export interface SignupFilterModel {
   memberId?: MemberIdentifier;
   scope?: SignupScope;
+}
+
+export const createEmptySignupInput = (): SignupInputModel => {
+  return {
+    title: '',
+    date: '',
+    groupId: '',
+    assignmentSetId: '',
+    optionSetId: '',
+  }
+}
+
+export const isEligibleForCheckIn = (signup: SignupModel): boolean => {
+  return true;
 }

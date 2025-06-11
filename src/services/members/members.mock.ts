@@ -1,4 +1,4 @@
-import {BehaviorSubject, Observable} from "rxjs";
+import {BehaviorSubject} from "rxjs";
 
 import {MembersApi} from "./members.api";
 import {BaseMock} from "../base.mock";

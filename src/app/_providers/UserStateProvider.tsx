@@ -1,25 +1,9 @@
 "use client"
 
-import {ReactNode, useEffect, useState} from "react";
-import {User} from "next-auth";
+import {ReactNode, useEffect} from "react";
 import {useSession} from "next-auth/react";
 import {useAtom, useAtomValue, useSetAtom} from "jotai";
 import {currentUserAtom, currentUserStatusAtom, loggedInUserAtom} from "@/atoms";
-
-const handleSessionUser = (user?: User, currentUser?: User): {user?: User, change: boolean} => {
-
-    if (user?.email && !currentUser?.email) {
-        return {user, change: true}
-    } else if (!user?.email && currentUser?.email) {
-        return {change: true}
-    } else if (!user?.email && !currentUser?.email) {
-        return {change: false}
-    } else if (user?.email && currentUser?.email && user?.email !== currentUser?.email) {
-        return {user, change: true}
-    }
-
-    return {change: false}
-}
 
 type SessionStatus = 'authenticated' | 'unauthenticated' | 'loading';
 const handleSessionStatus = (status: SessionStatus, currentStatus?: SessionStatus): {status?: SessionStatus, change: boolean} => {
@@ -34,17 +18,19 @@ interface UserStateProviderProps {
     children: ReactNode;
 }
 
-export const UserStateProvider = ({children}: UserStateProviderProps) => {
+export const UserStateProvider = ({children}: Readonly<UserStateProviderProps>) => {
     const [currentUserStatus, setCurrentUserStatus] = useAtom(currentUserStatusAtom);
-    const {data: session, status} = useSession();
+    const {status} = useSession();
 
     useEffect(() => {
         const {status: newStatus, change: statusChange} = handleSessionStatus(status, currentUserStatus);
 
+        console.log('Render UserStateProvider.useEffect: ', {status, currentUserStatus})
+
         if (statusChange) {
             setCurrentUserStatus(newStatus)
         }
-    }, [session?.user, status, currentUserStatus, setCurrentUserStatus])
+    }, [status, currentUserStatus, setCurrentUserStatus])
 
     if (currentUserStatus === 'authenticated') {
         return <AuthenticatedUserState>{children}</AuthenticatedUserState>
@@ -57,11 +43,13 @@ interface AuthenticatedUserStateProps {
     children: ReactNode;
 }
 
-const AuthenticatedUserState = ({children}: AuthenticatedUserStateProps) => {
+const AuthenticatedUserState = ({children}: Readonly<AuthenticatedUserStateProps>) => {
     const {data: user, isLoading, isError} = useAtomValue(loggedInUserAtom);
     const setCurrentUser = useSetAtom(currentUserAtom);
 
     useEffect(() => {
+        console.log('Render AuthenticatedUserState.useEffect: ', {user})
+
         setCurrentUser(user);
     }, [user, setCurrentUser])
 

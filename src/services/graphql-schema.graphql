@@ -48,6 +48,7 @@ type Member {
   groups: [Group!]
   id: ID!
   lastName: String!
+  notifications: [Notification!]
   phone: String!
   preferredContact: String
   roles: [MemberRole!]
@@ -80,7 +81,7 @@ type MemberSignupResponse {
   id: ID!
   member: Member!
   message: String
-  option: Option!
+  option: Option
   signedUp: Boolean!
   signup: Signup!
 }
@@ -145,12 +146,43 @@ type Mutation {
   removeMembersFromGroup(groupId: ID!, memberIds: [ID!]!): [Member!]!
   removeOption(optionId: String!, optionSetId: ID!): OptionSet!
   removeRoleFromMember(memberId: ID!, memberRoleId: ID!): Member!
+  respondToSignup(data: MemberSignupResponseInput!): Signup
+  sendSignupAssignments(signupId: ID!): NotificationResult!
+  sendSignupCheckin(signupId: ID!): NotificationResult!
+  sendSignupRequest(signupId: ID!): NotificationResult!
+  sendSignupRequestToNoResponse(signupId: ID!): NotificationResult!
   signup(data: MemberSignupResponseInput!): MemberSignupResponse!
   updateAssignmentSet(assignmentSetId: ID!, name: String!): AssignmentSet!
   updateMember(member: MemberUpdateInput!, memberId: ID!): Member!
   updateMemberSignupResponse(data: MemberSignupResponseUpdateInput!, id: ID!): MemberSignupResponse!
   updateOptionSet(name: String!, optionSetId: ID!): OptionSet!
   updateSignup(data: SignupUpdateModel!, signupId: ID!): Signup!
+}
+
+"""Notification"""
+type Notification {
+  date: String!
+  emailChannel: Boolean!
+  fromMember: Member
+  id: ID
+  message: String!
+  read: Boolean
+  subject: String!
+  textAction: String!
+  textChannel: Boolean!
+  toMember: Member!
+  type: String!
+  webChannel: Boolean!
+}
+
+type NotificationChannelResult {
+  channel: String!
+  count: Float!
+}
+
+type NotificationResult {
+  channels: [NotificationChannelResult!]!
+  type: String!
 }
 
 """Signup option"""
@@ -184,19 +216,26 @@ input OptionSetInput {
   options: [OptionInput!]!
 }
 
+type OptionSummary {
+  assignmentCount: Float!
+  count: Float!
+  option: Option
+}
+
 type Query {
   getAssignmentSet(assignmentSetId: String!): AssignmentSet
   getMember(memberId: MemberIdentityInput!): Member
   getOptionSet(optionSetId: ID!): OptionSet
   getResponse(id: ID!): MemberSignupResponse
   getSignup(signupId: ID!): Signup
+  listAllResponses(filter: MemberSignupResponseFilter): [MemberSignupResponse!]!
   listAssignmentSets: [AssignmentSet!]!
   listGroups: [Group!]!
   listMemberRoles: [MemberRole!]!
   listMembers: [Member!]!
   listOptionSets: [OptionSet!]!
   listResponses(filter: MemberSignupResponseFilter): [MemberSignupResponse!]!
-  listSignups(filter: SignupFilter, memberId: String): [Signup!]!
+  listSignups(filter: SignupFilter): [Signup!]!
 }
 
 """Signup"""
@@ -207,13 +246,16 @@ type Signup {
   description: String
   group: Group!
   id: ID!
+  members: [Member!]!
   optionSet: OptionSet!
   options: [Option!]!
+  responseSummaries: [OptionSummary!]!
   responses: [MemberSignupResponse!]
   title: String!
 }
 
 input SignupFilter {
+  memberId: MemberIdentityInput
   scope: SignupScope!
 }
 

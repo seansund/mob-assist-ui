@@ -5,7 +5,7 @@ import UpdateIcon from '@mui/icons-material/Update';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DetailIcon from '@mui/icons-material/Details';
 
-import {currentUserAtom, loggedInUserAtom} from "../../../../atoms";
+import {loggedInUserAtom} from "../../../../atoms";
 
 export interface MemberListMenuProps {
     onDelete: () => void

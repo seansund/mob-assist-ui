@@ -14,3 +14,4 @@ export const loggedInUserAtom = atomWithQuery(() => ({
         return usersApi().current();
     }
 }))
+

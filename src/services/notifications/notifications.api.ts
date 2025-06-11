@@ -1,4 +1,4 @@
-import {NotificationResultModel, SignupModel} from "../../models";
+import {NotificationResultModel, SignupModel} from "@/models";
 
 export abstract class NotificationsApi {
     abstract sendSignupRequest(signup: SignupModel): Promise<NotificationResultModel>

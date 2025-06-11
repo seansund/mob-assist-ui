@@ -3,22 +3,22 @@ import {BehaviorSubject} from "rxjs";
 
 import {MembersApi} from "./members.api";
 import {getApolloClient} from "@/backends";
-import {MemberIdentity, MemberModel} from "@/models";
+import {MemberIdentifier, MemberModel} from "@/models";
 
-const LIST_MEMBERS = gql`query ListMembers { listMembers { phone lastName firstName email preferredContact } }`;
+const LIST_MEMBERS = gql`query ListMembers { listMembers { id phone lastName firstName email preferredContact } }`;
 interface ListMembersQuery {
     listMembers: MemberModel[];
 }
 
-const GET_MEMBER = gql`query GetMember($memberId: MemberIdentityInput!) { getMember(memberId: $memberId) { phone lastName firstName email preferredContact } }`;
+const GET_MEMBER = gql`query GetMember($memberId: MemberIdentityInput!) { getMember(memberId: $memberId) { id phone lastName firstName email preferredContact } }`;
 interface GetMemberQuery {
     getMember: MemberModel
 }
 interface GetMemberVariables {
-    memberId: MemberIdentity;
+    memberId: MemberIdentifier;
 }
 
-const CREATE_MEMBER = gql`mutation CreateMember($member: MemberInput!) { createMember(member: $member) { phone lastName firstName email preferredContact } }`;
+const CREATE_MEMBER = gql`mutation CreateMember($member: MemberInput!) { createMember(member: $member) { id phone lastName firstName email preferredContact } }`;
 interface CreateMemberMutation {
     createMember: MemberModel
 }
@@ -26,7 +26,7 @@ interface CreateMemberVariables {
     member: Omit<MemberModel, 'id'>;
 }
 
-const UPDATE_MEMBER = gql`mutation UpdateMember($memberId: ID!, $member: MemberUpdateInput!) { updateMember(member: $member, memberId: $memberId) { phone lastName firstName email preferredContact } }`;
+const UPDATE_MEMBER = gql`mutation UpdateMember($memberId: ID!, $member: MemberUpdateInput!) { updateMember(member: $member, memberId: $memberId) { id phone lastName firstName email preferredContact } }`;
 interface UpdateMemberMutation {
     updateMember: MemberModel
 }
@@ -35,12 +35,12 @@ interface UpdateMemberVariables {
     memberId: string;
 }
 
-const DELETE_MEMBER = gql`mutation DeleteMember($memberId: MemberIdentityInput!) { deleteMember(memberId: $memberId) { phone lastName firstName email preferredContact } }`;
+const DELETE_MEMBER = gql`mutation DeleteMember($memberId: MemberIdentityInput!) { deleteMember(memberId: $memberId) { id phone lastName firstName email preferredContact } }`;
 interface DeleteMemberMutation {
     deleteMember: unknown
 }
 interface DeleteMemberVariables {
-    memberId: MemberIdentity;
+    memberId: MemberIdentifier;
 }
 
 export class MembersGraphql implements MembersApi {
@@ -74,7 +74,7 @@ export class MembersGraphql implements MembersApi {
             .then(result => result.data.getMember)
     }
 
-    async getByIdentity(memberId: MemberIdentity): Promise<MemberModel | undefined> {
+    async getByIdentity(memberId: MemberIdentifier): Promise<MemberModel | undefined> {
         return this.client
             .query<GetMemberQuery, GetMemberVariables>({
                 query: GET_MEMBER,

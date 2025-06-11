@@ -6,27 +6,27 @@ export class NoSuchElement extends Error {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DefaultType = any;
 
-export class Optional<T = DefaultType> {
+export class OptionalValue<T = DefaultType> {
   private constructor(public readonly value: T | undefined) {
   }
 
-  static of<T = DefaultType>(value?: T): Optional<T> {
-    return new Optional(value as T);
+  static of<T = DefaultType>(value?: T): OptionalValue<T> {
+    return new OptionalValue(value as T);
   }
 
-  static ofNullable<T = DefaultType>(value?: T): Optional<T> {
-    return new Optional(value as T);
+  static ofNullable<T = DefaultType>(value?: T): OptionalValue<T> {
+    return new OptionalValue(value as T);
   }
 
-  static empty<T = DefaultType>(): Optional<T> {
-    return new Optional<T>(undefined);
+  static empty<T = DefaultType>(): OptionalValue<T> {
+    return new OptionalValue<T>(undefined);
   }
 
   isPresent(): boolean {
     return this.value !== undefined && this.value !== null;
   }
 
-  ifPresent(f: (value: T) => void): Optional<T> {
+  ifPresent(f: (value: T) => void): OptionalValue<T> {
     if (this.value !== undefined && this.value !== null) {
       f(this.value);
     }
@@ -34,7 +34,7 @@ export class Optional<T = DefaultType> {
     return this;
   }
 
-  ifNotPresent(f: () => void): Optional<T> {
+  ifNotPresent(f: () => void): OptionalValue<T> {
     if (this.value === undefined || this.value === null) {
       f();
     }
@@ -74,28 +74,28 @@ export class Optional<T = DefaultType> {
     return this.value;
   }
 
-  map<U>(f: (value: T) => U): Optional<U> {
+  map<U>(f: (value: T) => U): OptionalValue<U> {
     if (this.value !== undefined && this.value !== null) {
-      return Optional.of(f(this.value));
+      return OptionalValue.of(f(this.value));
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return this as any;
     }
   }
 
-  mapIfNotPresent(f: () => T): Optional<T> {
+  mapIfNotPresent(f: () => T): OptionalValue<T> {
     if (isDefinedAndNotNull(this.value)) {
       return this;
     }
 
-    return Optional.of(f());
+    return OptionalValue.of(f());
   }
 }
 
-export function of<T = DefaultType>(value?: T): Optional<T> {
-  return Optional.of<T>(value);
+export function of<T = DefaultType>(value?: T): OptionalValue<T> {
+  return OptionalValue.of<T>(value);
 }
 
-export function empty<T = DefaultType>(): Optional<T> {
-  return Optional.empty<T>();
+export function empty<T = DefaultType>(): OptionalValue<T> {
+  return OptionalValue.empty<T>();
 }

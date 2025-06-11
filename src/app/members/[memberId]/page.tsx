@@ -2,7 +2,7 @@
 
 import {useEffect, useState} from "react";
 import {useAtom, useAtomValue, useSetAtom} from "jotai";
-import {Grid, Skeleton, Stack} from "@mui/material";
+import {Grid, Skeleton} from "@mui/material";
 
 import {currentMemberAtom, currentMemberIdAtom, currentSelectionAtom} from "@/atoms";
 import {SignupResponseTable} from "./_components";

@@ -1,7 +1,6 @@
 "use client"
 
 import React, {useEffect, useState} from "react";
-import {useRouter} from "next/navigation";
 import {Box, Button, Skeleton, Stack} from "@mui/material";
 import {useAtomValue, useSetAtom} from "jotai";
 
@@ -18,6 +17,8 @@ import {
 import {NotificationView, SignupResponseTableView} from "./_components";
 import {LoadingStateModel, NotificationResultModel, SignupModel} from "@/models";
 
+import styles from './page.module.css';
+
 interface SignupResolverPageQueryParams {
     signupId: string;
 }
@@ -27,29 +28,21 @@ interface SignupResolverPageProps {
 }
 
 export default function SignupResolverPage({params}: Readonly<SignupResolverPageProps>) {
-    const currentSignupId = useAtomValue(currentSignupIdAtom);
-    const [signupId, setSignupId] = useState<string>();
-    const [loading, setLoading] = useState<boolean>(true);
-    const [match, setMatch] = useState<boolean>();
-
-    const router = useRouter();
+    const setCurrentSignupId = useSetAtom(currentSignupIdAtom);
+    const [loading, setLoading] = useState<boolean>();
 
     useEffect(() => {
         const resolveParams = async () => {
             const signupId = (await params).signupId;
 
-            setSignupId(signupId);
-            setMatch(signupId === currentSignupId);
+            setCurrentSignupId(signupId);
             setLoading(false);
         }
+
         resolveParams().catch(console.error);
     })
 
-    if (loading || !signupId) return <></>
-
-    if (match === false) {
-        console.log('signupId param does not match state', {currentSignupId, signupId});
-        router.push('/signups')
+    if (loading) {
         return <></>
     }
 
@@ -86,13 +79,14 @@ const SignupPage = () => {
     if (status === 'error' || !currentSignup?.id) return (<div>Error...</div>)
 
     return <div>
-        <Stack>
-            <div>{currentSignup.date}</div>
-            <div>{currentSignup.title}</div>
+        <div className={styles.headerContainer}>
+        <Stack spacing={1} className={styles.labelContainer}>
+            <div><span className={styles.title}>Date:</span> {currentSignup.date}</div>
+            <div><span className={styles.title}>Title:</span> {currentSignup.title}</div>
         </Stack>
         <Box component="fieldset">
             <legend>Send notification</legend>
-            <Stack direction="row" spacing={2}>
+            <Stack direction="row" spacing={2} className={styles.buttonContainer}>
                 <Button onClick={() => handleNotification(sendSignupRequest)} variant="contained">Sign up</Button>
                 <Button onClick={() => handleNotification(sendSignupRequestNoResponse)} variant="contained">Sign up no response</Button>
                 <Button onClick={() => handleNotification(sendSignupAssignments)} variant="contained">Assignments</Button>
@@ -100,6 +94,7 @@ const SignupPage = () => {
             </Stack>
             <NotificationView />
         </Box>
+        </div>
 
         <SignupResponseTableView currentSignup={currentSignup} />
     </div>

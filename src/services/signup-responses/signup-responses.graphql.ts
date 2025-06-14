@@ -45,6 +45,7 @@ const RESPONSE_FRAGMENT = gql`fragment ResponseFragment on MemberSignupResponse 
         group
         name
         row
+        hidden
     }
     message
     checkedIn
@@ -122,6 +123,27 @@ interface UpdateSignupMutation {
 interface UpdateSignupVariables {
     id: string;
     data: Partial<MemberSignupResponseModel>;
+}
+
+const SET_RESPONSE_ASSIGNMENT = gql`mutation SetResponseAssignments($id: ID!, $assignmentIds: [String!]!) {
+    setResponseAssignments(id: $id, assignmentIds: $assignmentIds) {
+        ...ResponseFragment
+    }
+}
+
+${RESPONSE_FRAGMENT}
+`;
+interface SetResponseAssignmentMutation {
+    setResponseAssignments: MemberSignupResponseModel;
+}
+interface SetResponseAssignmentVariables {
+    id: string;
+    assignmentIds: string[];
+}
+
+interface CacheInput {
+    signupId: string;
+    memberId: string;
 }
 
 // eslint-disable-next-line
@@ -252,21 +274,51 @@ export class SignupResponsesGraphql implements SignupResponsesApi {
     }
 
     async delete(response: MemberSignupResponseModel): Promise<boolean> {
-        return this.update({id: response.id, signedUp: false})
-            .then(() => true)
+        return this.updateInternal({id: response.id, signedUp: false}, getCacheInput(response))
+            .then(() => true);
     }
 
-    async checkIn(id: string): Promise<MemberSignupResponseModel | undefined> {
-        return this.update({id, checkedIn: true});
+    async checkIn(response: MemberSignupResponseModel): Promise<MemberSignupResponseModel | undefined> {
+        return this.updateInternal({id: response.id, checkedIn: true}, getCacheInput(response));
     }
 
-    async removeCheckIn(id: string): Promise<MemberSignupResponseModel | undefined> {
-        return this.update({id, checkedIn: false});
+    async removeCheckIn(response: MemberSignupResponseModel): Promise<MemberSignupResponseModel | undefined> {
+        return this.updateInternal({id: response.id, checkedIn: false}, getCacheInput(response));
     }
 
+    async updateInternal(data: Partial<MemberSignupResponseModel> & {id: string}, cacheInput: CacheInput) {
+
+        return this.client
+            .mutate<UpdateSignupMutation, UpdateSignupVariables>({
+                mutation: UPDATE_SIGNUP_RESPONSE,
+                variables: {id: data.id, data},
+                refetchQueries: refetchQueries(cacheInput),
+                awaitRefetchQueries: true
+            })
+            .then(result => result.data?.updateMemberSignupResponse);
+    }
+
+    async setResponseAssignments(response: MemberSignupResponseModel, assignmentIds: string[]): Promise<MemberSignupResponseModel | undefined> {
+
+        return this.client
+            .mutate<SetResponseAssignmentMutation, SetResponseAssignmentVariables>({
+                mutation: SET_RESPONSE_ASSIGNMENT,
+                variables: {id: response.id, assignmentIds},
+                refetchQueries: refetchQueries(getCacheInput(response)),
+                awaitRefetchQueries: true
+            })
+            .then(result => result.data?.setResponseAssignments)
+    }
 }
 
-const refetchQueries  = (data: MemberSignupResponseInputModel): RefetchQueryType[] => {
+const getCacheInput = (response: MemberSignupResponseModel): CacheInput => {
+    return {
+        signupId: response.signup.id,
+        memberId: response.member.id,
+    }
+}
+
+const refetchQueries  = (data: {signupId: string, memberId: string}): RefetchQueryType[] => {
     const refetchQueries: RefetchQueryType[] = [{query: LIST_ALL_SIGNUP_RESPONSES}]
 
     refetchQueries.push(...getSignupResponseRefetchQuery(data));
@@ -276,14 +328,14 @@ const refetchQueries  = (data: MemberSignupResponseInputModel): RefetchQueryType
     return refetchQueries;
 }
 
-const getSignupResponseRefetchQuery = (data: MemberSignupResponseInputModel): RefetchQueryType<ListSignupResponsesVariables>[] => {
+const getSignupResponseRefetchQuery = (data: {signupId: string, memberId: string}): RefetchQueryType<ListSignupResponsesVariables>[] => {
     return [{query: LIST_ALL_SIGNUP_RESPONSES, variables: {filter: {signupId: data.signupId}}}];
 }
 
-const getMemberResponseRefetchQuery = (data: MemberSignupResponseInputModel): RefetchQueryType<ListSignupResponsesVariables>[] => {
+const getMemberResponseRefetchQuery = (data: {signupId: string, memberId: string}): RefetchQueryType<ListSignupResponsesVariables>[] => {
     return [{query: LIST_ALL_SIGNUP_RESPONSES, variables: {filter: {memberId: data.memberId}}}];
 }
 
-const getGetSignupRefetchQuery = (data: MemberSignupResponseInputModel): RefetchQueryType<GetSignupVariables>[] => {
+const getGetSignupRefetchQuery = (data: {signupId: string, memberId: string}): RefetchQueryType<GetSignupVariables>[] => {
     return [{query: GET_SIGNUP_BY_ID, variables: {signupId: data.signupId}}]
 }

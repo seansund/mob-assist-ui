@@ -23,7 +23,7 @@ const isSignupModel = (value: unknown): value is SignupModel => {
 }
 
 const baseSignupAtom = atom<SignupModel | SignupInputModel>()
-export const selectedSignupAtom = atom(
+export const selectedSignupAtom1 = atom(
     get => get(baseSignupAtom),
     (get, set, value: SignupModel | SignupInputModel) => {
         set(baseSignupAtom, value);
@@ -32,17 +32,9 @@ export const selectedSignupAtom = atom(
             set(currentSelectionAtom, value);
         }
     }
-)
+);
+
 export const currentSignupIdAtom = atom<string>()
-
-export const listSignupsAtom = atomWithQuery<SignupModel[]>(get => ({
-    queryKey: ['signups'],
-    queryFn: async () => {
-        const scope: SignupScope = get(signupScopeAtom)
-
-        return service.list({scope});
-    }
-}));
 
 export const currentSignupAtom = atomWithQuery<SignupModel>(get => ({
     queryKey: ['signup', get(currentSignupIdAtom)],
@@ -60,6 +52,15 @@ export const currentSignupAtom = atomWithQuery<SignupModel>(get => ({
         }
 
         return result;
+    }
+}));
+
+export const listSignupsAtom = atomWithQuery<SignupModel[]>(get => ({
+    queryKey: ['signups'],
+    queryFn: async () => {
+        const scope: SignupScope = get(signupScopeAtom)
+
+        return service.list({scope});
     }
 }));
 

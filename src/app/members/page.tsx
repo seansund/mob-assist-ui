@@ -6,17 +6,17 @@ import AddIcon from "@mui/icons-material/Add";
 import {DataGrid, GridColDef} from '@mui/x-data-grid';
 import {useAtomValue, useSetAtom} from "jotai";
 
-import {listMembersAtom, selectedMemberAtom} from "@/atoms";
+import {currentMemberIdAtom, listMembersAtom} from "@/atoms";
 import {showAddUpdateDialogAtom, showDeleteDialogAtom} from "./_atoms";
 import {AddUpdateMemberDialog, DeleteMemberDialog, MemberListMenu} from "./_components";
-import {createEmptyMember, MemberModel} from "@/models";
+import {MemberModel} from "@/models";
 
 import styles from './page.module.css';
 import {formatPhone} from "@/util";
 
 export default function MembersPage() {
     const {data: members, isPending, isError} = useAtomValue(listMembersAtom);
-    const setSelectedMember = useSetAtom(selectedMemberAtom);
+    const setCurrentMemberId = useSetAtom(currentMemberIdAtom);
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
     const showDeleteDialog = useSetAtom(showDeleteDialogAtom);
 
@@ -27,18 +27,17 @@ export default function MembersPage() {
     }
 
     const showUpdateMember = (member: MemberModel) => {
-        setSelectedMember(member);
+        setCurrentMemberId(member.id);
         showAddUpdateDialog();
     }
 
     const deleteMember = (member: MemberModel) => {
-        setSelectedMember(member);
+        setCurrentMemberId(member.id);
         showDeleteDialog();
     }
 
     const showMemberDetails = (member: MemberModel) => {
-        setSelectedMember(member);
-        router.push(`/members/${member.phone}`);
+        router.push(`/members/${member.id}`);
     }
 
     return <div className={styles.membersContainer}>
@@ -91,11 +90,9 @@ const initialDataGridState = (pageSize: number) => ({
 })
 
 const GridToolbar = () => {
-    const setSelectedMember = useSetAtom(selectedMemberAtom);
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
 
     const showAddMember = () => {
-        setSelectedMember(createEmptyMember());
         showAddUpdateDialog();
     }
 

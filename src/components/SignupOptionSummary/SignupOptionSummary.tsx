@@ -59,7 +59,6 @@ interface SignupOptionProps {
 
 const SignupOption = ({option, signedUp, onClick}: Readonly<SignupOptionProps>) => {
 
-    console.log('Toggle button: ', {option: option.value, signedUp: signedUp})
     return <ToggleButton selected={signedUp}
                          value={option.value}
                          size="small"

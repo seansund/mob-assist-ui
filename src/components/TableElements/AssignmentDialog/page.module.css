@@ -1,0 +1,8 @@
+
+.table2, .table4 {
+    border-left: black 1px;
+}
+
+.table3, .table5 {
+    border-right: black 1px;
+}

@@ -1,8 +1,8 @@
-import {atom} from "jotai";
+import {atom, Getter} from "jotai";
 import {atomWithMutation, atomWithQuery} from "jotai-tanstack-query";
 import {
-    isMemberModel,
-    MemberModel, MemberSignupResponseFilterModel,
+    AssignmentModel,
+    MemberModel,
     MemberSignupResponseInputModel,
     MemberSignupResponseModel,
     OptionModel,
@@ -10,41 +10,103 @@ import {
 } from "@/models";
 import {SignupResponsesApi, signupResponsesApi} from "@/services";
 import {getQueryClient} from "@/util";
+import {currentSignupIdAtom} from "@/atoms/signup.atom";
+import {currentMemberIdAtom} from "@/atoms/member.atom";
 
 const service: SignupResponsesApi = signupResponsesApi()
 
+export const currentMemberSignupResponseId = atom<string>();
+
+export const currentMemberSignupResponse = atomWithQuery(get => ({
+    queryKey: ['member-response', get(currentMemberSignupResponseId) ?? 'unknown'],
+    queryFn: async () => {
+        const responseId = get(currentMemberSignupResponseId);
+
+        if (!responseId) {
+            return undefined;
+        }
+
+        return service.get(responseId);
+    }
+}))
+
 export const currentSelectionAtom = atom<MemberModel | SignupModel>();
 
-const idValue = (val?: MemberModel | SignupModel): string => {
-    if (!val) {
-        return 'unknown';
-    }
-
-    if (isMemberModel(val)) {
-        return val.phone;
-    } else {
-        return val.id;
-    }
-}
-
-export const memberResponsesAtom = atomWithQuery<MemberSignupResponseModel[]>(get => ({
-    queryKey: ['member-responses', idValue(get(currentSelectionAtom))],
+export const signupMemberResponsesAtom = atomWithQuery<MemberSignupResponseModel[]>(get => ({
+    queryKey: ['member-responses', `signup-${get(currentSignupIdAtom)}`],
     queryFn: async () => {
-        const val = get(currentSelectionAtom);
+        const signupId = get(currentSignupIdAtom);
 
-        if (!val) {
+        if (!signupId) {
             return [];
         }
 
-        const filter: MemberSignupResponseFilterModel = isMemberModel(val)
-            ? {memberId: val.id}
-            : {signupId: val.id};
+        return service.listAllBySignup(signupId);
+    }
+}));
 
-        return service.listAll(filter);
+export const memberSignupResponsesAtom = atomWithQuery<MemberSignupResponseModel[]>(get => ({
+    queryKey: ['member-responses', `member-${get(currentMemberIdAtom)}`],
+    queryFn: async () => {
+        const memberId = get(currentMemberIdAtom);
+
+        if (!memberId) {
+            return [];
+        }
+
+        return service.listAllByMember(memberId);
     }
 }));
 
 export const selectedMemberResponseAtom = atom<MemberSignupResponseModel>()
+
+const invalidateMemberResponses = (get: Getter) => {
+    return async () => {
+        const client = getQueryClient();
+
+        const signupId = get(currentSignupIdAtom)
+        const memberId = get(currentMemberIdAtom)
+
+        // TODO invalidate more queries
+        if (signupId) {
+            await client.invalidateQueries({queryKey: ['member-responses', `signup-${signupId}`]})
+        }
+        if (memberId) {
+            await client.invalidateQueries({queryKey: ['member-responses', `member-${memberId}`]})
+        }
+    }
+}
+
+export const addUpdateMemberResponseAtom = atomWithMutation(get => ({
+    mutationFn: async (response: MemberSignupResponseInputModel) => {
+        await service.signup(response)
+    },
+    onSuccess: invalidateMemberResponses(get),
+}))
+
+export interface ToggleCheckinInput {
+    id: string;
+    checkedIn: boolean;
+}
+
+export const toggleCheckinAtom = atomWithMutation(get => ({
+    mutationFn: async ({id, checkedIn}: ToggleCheckinInput) => {
+        await service.update({id, checkedIn})
+    },
+    onSuccess: invalidateMemberResponses(get),
+}))
+
+export interface UpdateAssignmentsInput {
+    response: MemberSignupResponseModel;
+    assignments: AssignmentModel[];
+}
+
+export const updateResponseAssignmentsAtom = atomWithMutation(get => ({
+    mutationFn: async ({response, assignments}: UpdateAssignmentsInput) => {
+        await service.setResponseAssignments(response, assignments.map(assignment => assignment.id));
+    },
+    onSuccess: invalidateMemberResponses(get),
+}))
 
 export interface AddUpdateDeleteMemberResponsesInput {
     selectedResponse: MemberSignupResponseModel,
@@ -69,29 +131,5 @@ export const addUpdateDeleteMemberResponsesAtom = atomWithMutation(get => ({
             return service.delete(resp)
         }))
     },
-    onSuccess: async () => {
-        const client = getQueryClient();
-
-        await client.invalidateQueries({queryKey: ['member-responses', idValue(get(currentSelectionAtom))]})
-    }
-}))
-
-export const addUpdateMemberResponseAtom = atomWithMutation(get => ({
-    mutationFn: async (response: MemberSignupResponseInputModel) => {
-        const val = get(currentSelectionAtom);
-
-        const filter: MemberSignupResponseFilterModel | undefined = isMemberModel(val)
-            ? {memberId: val.id}
-            : val
-                ? {signupId: val.id}
-                : undefined;
-
-        await service.signup(response, filter)
-    },
-    onSuccess: async () => {
-        const client = getQueryClient();
-
-        // TODO invalidate more queries
-        await client.invalidateQueries({queryKey: ['member-responses', idValue(get(currentSelectionAtom))]})
-    }
+    onSuccess: invalidateMemberResponses(get),
 }))

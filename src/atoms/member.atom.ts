@@ -38,18 +38,18 @@ export const deleteMemberAtom = atomWithMutation(() => ({
     }
 }))
 
-export const currentMemberIdAtom = atom<MemberIdentifier>()
+export const currentMemberIdAtom = atom<string>()
 
 export const currentMemberAtom = atomWithQuery(get => ({
-    queryKey: ['member', memberIdentifierString(get(currentMemberIdAtom))],
+    queryKey: ['member', get(currentMemberIdAtom)],
     queryFn: async () => {
-        const id = get(currentMemberIdAtom);
+        const memberId = get(currentMemberIdAtom);
 
-        if (!id) {
+        if (!memberId) {
             return {} as MemberModel;
         }
 
-        return service.getByIdentity(id);
+        return service.get(memberId);
     }
 }))
 

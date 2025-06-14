@@ -10,6 +10,13 @@ export const SIGNUP_FRAGMENT = gql`fragment SignupFragment on Signup {
         id
         name
     }
+    assignments {
+        id
+        group
+        name
+        row
+        hidden
+    }
     options {
         id
         value
@@ -28,6 +35,7 @@ export const SIGNUP_FRAGMENT = gql`fragment SignupFragment on Signup {
         }
     }
     responses {
+        id
         signedUp
         option {
             id
@@ -43,6 +51,7 @@ export const SIGNUP_FRAGMENT = gql`fragment SignupFragment on Signup {
             group
             name
             row
+            hidden
         }
     }
 }`
@@ -53,6 +62,13 @@ export const SIGNUP_LIST_FRAGMENT = gql`fragment SignupListFragment on Signup {
     group {
         id
         name
+    }
+    assignments {
+        id
+        group
+        name
+        row
+        hidden
     }
     options {
         id
@@ -80,6 +96,13 @@ export const SIGNUP_FOR_USER_FRAGMENT = gql`fragment SignupForUserFragment on Si
         id
         name
     }
+    assignments {
+        id
+        group
+        name
+        row
+        hidden
+    }
     options {
         id
         value
@@ -88,6 +111,7 @@ export const SIGNUP_FOR_USER_FRAGMENT = gql`fragment SignupForUserFragment on Si
         sortIndex
     }
     responses {
+        id
         signedUp
         option {
             id
@@ -103,6 +127,7 @@ export const SIGNUP_FOR_USER_FRAGMENT = gql`fragment SignupForUserFragment on Si
             group
             name
             row
+            hidden
         }
     }
 }`
@@ -113,6 +138,13 @@ export const SIGNUP_DETAIL_FRAGMENT = gql`fragment SignupDetailFragment on Signu
     group {
         id
         name
+    }
+    assignments {
+        id
+        group
+        name
+        row
+        hidden
     }
     options {
         id

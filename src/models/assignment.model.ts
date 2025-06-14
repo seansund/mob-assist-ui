@@ -1,5 +1,5 @@
 import {ModelRef} from "./base.model";
-import {evaluateComparisons} from '../util';
+import {evaluateComparisons} from '@/util';
 
 export interface AssignmentSetModel extends ModelRef {
     name: string;
@@ -11,6 +11,7 @@ export interface AssignmentDataModel {
   name: string;
   row: number;
   partnerId?: string;
+  hidden?: boolean;
 }
 
 export interface AssignmentModel extends ModelRef, AssignmentDataModel {
@@ -40,10 +41,11 @@ const createAssignmentGroup = (group: string): AssignmentGroupModel => {
 type AssignmentGroupMap = {[group: string]: AssignmentGroupModel};
 
 export const groupAssignments = (assignments: AssignmentModel[]): AssignmentGroupModel[] => {
-  const result: AssignmentGroupMap = assignments
+  const result: AssignmentGroupMap = [...assignments]
+      .sort(assignmentSorter('descending'))
     .sort((a: AssignmentModel, b: AssignmentModel): number => evaluateComparisons([
         a.row - b.row,
-        a.group.localeCompare(b.group),
+        b.group.localeCompare(a.group),
         a.name.localeCompare(b.name),
       ]))
     .reduce((partialResult: AssignmentGroupMap, current: AssignmentModel) => {

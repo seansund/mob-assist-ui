@@ -1,1 +1,1 @@
-export * from './SignupResponseTable';
+export * from './MemberSignupResponseTable';

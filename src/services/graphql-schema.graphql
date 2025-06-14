@@ -7,6 +7,7 @@ schema {
 type Assignment {
   assignmentSet: AssignmentSet
   group: String!
+  hidden: Boolean
   id: ID!
   name: String!
   partnerId: String
@@ -151,6 +152,7 @@ type Mutation {
   sendSignupCheckin(signupId: ID!): NotificationResult!
   sendSignupRequest(signupId: ID!): NotificationResult!
   sendSignupRequestToNoResponse(signupId: ID!): NotificationResult!
+  setResponseAssignments(assignmentIds: [String!]!, id: ID!): MemberSignupResponse!
   signup(data: MemberSignupResponseInput!): MemberSignupResponse!
   updateAssignmentSet(assignmentSetId: ID!, name: String!): AssignmentSet!
   updateMember(member: MemberUpdateInput!, memberId: ID!): Member!

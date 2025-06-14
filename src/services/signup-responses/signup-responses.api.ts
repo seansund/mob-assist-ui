@@ -13,8 +13,10 @@ export abstract class SignupResponsesApi extends BaseApi<MemberSignupResponseMod
 
     abstract signup(input: MemberSignupResponseInputModel): Promise<MemberSignupResponseModel | undefined>;
 
-    abstract checkIn(id: string): Promise<MemberSignupResponseModel | undefined>;
-    abstract removeCheckIn(id: string): Promise<MemberSignupResponseModel | undefined>;
+    abstract checkIn(response: MemberSignupResponseModel): Promise<MemberSignupResponseModel | undefined>;
+    abstract removeCheckIn(response: MemberSignupResponseModel): Promise<MemberSignupResponseModel | undefined>;
+
+    abstract setResponseAssignments(response: MemberSignupResponseModel, assignmentIds: string[]): Promise<MemberSignupResponseModel | undefined>;
 
     abstract listByType(parent: MemberModel | SignupModel): Promise<MemberSignupResponseModel[]>;
 

@@ -1,26 +1,20 @@
 import React, {useState} from "react";
 import {Skeleton} from "@mui/material";
 
-import {AssignmentDialog, MemberResponseDialog} from "@/components";
-import {
-    AssignmentModel,
-    SignupModel,
-    OptionModel,
-    simpleAssignmentSorter, MemberSignupResponseModel
-} from "@/models";
+import {AssignmentDialog} from "@/components";
+import {AssignmentModel, MemberSignupResponseModel, OptionModel, SignupModel, simpleAssignmentSorter} from "@/models";
 import {first, OptionalValue} from "@/util";
 import {SignupResponseAccordion} from "../SignupResponseAccordion";
 import {useAtomValue} from "jotai";
-import {memberResponsesAtom} from "@/atoms";
+import {signupMemberResponsesAtom} from "@/atoms";
 
 interface SignupResponseTableViewProps {
     currentSignup: SignupModel
 }
 
 export const SignupResponseTableView = ({currentSignup}: Readonly<SignupResponseTableViewProps>) => {
-    const {data: responses, status, refetch} = useAtomValue(memberResponsesAtom);
+    const {data: responses, status, refetch} = useAtomValue(signupMemberResponsesAtom);
 
-    const [openResponseDialog, setOpenResponseDialog] = useState(false)
     const [openAssignmentDialog, setOpenAssignmentDialog] = useState(false)
     const [currentAssignments, setCurrentAssignments] = useState<AssignmentModel[]>([])
 
@@ -72,7 +66,6 @@ export const SignupResponseTableView = ({currentSignup}: Readonly<SignupResponse
         : []
 
     const onClose = () => {
-        setOpenResponseDialog(false)
         setOpenAssignmentDialog(false)
     }
 
@@ -94,15 +87,13 @@ export const SignupResponseTableView = ({currentSignup}: Readonly<SignupResponse
     }
 
     return (<div>
-        <MemberResponseDialog open={openResponseDialog} onClose={onClose} baseType={currentSignup} />
-        <AssignmentDialog open={openAssignmentDialog} onClose={onClose} baseType={currentSignup} currentAssignments={currentAssignments} />
+        <AssignmentDialog open={openAssignmentDialog} onClose={onClose} currentAssignments={currentAssignments} refetch={refetchResponses} />
         {options.map((option?: OptionModel) => (
             <SignupResponseAccordion
                 key={option?.value || 'no-response'}
                 responses={filterResponses(option, responses)}
                 showAssignmentDialog={showAssignmentDialog}
                 option={option}
-                baseType={currentSignup}
                 refetch={refetchResponses}
             />
         ))}

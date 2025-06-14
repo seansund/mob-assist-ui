@@ -5,7 +5,7 @@ import {useAtom, useAtomValue, useSetAtom} from "jotai";
 import {Grid, Skeleton} from "@mui/material";
 
 import {currentMemberAtom, currentMemberIdAtom, currentSelectionAtom} from "@/atoms";
-import {SignupResponseTable} from "./_components";
+import {MemberSignupResponseTable} from "./_components";
 import {MemberModel} from "@/models";
 import {classnames, formatPhone} from "@/util";
 
@@ -21,7 +21,6 @@ interface MemberResolverPageProps {
 
 export default function MemberResolverPage({params}: MemberResolverPageProps) {
   const [memberId, setMemberId] = useAtom(currentMemberIdAtom)
-  const setCurrentSelection = useSetAtom(currentSelectionAtom);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -29,7 +28,6 @@ export default function MemberResolverPage({params}: MemberResolverPageProps) {
       const memberId = (await params).memberId;
 
       setMemberId(memberId);
-      setCurrentSelection({phone: memberId} as MemberModel)
       setLoading(false);
     }
     resolveParams().catch(console.error);
@@ -50,7 +48,7 @@ const MemberDetailView = () => {
         <MemberGrid />
       </div>
 
-    <SignupResponseTable />
+    <MemberSignupResponseTable />
   </div>
 }
 

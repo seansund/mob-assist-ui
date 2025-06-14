@@ -1,7 +1,10 @@
 "use client"
 
-import {AssignmentDiagramView} from "@/app/assignment/_components";
+import {AssignmentDiagramView} from "@/components";
+import {useHash} from "@/hooks";
 
 export default function Assignment() {
-    return <AssignmentDiagramView assignment={''} />
+    const assignmentHash = useHash();
+
+    return <AssignmentDiagramView assignmentHash={assignmentHash} />
 }

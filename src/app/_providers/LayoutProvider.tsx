@@ -35,13 +35,9 @@ interface ThemeProviderProps {
 function filterPagesByUserRole(currentUser: UserModel | undefined, pages: PageConfig[]): string[] {
     const userRoles: string[] = currentUser?.roles ?? ['default'];
 
-    console.log('Filtering pages: ', {userRoles, pages});
-
     const filteredPages = pages
         .filter(page => !page.requiredRole || userRoles.includes(page.requiredRole))
         .map(page => page.name)
-
-    console.log('  After filter: ', {filteredPages})
 
     return filteredPages;
 }

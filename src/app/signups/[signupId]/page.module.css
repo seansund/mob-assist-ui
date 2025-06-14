@@ -1,0 +1,19 @@
+
+.headerContainer {
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
+    padding: 10px 0 15px 0;
+}
+
+.labelContainer {
+    padding-top: 10px;
+}
+
+.buttonContainer {
+    padding: 5px 10px;
+}
+
+.title {
+    font-weight: bold;
+}

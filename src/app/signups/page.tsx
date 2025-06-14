@@ -17,8 +17,8 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 
-import {currentSignupIdAtom, listSignupsAtom, selectedSignupAtom, signupScopeAtom} from "@/atoms";
-import {createEmptySignupInput, lookupSignupScope, OptionSummaryModel, SignupModel, SignupScope} from "@/models";
+import {currentSignupIdAtom, listSignupsAtom, signupScopeAtom} from "@/atoms";
+import {lookupSignupScope, SignupModel, SignupScope} from "@/models";
 
 import {showAddUpdateDialogAtom, showDeleteDialogAtom} from "./_atoms";
 import {SignupListMenu, SignupOptionSummary, SignupResponseSummary} from "./_components";
@@ -29,7 +29,6 @@ import {useRouter} from "next/navigation";
 export default function SignupsPage() {
     const {data: signups, isPending, isError} = useAtomValue(listSignupsAtom);
     const setCurrentSignupId = useSetAtom(currentSignupIdAtom);
-    const setSelectedSignup = useSetAtom(selectedSignupAtom);
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
     const showDeleteDialog = useSetAtom(showDeleteDialogAtom);
 
@@ -41,26 +40,20 @@ export default function SignupsPage() {
 
     const showUpdateSignup = (signup: SignupModel) => {
         setCurrentSignupId(signup.id);
-        setSelectedSignup(signup);
         showAddUpdateDialog();
     }
 
     const duplicateSignup = (signup: SignupModel) => {
-        const copy = {...signup, id: ''}
-
-        setSelectedSignup(copy);
+        setCurrentSignupId(signup.id);
         showAddUpdateDialog();
     }
 
     const deleteSignup = (signup: SignupModel) => {
         setCurrentSignupId(signup.id);
-        setSelectedSignup(signup);
         showDeleteDialog();
     }
 
     const showSignupDetails = (signup: SignupModel) => {
-        setCurrentSignupId(signup.id);
-        setSelectedSignup(signup);
         router.push(`/signups/${signup.id}`);
     }
 
@@ -151,11 +144,9 @@ const initialDataGridState = (pageSize: number) => ({
 
 const GridToolbar = () => {
     const [signupScope, setSignupScope] = useAtom(signupScopeAtom)
-    const setSelectedSignup = useSetAtom(selectedSignupAtom);
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
 
     const showAddView = () => {
-        setSelectedSignup(createEmptySignupInput());
         showAddUpdateDialog();
     }
 

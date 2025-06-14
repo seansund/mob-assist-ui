@@ -1,13 +1,14 @@
 import {useEffect, useRef, useState} from "react";
 import {AssignmentDiagram} from "@/components";
-import {useHash} from "@/hooks";
+import {AssignmentModel} from "@/models";
+import {uniqueList} from "@/util";
 
 interface AssignmentDiagramViewProps {
-    assignment: string;
+    assignments?: AssignmentModel[];
+    assignmentHash?: string;
 }
 
-export const AssignmentDiagramView = ({assignment}: AssignmentDiagramViewProps) => {
-    const hash = useHash();
+export const AssignmentDiagramView = ({assignments, assignmentHash}: Readonly<AssignmentDiagramViewProps>) => {
     const [width, setWidth] = useState(0);
     const [height, setHeight] = useState(0);
 
@@ -22,7 +23,7 @@ export const AssignmentDiagramView = ({assignment}: AssignmentDiagramViewProps) 
         resizeObserver.observe(canvasRef.current)
     }, [canvasRef]);
 
-    const layers = [assignment ? assignment.toLowerCase().split(',') : [], hash ? hash.toLowerCase().replace('#', '').split(',') : []]
+    const layers = [assignmentStrings(assignments), hashStrings(assignmentHash)]
         .reduce((result: string[], current: string[]) => {
             current.forEach(val => {
                 if (!result.includes(val)) {
@@ -38,4 +39,17 @@ export const AssignmentDiagramView = ({assignment}: AssignmentDiagramViewProps) 
             <AssignmentDiagram parentWidth={width} parentHeight={height} layers={layers} />
         </div>
     )
+}
+
+const assignmentStrings = (assignments?: AssignmentModel[]): string[] => {
+    return uniqueList((assignments ?? [])
+        .flatMap(assignment => [format(assignment.group), format(assignment.name)]));
+}
+
+const hashStrings = (hash?: string): string[] => {
+    return hash ? hash.toLowerCase().replace('#', '').split(',') : []
+}
+
+const format = (value: string) => {
+    return value.toLowerCase().replaceAll(' ', '');
 }

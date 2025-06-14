@@ -1,22 +1,32 @@
 "use client"
 
-import {MouseEvent} from "react";
+import {MouseEvent, useState} from "react";
 import {Grid, ToggleButton, ToggleButtonGroup} from "@mui/material";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {useAtom, useAtomValue} from "jotai";
 
 import {currentUserMemberAtom, listUserSignupsAtom, signupScopeAtom} from "@/atoms";
-import {lookupSignupScope, MemberModel, SignupModel, SignupScope} from "@/models";
+import {
+  isEligibleForCheckIn,
+  lookupSignupScope,
+  MemberModel,
+  MemberSignupResponseModel,
+  SignupScope
+} from "@/models";
 
 import styles from "./page.module.css";
 import {UserSignupOptionSummary} from "@/app/_components";
 import {CheckedIn} from "@/app/_components/CheckedIn";
+import {AssignmentsView} from "@/components";
+import {AssignmentDiagramModal} from "@/components/AssignmentDiagramModal";
 
 export default function Home() {
   const {data: currentMember, isPending: memberPending} = useAtomValue(currentUserMemberAtom)
   const {data: signups, isPending: signupsPending, refetch} = useAtomValue(listUserSignupsAtom)
 
-  if (!memberPending && !currentMember && !currentMember && !signups) {
+  const [openDiagram, setOpenDiagram] = useState<boolean>(false);
+
+  if (!memberPending && !signupsPending && (!currentMember || !signups)) {
     console.log('No user data!')
     return <div>Error</div>
   }
@@ -25,21 +35,56 @@ export default function Home() {
     return refetch().then(() => undefined)
   }
 
+  const handleClose = () =>{
+    setOpenDiagram(false);
+  }
+
+  const showDiagram = () => {
+    setOpenDiagram(true);
+  }
+
+  const responses: MemberSignupResponseModel[] = (signups ?? [])
+      .flatMap(signup => {
+        if ((signup.responses ?? []).length > 0) {
+          return (signup.responses ?? []).map(response => {
+            if (!response.id) {
+              console.log('Response is missing id', {signup: response.signup, member: response.member})
+            }
+
+            return {
+              ...response,
+              signup,
+            };
+          })
+        }
+
+        return [{
+          id: `signup${signup.id}-member${currentMember?.id ?? '1'}`,
+          signup,
+          // eslint-disable-next-line
+          member: currentMember as any,
+          signedUp: true
+        }]
+      })
+      .filter(response => response.signedUp)
+
   return <div className={styles.signupsContainer}>
+    <AssignmentDiagramModal open={openDiagram} onClose={handleClose} />
     <DataGrid
-        rows={signups || []}
-        columns={buildColumns(refetchSignups, currentMember)}
+        rows={responses}
+        columns={buildColumns(showDiagram, refetchSignups, currentMember)}
         pageSizeOptions={[10, 30, 50, 100]}
         initialState={initialDataGridState(10)}
         showToolbar
         loading={signupsPending || memberPending}
         slots={{toolbar: GridToolbar, noRowsOverlay: GridNoSignupsOverlay}}
         disableRowSelectionOnClick
+        rowSpanning={true}
     />
   </div>
 }
 
-const buildColumns = (refetch: () => Promise<void>, currentMember?: MemberModel): GridColDef<SignupModel>[] => {
+const buildColumns = (showDiagram: () => void, refetch: () => Promise<void>, currentMember?: MemberModel): GridColDef<MemberSignupResponseModel>[] => {
 
   // eslint-disable-next-line
   const member: MemberModel = currentMember ?? {id: ''} as any
@@ -49,13 +94,15 @@ const buildColumns = (refetch: () => Promise<void>, currentMember?: MemberModel)
       field: 'date',
       headerName: 'Date',
       minWidth: 105,
-      flex: 1
+      flex: 1,
+      valueGetter: (value: never, response: MemberSignupResponseModel) => response.signup.date,
     },
     {
       field: 'title',
       headerName: 'Title',
       minWidth: 75,
-      flex: 1
+      flex: 1,
+      valueGetter: (value: never, response: MemberSignupResponseModel) => response.signup.title,
     },
     {
       field: 'responses',
@@ -63,21 +110,24 @@ const buildColumns = (refetch: () => Promise<void>, currentMember?: MemberModel)
       minWidth: 150,
       flex: 1,
       sortable: false,
-      renderCell: ({row: signup}) => (<UserSignupOptionSummary responses={signup.responses} options={signup.options} signup={signup} member={member} refetch={refetch} />)
+      renderCell: ({row: response}) => <UserSignupOptionSummary responses={[response]} options={response.signup.options} signup={response.signup} member={member} refetch={refetch} />,
+      rowSpanValueGetter: () => null,
     },
     {
       field: 'assignments',
       headerName: 'Assignment(s)',
       minWidth: 150,
       flex: 1,
-      renderCell: () => (<>?</>),
+      renderCell: ({row: response}) => <AssignmentsView response={response} onClick={showDiagram} />,
+      rowSpanValueGetter: () => null,
     },
     {
       field: 'checkedIn',
       headerName: 'Checked In?',
       minWidth: 50,
       flex: 1,
-      renderCell: ({value: checkedIn}) => <CheckedIn enabled={false} checkedIn={checkedIn} />,
+      renderCell: ({value: checkedIn, row: response}) => <CheckedIn enabled={isEligibleForCheckIn(response.signup)} response={response} checkedIn={checkedIn} />,
+      rowSpanValueGetter: () => null,
     }
   ]
 }

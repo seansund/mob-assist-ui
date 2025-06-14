@@ -13,38 +13,32 @@ import {
     Grid
 } from "@mui/material";
 
-import {addUpdateMemberResponseAtom, currentSignupAtom, selectedMemberResponseAtom} from "@/atoms";
-import {
-    AssignmentGroupModel,
-    AssignmentModel,
-    getGroupIndex,
-    groupAssignments,
-    MemberModel, MemberSignupResponseModel,
-    SignupModel
-} from "@/models";
+import {currentSignupAtom, selectedMemberResponseAtom, updateResponseAssignmentsAtom} from "@/atoms";
+import {AssignmentGroupModel, AssignmentModel, groupAssignments, MemberSignupResponseModel} from "@/models";
 import {first} from "@/util";
 
+
 export interface AssignmentDialogProps {
-    open: boolean
-    onClose: () => void
-    baseType: SignupModel | MemberModel
-    currentAssignments: AssignmentModel[]
+    open: boolean;
+    onClose: () => void;
+    currentAssignments: AssignmentModel[];
+    refetch: () => Promise<void>;
 }
 
-export const AssignmentDialog = (props: AssignmentDialogProps) => {
+export const AssignmentDialog = ({open, onClose, currentAssignments, refetch}: Readonly<AssignmentDialogProps>) => {
     const {data: signup, status} = useAtomValue(currentSignupAtom)
-    const response: MemberSignupResponseModel = useAtomValue(selectedMemberResponseAtom)
-    const {mutate: addUpdate} = useAtomValue(addUpdateMemberResponseAtom)
+    const response: MemberSignupResponseModel | undefined = useAtomValue(selectedMemberResponseAtom)
+    const {mutateAsync} = useAtomValue(updateResponseAssignmentsAtom)
 
     if (status === 'pending' || status === 'error') {
         return (<></>)
     }
 
-    if (!response || !signup?.assignments) {
+    if (!response) {
         return (<></>)
     }
 
-    const assignments: AssignmentModel[] = signup.assignments
+    const assignments: AssignmentModel[] = signup.assignments ?? [];
 
     const formDataToObject = (formData: FormData): {[name: string]: string} => {
         const result: {[name: string]: string} = {}
@@ -71,20 +65,18 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
             .map(lookupAssignment)
             .filter(assignment => !!assignment) as AssignmentModel[]
 
-        handleAssignmentChange(assignments)
+        handleAssignmentChange(assignments).catch(err => console.log('Error updating assignments: ', err))
 
-        props.onClose()
+        onClose()
     }
 
     const handleClose = () => {
-        props.onClose()
+        onClose()
     }
 
     const handleAssignmentChange = async (assignments?: AssignmentModel[]) => {
         if (assignments) {
-            response.assignments = assignments;
-
-            addUpdate(response);
+            mutateAsync({response, assignments}).then(refetch);
         }
     }
 
@@ -95,14 +87,10 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
     }
 
     const isDisabled = (assignment: AssignmentModel): boolean => {
-        return !isChecked(assignment) && props.currentAssignments.map(assn => assn.name).includes(assignment.name)
+        return !isChecked(assignment) && currentAssignments.map(assn => assn.name).includes(assignment.name)
     }
 
-    const getDirection = (group: string): 'row' | 'row-reverse' => {
-        return getGroupIndex(group) % 2 === 0 ? 'row-reverse' : 'row'
-    }
-
-    return (<Dialog open={props.open} onClose={handleClose} >
+    return (<Dialog open={open} onClose={handleClose} >
         <DialogTitle>Update assignments: {response.member.firstName} {response.member.lastName}</DialogTitle>
         <Box sx={{padding: '10px'}}>
             <form onSubmit={handleSubmit}>
@@ -112,17 +100,10 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
                 <Grid key={group.group} size={{xs: 6}}>
                 <FormLabel component="div" style={{textAlign: 'center', width: '100%'}}>{group.group}</FormLabel>
                 <FormGroup>
-                    <Grid container direction={getDirection(group.group)}>
+                    <Grid container direction="row-reverse">
                 {group.assignments.map(assignment => (
-                    <Grid key={assignment.group + '-' + assignment.name} size={{xs: 2}}>
-                    <FormControlLabel
-                        labelPlacement="top"
-                        control={
-                            <Checkbox defaultChecked={isChecked(assignment)} disabled={isDisabled(assignment)} name={assignment.name} value={assignment.name}/>
-                        }
-                        label={assignment.name}
-                        key={assignment.group + '-' + assignment.name}
-                    />
+                    <Grid key={assignment.id} size={{xs: 2}}>
+                        <AssignmentCheck assignment={assignment} isChecked={isChecked} isDisabled={isDisabled} />
                     </Grid>
                 ))}
                     </Grid>
@@ -135,8 +116,28 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
                     <Grid size={{xs: 6}}><Button variant="outlined" onClick={handleClose}>Cancel</Button></Grid>
                     <Grid size={{xs: 6}}><Button variant="contained" type="submit">Submit</Button></Grid>
                 </Grid>
-
             </form>
         </Box>
     </Dialog>)
+}
+
+interface AssignmentCheck {
+    assignment: AssignmentModel;
+    isChecked: (assignment: AssignmentModel) => boolean;
+    isDisabled: (assignment: AssignmentModel) => boolean;
+}
+
+const AssignmentCheck = ({assignment, isChecked, isDisabled}: Readonly<AssignmentCheck>) => {
+    if (assignment.hidden) {
+        return <span> </span>
+    }
+
+    return <FormControlLabel
+        labelPlacement="top"
+        control={
+            <Checkbox defaultChecked={isChecked(assignment)} disabled={isDisabled(assignment)} name={assignment.name} value={assignment.name}/>
+        }
+        label={assignment.name}
+        key={assignment.group + '-' + assignment.name}
+    />
 }

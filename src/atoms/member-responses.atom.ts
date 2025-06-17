@@ -85,13 +85,16 @@ export const addUpdateMemberResponseAtom = atomWithMutation(get => ({
 }))
 
 export interface ToggleCheckinInput {
-    id: string;
-    checkedIn: boolean;
+    response: MemberSignupResponseModel;
 }
 
 export const toggleCheckinAtom = atomWithMutation(get => ({
-    mutationFn: async ({id, checkedIn}: ToggleCheckinInput) => {
-        await service.update({id, checkedIn})
+    mutationFn: async ({response}: ToggleCheckinInput) => {
+        if (response.checkedIn) {
+            await service.removeCheckIn(response);
+        } else {
+            await service.checkIn(response);
+        }
     },
     onSuccess: invalidateMemberResponses(get),
 }))

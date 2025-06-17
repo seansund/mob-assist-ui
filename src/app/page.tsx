@@ -126,7 +126,7 @@ const buildColumns = (showDiagram: () => void, refetch: () => Promise<void>, cur
       headerName: 'Checked In?',
       minWidth: 50,
       flex: 1,
-      renderCell: ({value: checkedIn, row: response}) => <CheckedIn enabled={isEligibleForCheckIn(response.signup)} response={response} checkedIn={checkedIn} />,
+      renderCell: ({row: response}) => <CheckedIn enabled={isEligibleForCheckIn(response.signup)} response={response} refetch={refetch} />,
       rowSpanValueGetter: () => null,
     }
   ]

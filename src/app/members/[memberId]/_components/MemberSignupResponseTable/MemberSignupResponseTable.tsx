@@ -7,7 +7,7 @@ import {MemberSignupResponseModel} from "@/models";
 import {SignupOptionSummary} from "@/components/SignupOptionSummary";
 
 export const MemberSignupResponseTable = () => {
-    const {data: responses, isPending, refetch} = useAtomValue(memberSignupResponsesAtom)
+    const {data: responses, isPending, refetch} = useAtomValue(memberSignupResponsesAtom);
 
     const refetchMember = async (): Promise<void> => {
         return refetch().then(() => undefined).catch(console.log)

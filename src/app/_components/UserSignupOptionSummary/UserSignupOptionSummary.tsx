@@ -22,7 +22,7 @@ interface UserSignupOptionSummaryProps {
 }
 
 export const UserSignupOptionSummary = ({options, responses, member, signup, refetch}: Readonly<UserSignupOptionSummaryProps>) => {
-    const {mutateAsync} = useAtomValue(userSignupResponseAtom)
+    const {mutateAsync, isPending} = useAtomValue(userSignupResponseAtom);
 
     const signupForOption = () => {
         return (option: OptionModel, signedUp: boolean) => {
@@ -46,6 +46,7 @@ export const UserSignupOptionSummary = ({options, responses, member, signup, ref
         .map((option: OptionModel) => <SignupOption
             key={option?.value ?? 'noresponse'}
             option={option}
+            disabled={isPending}
             signedUp={signupUpForOption(option, responses)}
             onClick={signupForOption()} />)}
     </div>)
@@ -55,13 +56,15 @@ interface SignupOptionProps {
     option: OptionModel;
     signedUp: boolean;
     onClick: (option: OptionModel, currentResponse: boolean) => void,
+    disabled?: boolean;
 }
 
-const SignupOption = ({option, signedUp, onClick}: Readonly<SignupOptionProps>) => {
+const SignupOption = ({option, signedUp, onClick, disabled}: Readonly<SignupOptionProps>) => {
 
     return <ToggleButton selected={signedUp}
                          value={option.value}
                          size="small"
+                         disabled={disabled}
                          onClick={() => onClick(option, signedUp)}>{option.value}</ToggleButton>
 }
 

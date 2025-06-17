@@ -62,7 +62,18 @@ export const currentUserMemberAtom = atomWithQuery(get => ({
             return {} as MemberModel;
         }
 
-        return service.getByIdentity({email: user.email, phone: user.phone});
+        return service.getByIdentity({email: user.email, phone: user.phone})
+    }
+}))
+
+export const updateMemberAtom = atomWithMutation(get => ({
+    mutationFn: async (member: MemberModel) => {
+        return service.update(member);
+    },
+    onSuccess: async () => {
+        const client = getQueryClient();
+
+        await client.invalidateQueries({queryKey: ['member', memberIdentifierString(get(currentUserAtom))]})
     }
 }))
 

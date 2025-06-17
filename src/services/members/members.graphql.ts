@@ -5,12 +5,39 @@ import {MembersApi} from "./members.api";
 import {getApolloClient} from "@/backends";
 import {MemberIdentifier, MemberModel} from "@/models";
 
-const LIST_MEMBERS = gql`query ListMembers { listMembers { id phone lastName firstName email preferredContact } }`;
+export const MEMBER_FRAGMENT = gql`fragment MemberFragment on Member {
+    id
+    email
+    phone
+    lastName
+    firstName
+    preferredContact
+    groups {
+        id
+        name
+    }
+}`
+
+const LIST_MEMBERS = gql`query ListMembers {
+    listMembers { 
+        ...MemberFragment 
+    } 
+}
+
+${MEMBER_FRAGMENT}
+`;
 interface ListMembersQuery {
     listMembers: MemberModel[];
 }
 
-const GET_MEMBER = gql`query GetMember($memberId: MemberIdentityInput!) { getMember(memberId: $memberId) { id phone lastName firstName email preferredContact } }`;
+const GET_MEMBER = gql`query GetMember($memberId: MemberIdentityInput!) { 
+    getMember(memberId: $memberId) { 
+        ...MemberFragment
+    } 
+}
+
+${MEMBER_FRAGMENT}
+`;
 interface GetMemberQuery {
     getMember: MemberModel
 }
@@ -18,7 +45,14 @@ interface GetMemberVariables {
     memberId: MemberIdentifier;
 }
 
-const CREATE_MEMBER = gql`mutation CreateMember($member: MemberInput!) { createMember(member: $member) { id phone lastName firstName email preferredContact } }`;
+const CREATE_MEMBER = gql`mutation CreateMember($member: MemberInput!) { 
+    createMember(member: $member) {
+        ...MemberFragment
+    } 
+}
+
+${MEMBER_FRAGMENT}
+`;
 interface CreateMemberMutation {
     createMember: MemberModel
 }
@@ -26,7 +60,14 @@ interface CreateMemberVariables {
     member: Omit<MemberModel, 'id'>;
 }
 
-const UPDATE_MEMBER = gql`mutation UpdateMember($memberId: ID!, $member: MemberUpdateInput!) { updateMember(member: $member, memberId: $memberId) { id phone lastName firstName email preferredContact } }`;
+const UPDATE_MEMBER = gql`mutation UpdateMember($memberId: ID!, $member: MemberUpdateInput!) { 
+    updateMember(member: $member, memberId: $memberId) { 
+        ...MemberFragment
+    }
+}
+
+${MEMBER_FRAGMENT}
+`;
 interface UpdateMemberMutation {
     updateMember: MemberModel
 }
@@ -35,7 +76,14 @@ interface UpdateMemberVariables {
     memberId: string;
 }
 
-const DELETE_MEMBER = gql`mutation DeleteMember($memberId: MemberIdentityInput!) { deleteMember(memberId: $memberId) { id phone lastName firstName email preferredContact } }`;
+const DELETE_MEMBER = gql`mutation DeleteMember($memberId: MemberIdentityInput!) { 
+    deleteMember(memberId: $memberId) { 
+        ...MemberFragment
+    } 
+}
+
+${MEMBER_FRAGMENT}
+`;
 interface DeleteMemberMutation {
     deleteMember: unknown
 }
@@ -101,7 +149,7 @@ export class MembersGraphql implements MembersApi {
             .mutate<UpdateMemberMutation, UpdateMemberVariables>({
                 mutation: UPDATE_MEMBER,
                 variables: {memberId: member.id, member},
-                refetchQueries: [{query: LIST_MEMBERS}, ...getMemberRefetchQueryies(member)],
+                refetchQueries: [{query: LIST_MEMBERS}, ...getMemberRefetchQueries(member)],
                 awaitRefetchQueries: true
             })
             .then(result => result.data?.updateMember)
@@ -112,7 +160,7 @@ export class MembersGraphql implements MembersApi {
             .mutate<DeleteMemberMutation, DeleteMemberVariables>({
                 mutation: DELETE_MEMBER,
                 variables: {memberId: {id: member.id}},
-                refetchQueries: [{query: LIST_MEMBERS}, ...getMemberRefetchQueryies(member)],
+                refetchQueries: [{query: LIST_MEMBERS}, ...getMemberRefetchQueries(member)],
                 awaitRefetchQueries: true
             })
             .then(() => true)
@@ -121,7 +169,7 @@ export class MembersGraphql implements MembersApi {
 }
 
 // eslint-disable-next-line
-const getMemberRefetchQueryies = (member: MemberModel): Array<{query: any, variables: GetMemberVariables}> => {
+const getMemberRefetchQueries = (member: MemberModel): Array<{query: any, variables: GetMemberVariables}> => {
     return [
         {query: GET_MEMBER, variables: {memberId: {id: member.id}}},
         {query: GET_MEMBER, variables: {memberId: {email: member.email}}},

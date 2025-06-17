@@ -1,6 +1,7 @@
 "use client"
 
 import {ReactNode} from 'react';
+import {useRouter} from "next/navigation";
 import {SessionProvider, signOut} from "next-auth/react";
 import {Provider as StateProvider} from "jotai";
 import {ThemeProvider} from "@mui/material";
@@ -23,22 +24,27 @@ interface BaseProviderProps {
 const pages: PageConfig[] = [
     {name: 'Signups', requiredRole: 'admin'},
     {name: 'Members', requiredRole: 'admin'},
+    {name: 'Groups', requiredRole: 'admin'},
 ];
 const links: {[page: string]: string} = {
     'Members': '/members',
-    'Signups': '/signups'
+    'Signups': '/signups',
+    'Groups': '/groups',
 }
-const settings: Array<{label: string, onClick: () => void}> = [{
-    label: 'Profile',
-    onClick: () => {}
-}, {
-    label: 'Logout',
-    onClick: () => signOut()
-}];
 
 
 export default function Provider({children}: BaseProviderProps) {
+    const router = useRouter();
+
     console.log('Rendering Provider', {children})
+
+    const settings: Array<{label: string, onClick: () => void}> = [{
+        label: 'Profile',
+        onClick: () => router.push('/profile')
+    }, {
+        label: 'Logout',
+        onClick: () => signOut()
+    }];
 
     return <QueryProvider>
         <StateProvider>

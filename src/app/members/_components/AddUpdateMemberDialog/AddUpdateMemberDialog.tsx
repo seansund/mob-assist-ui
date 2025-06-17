@@ -27,7 +27,8 @@ export const AddUpdateMemberDialog = () => {
         const partialMember: Partial<MemberDataModel> = {}
 
         const key = event.target.name as keyof MemberDataModel
-        partialMember[key] = event.target.value
+        // eslint-disable-next-line
+        partialMember[key] = event.target.value as any
 
         const newMember = Object.assign({}, member, partialMember)
 

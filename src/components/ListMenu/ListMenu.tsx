@@ -1,23 +1,26 @@
-import React from "react";
+"use client"
+
+import {useState} from "react";
 import {useAtomValue} from "jotai";
 import {Avatar, Button, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Popover} from "@mui/material";
-import UpdateIcon from '@mui/icons-material/Update';
-import DeleteIcon from '@mui/icons-material/Delete';
-import DetailIcon from '@mui/icons-material/Details';
+import DetailIcon from "@mui/icons-material/Details";
+import UpdateIcon from "@mui/icons-material/Update";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-import {loggedInUserAtom} from "../../../../atoms";
+import {loggedInUserAtom} from "@/atoms";
 
-export interface MemberListMenuProps {
-    onDelete: () => void
-    onUpdate: () => void
-    onDetail: () => void
+interface ListMenuProps {
+    detailText?: string;
+    onDetail: () => void;
+    updateText?: string;
+    onUpdate: () => void;
+    deleteText?: string;
+    onDelete: () => void;
 }
 
-export const MemberListMenu = (props: MemberListMenuProps) => {
+export const ListMenu = ({detailText, onDetail, updateText, onUpdate, deleteText, onDelete}: Readonly<ListMenuProps>) => {
     const {data: currentUser} = useAtomValue(loggedInUserAtom)
-    const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
-
-    console.log('Current user: ', currentUser)
+    const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -27,12 +30,19 @@ export const MemberListMenu = (props: MemberListMenuProps) => {
         setAnchorEl(null);
     };
 
+    const handleMenuClick = (fn: () => void) => {
+        return () => {
+            fn();
+            handleClose();
+        }
+    }
+
     const open = !!anchorEl;
     const id = open ? 'simple-popover' : undefined;
 
     if (currentUser?.role !== 'admin') {
         return (<div>
-            <Button aria-describedby={id} variant="outlined" size="small" onClick={props.onDetail}>
+            <Button aria-describedby={id} variant="outlined" size="small" onClick={onDetail}>
                 Details
             </Button>
         </div>)
@@ -57,40 +67,40 @@ export const MemberListMenu = (props: MemberListMenuProps) => {
                     <ListItem disableGutters>
                         <ListItemButton
                             autoFocus
-                            onClick={props.onDetail}
+                            onClick={handleMenuClick(onDetail)}
                         >
                             <ListItemAvatar>
                                 <Avatar>
                                     <DetailIcon />
                                 </Avatar>
                             </ListItemAvatar>
-                            <ListItemText primary="View details" />
+                            <ListItemText primary={detailText ?? 'View details'} />
                         </ListItemButton>
                     </ListItem>
                     <ListItem disableGutters>
                         <ListItemButton
                             autoFocus
-                            onClick={props.onUpdate}
+                            onClick={handleMenuClick(onUpdate)}
                         >
                             <ListItemAvatar>
                                 <Avatar>
                                     <UpdateIcon />
                                 </Avatar>
                             </ListItemAvatar>
-                            <ListItemText primary="Update member" />
+                            <ListItemText primary={updateText ?? 'Update item'} />
                         </ListItemButton>
                     </ListItem>
                     <ListItem disableGutters>
                         <ListItemButton
                             autoFocus
-                            onClick={props.onDelete}
+                            onClick={handleMenuClick(onDelete)}
                         >
                             <ListItemAvatar>
                                 <Avatar>
                                     <DeleteIcon />
                                 </Avatar>
                             </ListItemAvatar>
-                            <ListItemText primary="Delete member" />
+                            <ListItemText primary={deleteText ?? 'Delete item'} />
                         </ListItemButton>
                     </ListItem>
                 </List>

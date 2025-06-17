@@ -8,11 +8,12 @@ import {useAtomValue, useSetAtom} from "jotai";
 
 import {currentMemberIdAtom, listMembersAtom} from "@/atoms";
 import {showAddUpdateDialogAtom, showDeleteDialogAtom} from "./_atoms";
-import {AddUpdateMemberDialog, DeleteMemberDialog, MemberListMenu} from "./_components";
+import {AddUpdateMemberDialog, DeleteMemberDialog} from "./_components";
 import {MemberModel} from "@/models";
 
 import styles from './page.module.css';
 import {formatPhone} from "@/util";
+import {ListMenu} from "@/components";
 
 export default function MembersPage() {
     const {data: members, isPending, isError} = useAtomValue(listMembersAtom);
@@ -76,7 +77,7 @@ const buildColumns = ({deleteRow, showUpdateRow, showRowDetails}: BuildColumnsPa
             width: 100,
             align: 'center',
             sortable: false,
-            renderCell: ({row: member}) => (<MemberListMenu onDelete={() => deleteRow(member)} onUpdate={() => showUpdateRow(member)} onDetail={() => showRowDetails(member)}></MemberListMenu>)
+            renderCell: ({row: member}) => (<ListMenu onDelete={() => deleteRow(member)} onUpdate={() => showUpdateRow(member)} onDetail={() => showRowDetails(member)} deleteText="Delete member" updateText="Update member"></ListMenu>)
         }
     ]
 }

@@ -43,7 +43,13 @@ export const AssignmentDiagramView = ({assignments, assignmentHash}: Readonly<As
 
 const assignmentStrings = (assignments?: AssignmentModel[]): string[] => {
     return uniqueList((assignments ?? [])
-        .flatMap(assignment => [format(assignment.group), format(assignment.name)]));
+        .flatMap((assignment: AssignmentModel, index: number) => {
+            if (index === 0) {
+                return [format(assignment.group), format(assignment.name)]
+            }
+
+            return [format(assignment.name)]
+        }));
 }
 
 const hashStrings = (hash?: string): string[] => {

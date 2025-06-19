@@ -1,47 +1,18 @@
-import {atom} from "jotai";
-import {atomWithDefault} from "jotai/vanilla/utils";
-import {atomWithMutation} from "jotai-tanstack-query";
+import {Atom, atom, WritableAtom} from "jotai";
+import {atomWithDefault, RESET} from "jotai/vanilla/utils";
+import {atomWithMutation, AtomWithMutationResult} from "jotai-tanstack-query";
 
+import {signupScopeAtom} from "@/atoms";
 import {ModelRef, SignupInputModel} from "@/models";
 import {signupsApi} from "@/services";
 import {getQueryClient} from "@/util";
-import {signupScopeAtom} from "@/atoms";
 
 const service = signupsApi();
 
-export const addUpdateDialogVisibleAtom = atom<boolean>(false);
-export const hideAddUpdateDialogAtom = atom(
-    get => get(addUpdateDialogVisibleAtom),
-    (get, set) => {
-        set(addUpdateDialogVisibleAtom, false)
-    }
-);
-export const showAddUpdateDialogAtom = atom(
-    get => get(addUpdateDialogVisibleAtom),
-    (get, set) => {
-        set(addUpdateDialogVisibleAtom, true)
-    }
-);
-
-export const deleteDialogVisibleAtom = atom<boolean>(false);
-export const hideDeleteDialogAtom = atom(
-    get => get(deleteDialogVisibleAtom),
-    (get, set) => {
-        set(deleteDialogVisibleAtom, false)
-    }
-)
-export const showDeleteDialogAtom = atom(
-    get => get(deleteDialogVisibleAtom),
-    (get, set) => {
-        set(deleteDialogVisibleAtom, true)
-    }
-)
-
-
-export const selectedSignupAtom = atomWithDefault<SignupInputModel & {id?: string}>(() => createDefaultSignupInput())
-export const resetSelectedSignupAtom = atom(
+export const selectedSignupAtom: WritableAtom<SignupInputModel, [SignupInputModel | typeof RESET], void> = atomWithDefault<SignupInputModel>(() => createDefaultSignupInput());
+export const resetSelectedSignupAtom: WritableAtom<SignupInputModel, [], void> = atom(
     get => get(selectedSignupAtom),
-    (_, set) => set(selectedSignupAtom, createDefaultSignupInput())
+    (_, set) => set(selectedSignupAtom, createDefaultSignupInput()),
 )
 
 const createDefaultSignupInput = (): SignupInputModel => {
@@ -82,7 +53,8 @@ export const addUpdateSignupAtom = atomWithMutation(get => ({
     },
 }));
 
-export const deleteSignupAtom = atomWithMutation(get => ({
+// eslint-disable-next-line
+export const deleteSignupAtom: Atom<AtomWithMutationResult<boolean, unknown, {signup: ModelRef}, any>> = atomWithMutation(get => ({
     mutationFn: async ({signup}: {signup: ModelRef}) => {
         const scope = get(signupScopeAtom);
 

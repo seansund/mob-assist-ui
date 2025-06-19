@@ -27,3 +27,4 @@ export const showDeleteDialogAtom = atom(
         set(deleteDialogVisibleAtom, true)
     }
 )
+

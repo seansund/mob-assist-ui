@@ -1,7 +1,6 @@
 import {Box, Button, Dialog, DialogTitle, LinearProgress} from "@mui/material";
 import {useAtom, useAtomValue} from "jotai";
-import {deleteMemberAtom, selectedMemberAtom} from "@/atoms";
-import {hideDeleteDialogAtom} from "../../_atoms";
+import {deleteMemberAtom, hideDeleteDialogAtom, selectedMemberAtom} from "@/atoms";
 
 
 export const DeleteMemberDialog = () => {

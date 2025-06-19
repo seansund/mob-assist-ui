@@ -18,15 +18,14 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 
-import {listSignupsAtom, signupScopeAtom} from "@/atoms";
-import {resetSelectedSignupAtom, selectedSignupAtom, showAddUpdateDialogAtom, showDeleteDialogAtom} from "./_atoms";
+import {listSignupsAtom, showAddUpdateDialogAtom, showDeleteDialogAtom, signupScopeAtom} from "@/atoms";
+import {resetSelectedSignupAtom, selectedSignupAtom} from "./_atoms";
 import {
     AddUpdateSignupDialog,
     DeleteSignupDialog,
-    SignupListMenu,
-    SignupOptionSummary,
     SignupResponseSummary
 } from "./_components";
+import {ListMenu, SignupOptionSummary} from "@/components";
 import {lookupSignupScope, SignupInputModel, SignupModel, SignupScope} from "@/models";
 
 import styles from './page.module.css';
@@ -47,13 +46,13 @@ export default function SignupsPage() {
         return refetch().then(() => undefined);
     }
 
-    const showUpdateSignup = (signup: SignupModel) => {
-        setSelectedSignup(signupToSignupInput(signup));
+    const duplicateSignup = (signup: SignupModel) => {
+        setSelectedSignup(signupToSignupInput(signup, true));
         showAddUpdateDialog();
     }
 
-    const duplicateSignup = (signup: SignupModel) => {
-        setSelectedSignup(signupToSignupInput(signup, true));
+    const showUpdateSignup = (signup: SignupModel) => {
+        setSelectedSignup(signupToSignupInput(signup));
         showAddUpdateDialog();
     }
 
@@ -133,10 +132,13 @@ const buildColumns = ({deleteRow, showUpdateRow, showRowDetails, duplicateRow}: 
             align: 'center',
             sortable: false,
             renderCell: ({row: signup}) => (
-                <SignupListMenu
+                <ListMenu
+                    deleteText="Delete signup"
                     onDelete={() => deleteRow(signup)}
+                    updateText="Update signup"
                     onUpdate={() => showUpdateRow(signup)}
                     onDetail={() => showRowDetails(signup)}
+                    duplicateText="Duplicate signup"
                     onDuplicate={() => duplicateRow(signup)}
                 />
             )

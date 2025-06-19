@@ -26,29 +26,6 @@ export const currentGroupAtom = atomWithQuery<GroupModel | undefined>(get => ({
 
 export const selectedMemberAtom = atom<MemberModel>();
 
-const addMemberDialogVisibleAtom = atom<boolean>(false);
-export const showAddMemberDialogAtom = atom(
-    get => get(addMemberDialogVisibleAtom),
-    (_, set) => {
-        set(addMemberDialogVisibleAtom, true);
-    }
-);
-export const hideAddMemberDialogAtom = atom(
-    get => get(addMemberDialogVisibleAtom),
-    (_, set) => set(addMemberDialogVisibleAtom, false),
-);
-
-const removeMemberDialogVisibleAtom = atom<boolean>(false);
-export const showRemoveMemberDialogAtom = atom(
-    get => get(removeMemberDialogVisibleAtom),
-    (_, set) => set(removeMemberDialogVisibleAtom, true),
-);
-export const hideRemoveMemberDialogAtom = atom(
-    get => get(removeMemberDialogVisibleAtom),
-    (_, set) => set(removeMemberDialogVisibleAtom, false),
-);
-
-
 export const addMembersToGroupAtom = atomWithMutation(get => ({
     mutationFn: async ({group, memberIds}: {group: GroupModel, memberIds: string[]}) => {
         return service.addMembers(group, memberIds);

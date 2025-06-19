@@ -6,8 +6,7 @@ import AddIcon from "@mui/icons-material/Add";
 import {DataGrid, GridColDef} from '@mui/x-data-grid';
 import {useAtomValue, useSetAtom} from "jotai";
 
-import {currentMemberIdAtom, listMembersAtom} from "@/atoms";
-import {showAddUpdateDialogAtom, showDeleteDialogAtom} from "./_atoms";
+import {currentMemberIdAtom, listMembersAtom, showAddUpdateDialogAtom, showDeleteDialogAtom} from "@/atoms";
 import {AddUpdateMemberDialog, DeleteMemberDialog} from "./_components";
 import {GroupModel, MemberModel} from "@/models";
 

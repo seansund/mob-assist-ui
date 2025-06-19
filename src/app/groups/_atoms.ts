@@ -7,28 +7,6 @@ import {getQueryClient} from "@/util";
 
 const service = groupsApi();
 
-const addUpdateDialogVisibleAtom = atom<boolean>(false);
-
-export const showAddUpdateDialogAtom = atom(
-    get => get(addUpdateDialogVisibleAtom),
-    (_, set) => set(addUpdateDialogVisibleAtom, true),
-);
-export const hideAddUpdateDialogAtom = atom(
-    get => get(addUpdateDialogVisibleAtom),
-    (_, set) => set(addUpdateDialogVisibleAtom, false),
-);
-
-const deleteDialogVisibleAtom = atom<boolean>(false);
-
-export const showDeleteDialogAtom = atom(
-    get => get(deleteDialogVisibleAtom),
-    (_, set) => set(deleteDialogVisibleAtom, true),
-);
-export const hideDeleteDialogAtom = atom(
-    get => get(deleteDialogVisibleAtom),
-    (_, set) => set(deleteDialogVisibleAtom, false),
-);
-
 export const selectedGroupAtom = atom<GroupModel>();
 export const resetSelectedGroupAtom = atom(
     get => get(selectedGroupAtom),

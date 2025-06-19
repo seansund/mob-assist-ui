@@ -10,14 +10,13 @@ import RemoveCircleRoundedIcon from '@mui/icons-material/RemoveCircleRounded';
 import {
     currentGroupAtom,
     currentGroupIdAtom, selectedMemberAtom,
-    showAddMemberDialogAtom,
-    showRemoveMemberDialogAtom
 } from "./_atoms";
 import {AddMembersToGroupDialog, RemoveMemberFromGroupDialog} from "./_components";
 import {GroupModel, MemberModel} from "@/models";
 import {formatPhone} from "@/util";
 
 import styles from './page.module.css';
+import {showAddUpdateDialogAtom, showDeleteDialogAtom} from "@/atoms";
 
 interface GroupResolverPageQueryParams {
     groupId: string;
@@ -56,7 +55,7 @@ interface GroupDetailViewProps {
 const GroupDetailView = ({groupId}: Readonly<GroupDetailViewProps>) => {
     const {data: group, isPending, isError, refetch} = useAtomValue(currentGroupAtom);
     const setSelectedMember = useSetAtom(selectedMemberAtom);
-    const showRemoveMemberDialog = useSetAtom(showRemoveMemberDialogAtom);
+    const showRemoveMemberDialog = useSetAtom(showDeleteDialogAtom);
 
     if (isError) return <GroupError />
 
@@ -162,7 +161,7 @@ const GridNoMembersOverlay = () => {
 }
 
 const GridToolbar = () => {
-    const showAddMemberDialog = useSetAtom(showAddMemberDialogAtom);
+    const showAddMemberDialog = useSetAtom(showAddUpdateDialogAtom);
 
     const showAddMember = () => {
         showAddMemberDialog();

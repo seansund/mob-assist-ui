@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 import useMediaQuery from '@mui/material/useMediaQuery';
 
-import {addMembersToGroupAtom, hideAddMemberDialogAtom} from "@/app/groups/[groupId]/_atoms";
-import {listMembersAtom} from "@/atoms";
+import {addMembersToGroupAtom} from "@/app/groups/[groupId]/_atoms";
+import {hideAddUpdateDialogAtom, listMembersAtom} from "@/atoms";
 import {ErrorMessage} from "@/components";
 import {GroupModel, MemberModel} from "@/models";
 
@@ -26,7 +26,7 @@ interface AddMemberToGroupDialogProps {
 }
 
 export const AddMembersToGroupDialog = ({group, refetch}: Readonly<AddMemberToGroupDialogProps>) => {
-    const [open, closeDialog] = useAtom(hideAddMemberDialogAtom);
+    const [open, closeDialog] = useAtom(hideAddUpdateDialogAtom);
     const {data: memberList, isPending: memberListLoading} = useAtomValue(listMembersAtom);
     const {mutateAsync: addMember, isPending} = useAtomValue(addMembersToGroupAtom);
     const [members, setMembers] = useState<MemberModel[]>([]);

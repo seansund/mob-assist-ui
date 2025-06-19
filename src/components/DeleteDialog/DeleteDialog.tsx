@@ -1,7 +1,6 @@
-import {useState} from "react";
-import {useAtom, useAtomValue} from "jotai";
-
-import {deleteSignupAtom, resetSelectedSignupAtom} from "@/app/signups/_atoms";
+import {ReactNode, useState} from "react";
+import {Atom, useAtom, useAtomValue, WritableAtom} from "jotai";
+import {AtomWithMutationResult} from "jotai-tanstack-query";
 import {
     Button,
     Dialog,
@@ -18,23 +17,26 @@ import {ErrorMessage} from "@/components";
 
 import styles from './page.module.css';
 
-interface DeleteSignupDialogProps {
+interface DeleteDialogProps<T, R> {
+    title: string;
+    resetSelectionAtom: WritableAtom<T, [], void>;
+    deleteSelectionAtom: Atom<AtomWithMutationResult<R, unknown, {data: T}, unknown>>;
     refetch: () => Promise<void>;
+    content: ReactNode;
 }
 
-export const DeleteSignupDialog = ({refetch}: Readonly<DeleteSignupDialogProps>) => {
+export function DeleteDialog<T, R> ({title, content, resetSelectionAtom, deleteSelectionAtom, refetch}: Readonly<DeleteDialogProps<T, R>>) {
     const [open, closeDialog] = useAtom(hideDeleteDialogAtom);
-    const [currentSignup, resetSignup] = useAtom(resetSelectedSignupAtom);
-    const {mutateAsync: deleteSignup, isPending} = useAtomValue(deleteSignupAtom);
+    const [currentSelection, resetSelection] = useAtom(resetSelectionAtom);
+    const {mutateAsync: deleteSelection, isPending} = useAtomValue(deleteSelectionAtom);
     const [errorMessage, setErrorMessage] = useState<string>();
 
     const yesAction = async (event: {preventDefault: () => void}) => {
         event.preventDefault();
 
-        // eslint-disable-next-line
-        deleteSignup({signup: currentSignup as any})
+        deleteSelection({data: currentSelection})
             .then(refetch)
-            .then(resetSignup)
+            .then(resetSelection)
             .then(closeDialog)
             .catch(() => {
                 setErrorMessage('Error deleting signup');
@@ -43,7 +45,7 @@ export const DeleteSignupDialog = ({refetch}: Readonly<DeleteSignupDialogProps>)
 
     const handleClose = () => {
         closeDialog();
-        resetSignup();
+        resetSelection();
         setErrorMessage(undefined);
     }
 
@@ -51,22 +53,12 @@ export const DeleteSignupDialog = ({refetch}: Readonly<DeleteSignupDialogProps>)
         return <></>
     }
 
-    if (!currentSignup?.id) {
-        console.log('Current signup is undefined.')
-        return <div>Error</div>
-    }
-
     return <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Delete signup?</DialogTitle>
+        <DialogTitle>{title}</DialogTitle>
         <DialogContent className={styles.deleteContainer}>
             <Stack spacing={2}>
                 <ErrorMessage errorMessage={errorMessage} />
-                <Stack spacing={1}>
-                    <DialogContentText>Are you sure you want to delete this signup?</DialogContentText>
-                    <DialogContentText><span>Title:</span> {currentSignup.title}</DialogContentText>
-                    <DialogContentText><span>Date:</span> {currentSignup.date}</DialogContentText>
-                    <DialogContentText><span>Description:</span> {currentSignup.description}</DialogContentText>
-                </Stack>
+                {content}
                 <LinearProgress sx={{visibility: isPending ? 'visible' : 'hidden'}}/>
             </Stack>
         </DialogContent>

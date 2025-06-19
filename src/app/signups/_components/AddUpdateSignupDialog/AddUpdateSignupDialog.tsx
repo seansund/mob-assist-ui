@@ -17,8 +17,8 @@ import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
 import {DatePicker} from "@mui/x-date-pickers";
 
-import {addUpdateSignupAtom, hideAddUpdateDialogAtom, resetSelectedSignupAtom} from "@/app/signups/_atoms";
-import {assignmentSetListAtom, groupListAtom, optionSetListAtom} from "@/atoms";
+import {addUpdateSignupAtom, resetSelectedSignupAtom} from "@/app/signups/_atoms";
+import {assignmentSetListAtom, groupListAtom, hideAddUpdateDialogAtom, optionSetListAtom} from "@/atoms";
 import {ErrorMessage} from "@/components";
 import {SignupInputModel} from "@/models";
 
@@ -30,7 +30,7 @@ interface AddUpdateSignupDialogProps {
 }
 
 export const AddUpdateSignupDialog = ({refetch}: Readonly<AddUpdateSignupDialogProps>) => {
-    const [open, closeDialog] = useAtom(hideAddUpdateDialogAtom)
+    const [open, closeDialog] = useAtom(hideAddUpdateDialogAtom);
     const [currentSignup, resetSignup] = useAtom(resetSelectedSignupAtom);
     const {mutateAsync: addUpdate, isPending} = useAtomValue(addUpdateSignupAtom);
     const [errorMessage, setErrorMessage] = useState<string>();

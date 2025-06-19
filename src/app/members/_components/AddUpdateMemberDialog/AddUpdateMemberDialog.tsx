@@ -13,9 +13,8 @@ import {
     TextField
 } from "@mui/material";
 import {useAtom, useAtomValue} from "jotai";
-import {addUpdateMemberAtom, selectedMemberAtom} from "@/atoms";
+import {addUpdateMemberAtom, hideAddUpdateDialogAtom, selectedMemberAtom} from "@/atoms";
 import {isDeepStrictEqual} from "util";
-import {hideAddUpdateDialogAtom} from "@/app/members/_atoms";
 
 export const AddUpdateMemberDialog = () => {
     const [display, hideDialog] = useAtom(hideAddUpdateDialogAtom);

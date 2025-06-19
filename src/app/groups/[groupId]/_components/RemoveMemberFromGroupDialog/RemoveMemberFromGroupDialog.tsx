@@ -11,7 +11,8 @@ import {
     Stack
 } from "@mui/material";
 
-import {hideRemoveMemberDialogAtom, removeMemberFromGroupAtom, selectedMemberAtom} from "@/app/groups/[groupId]/_atoms";
+import {removeMemberFromGroupAtom, selectedMemberAtom} from "@/app/groups/[groupId]/_atoms";
+import {hideDeleteDialogAtom} from "@/atoms";
 import {ErrorMessage} from "@/components";
 import {GroupModel} from "@/models";
 
@@ -23,7 +24,7 @@ interface RemoveMemberFromGroupDialogProps {
 }
 
 export const RemoveMemberFromGroupDialog = ({group, refetch}: Readonly<RemoveMemberFromGroupDialogProps>) => {
-    const [open, closeDialog] = useAtom(hideRemoveMemberDialogAtom);
+    const [open, closeDialog] = useAtom(hideDeleteDialogAtom);
     const member = useAtomValue(selectedMemberAtom);
     const {mutateAsync: removeMember, isPending} = useAtomValue(removeMemberFromGroupAtom);
     const [errorMessage, setErrorMessage] = useState<string>();

@@ -21,8 +21,8 @@ import {AssignmentsView} from "@/components";
 import {AssignmentDiagramModal} from "@/components/AssignmentDiagramModal";
 
 export default function Home() {
-  const {data: currentMember, isPending: memberPending} = useAtomValue(currentUserMemberAtom)
-  const {data: signups, isPending: signupsPending, refetch} = useAtomValue(listUserSignupsAtom)
+  const {data: currentMember, isPending: memberPending} = useAtomValue(currentUserMemberAtom);
+  const {data: signups, isPending: signupsPending, refetch} = useAtomValue(listUserSignupsAtom);
 
   const [openDiagram, setOpenDiagram] = useState<boolean>(false);
 

@@ -11,11 +11,13 @@ import {
     TextField
 } from "@mui/material";
 
-import styles from './page.module.css';
-import {addUpdateGroupAtom, hideAddUpdateDialogAtom, selectedGroupAtom} from "@/app/groups/_atoms";
+import {hideAddUpdateDialogAtom} from "@/atoms";
+import {addUpdateGroupAtom, selectedGroupAtom} from "@/app/groups/_atoms";
 import {ErrorMessage} from "@/components";
 import {GroupDataModel, GroupModel} from "@/models";
 import {Optional} from "@/util";
+
+import styles from './page.module.css';
 
 interface AddUpdateGroupDialogProps {
     refetch: () => Promise<void>;

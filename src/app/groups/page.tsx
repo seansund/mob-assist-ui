@@ -6,12 +6,13 @@ import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {Button} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
-import styles from "./page.module.css";
-import {selectedGroupAtom, showAddUpdateDialogAtom, showDeleteDialogAtom} from "@/app/groups/_atoms";
+import {groupListAtom, showAddUpdateDialogAtom, showDeleteDialogAtom} from "@/atoms";
+import {selectedGroupAtom} from "@/app/groups/_atoms";
 import {AddUpdateGroupDialog, DeleteGroupDialog} from "@/app/groups/_components";
 import {ListMenu} from "@/components";
 import {GroupModel} from "@/models";
-import {groupListAtom} from "@/atoms";
+
+import styles from "./page.module.css";
 
 export default function Groups() {
     const {data: groups, isPending, refetch} = useAtomValue(groupListAtom);

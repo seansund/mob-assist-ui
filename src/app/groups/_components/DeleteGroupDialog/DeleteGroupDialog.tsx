@@ -11,7 +11,8 @@ import {
     Stack
 } from "@mui/material";
 
-import {deleteGroupAtom, hideDeleteDialogAtom, resetSelectedGroupAtom} from "@/app/groups/_atoms";
+import {hideDeleteDialogAtom} from "@/atoms";
+import {deleteGroupAtom, resetSelectedGroupAtom} from "@/app/groups/_atoms";
 import {ErrorMessage} from "@/components";
 
 import styles from './page.module.css';

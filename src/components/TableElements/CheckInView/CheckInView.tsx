@@ -21,7 +21,7 @@ export const CheckInView = ({response, refetch}: Readonly<CheckInViewProps>) => 
     }
 
     const toggleCheckin = async () => {
-        mutateAsync({id: response.id, checkedIn: !response.checkedIn})
+        mutateAsync({response})
             .then(refetch);
     }
 

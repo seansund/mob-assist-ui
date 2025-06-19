@@ -18,3 +18,11 @@
 .membersTable {
     min-width: 650px;
 }
+
+.groupNameContainer {
+    display: flex;
+    gap: 7px;
+    justify-content: flex-start;
+    align-items: center;
+    height: 100%;
+}

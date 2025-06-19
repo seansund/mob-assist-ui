@@ -13,16 +13,14 @@ export const MemberSignupResponseTable = () => {
         return refetch().then(() => undefined).catch(console.log)
     }
 
-    return (<>
-        <DataGrid
-            rows={responses || []}
-            columns={buildColumns({refetch: refetchMember})}
-            pageSizeOptions={[10, 30, 60, 100]}
-            initialState={initialDataGridState(10)}
-            loading={isPending}
-            disableRowSelectionOnClick
-        />
-    </>)
+    return <DataGrid
+        rows={responses || []}
+        columns={buildColumns({refetch: refetchMember})}
+        pageSizeOptions={[10, 30, 60, 100]}
+        initialState={initialDataGridState(10)}
+        loading={isPending}
+        disableRowSelectionOnClick
+    />
 }
 
 interface BuildColumnsParams {

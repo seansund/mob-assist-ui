@@ -7,13 +7,14 @@ import {Button} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
 import styles from "./page.module.css";
-import {groupListAtom, selectedGroupAtom, showAddUpdateDialogAtom, showDeleteDialogAtom} from "@/app/groups/_atoms";
+import {selectedGroupAtom, showAddUpdateDialogAtom, showDeleteDialogAtom} from "@/app/groups/_atoms";
 import {AddUpdateGroupDialog, DeleteGroupDialog} from "@/app/groups/_components";
 import {ListMenu} from "@/components";
 import {GroupModel} from "@/models";
+import {groupListAtom} from "@/atoms";
 
 export default function Groups() {
-    const {data: groups, isPending, refetch} = useAtomValue(groupListAtom)
+    const {data: groups, isPending, refetch} = useAtomValue(groupListAtom);
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
     const showDeleteDialog = useSetAtom(showDeleteDialogAtom);
     const setSelectedGroup = useSetAtom(selectedGroupAtom);
@@ -55,9 +56,9 @@ export default function Groups() {
 }
 
 interface BuildColumnsParams<T> {
-    deleteRow: (member: T) => void;
-    showUpdateRow: (member: T) => void;
-    showRowDetails: (member: T) => void;
+    deleteRow: (row: T) => void;
+    showUpdateRow: (row: T) => void;
+    showRowDetails: (row: T) => void;
 }
 
 const buildColumns = ({deleteRow, showUpdateRow, showRowDetails}: BuildColumnsParams<GroupModel>): GridColDef<GroupModel>[] => {
@@ -104,9 +105,15 @@ const GridNoGroupsOverlay = () => {
 
 const GridToolbar = () => {
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
+    const setSelectedGroup = useSetAtom(selectedGroupAtom);
+
+    const handleClick = () => {
+        setSelectedGroup(undefined);
+        showAddUpdateDialog();
+    }
 
     return <div className={styles.groupActionsContainer}>
-        <Button variant="outlined" aria-label="add group" startIcon={<AddIcon />} onClick={showAddUpdateDialog}>
+        <Button variant="outlined" aria-label="add group" startIcon={<AddIcon />} onClick={handleClick}>
             Add
         </Button>
     </div>

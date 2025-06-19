@@ -98,7 +98,7 @@ export const AssignmentDialog = ({open, onClose, currentAssignments, refetch}: R
             <Grid container sx={{pr: '15px'}}>
             {assignmentsByGroup.map(group => (
                 <Grid key={group.group} size={{xs: 6}}>
-                <FormLabel component="div" style={{textAlign: 'center', width: '100%'}}>{group.group}</FormLabel>
+                <FormLabel component="div" style={{textAlign: 'center', width: '100%', fontWeight: 'bold'}}>{group.group}</FormLabel>
                 <FormGroup>
                     <Grid container direction="row-reverse">
                 {group.assignments.map(assignment => (

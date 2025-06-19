@@ -46,7 +46,7 @@ export interface SignupDataModel {
   description?: string;
 }
 
-export interface SignupInputModel extends SignupDataModel, SignupRelationsIdsModel {
+export interface SignupInputModel extends Partial<ModelRef>, SignupDataModel, SignupRelationsIdsModel {
 }
 
 export interface BaseSignupModel extends Partial<ModelRef>, SignupDataModel {
@@ -67,7 +67,7 @@ export interface SignupRelationsModel {
   members?: MemberModel[];
 }
 
-export interface SignupModel extends ModelRef, SignupDataModel, SignupRelationsModel {
+export interface SignupModel extends ModelRef, SignupDataModel, SignupRelationsModel, SignupRelationsIdsModel {
 }
 
 export interface SignupModelEntity extends BaseSignupModel, SignupRelationsModel {

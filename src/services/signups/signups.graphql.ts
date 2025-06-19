@@ -3,7 +3,7 @@ import {BehaviorSubject} from "rxjs";
 
 import {SignupsApi} from "./signups.api";
 import {getApolloClient} from "@/backends";
-import {MemberSignupResponseInputModel, SignupFilterModel, SignupModel} from "@/models";
+import {MemberSignupResponseInputModel, ModelRef, SignupFilterModel, SignupInputModel, SignupModel} from "@/models";
 import {
     CREATE_SIGNUP,
     CreateSignupMutation,
@@ -66,43 +66,46 @@ export class SignupsGraphql implements SignupsApi {
             .then(result => result.data.getSignup)
     }
 
-    async create(signup: Omit<SignupModel, 'id'> & {id?: string}): Promise<SignupModel | undefined> {
+    async create(signup: SignupInputModel, filter?: SignupFilterModel): Promise<SignupModel | undefined> {
 
-        delete signup.id;
+        // eslint-disable-next-line
+        delete (signup as any).id;
 
         return this.client
             .mutate<CreateSignupMutation, CreateSignupVariables>({
                 mutation: CREATE_SIGNUP,
                 variables: {signup},
-                refetchQueries: [listSignupsRefetchQuery()],
+                refetchQueries: [listSignupsRefetchQuery(filter)],
                 awaitRefetchQueries: true
             })
             .then(result => result.data?.createSignup)
     }
 
-    async update(signup: SignupModel): Promise<SignupModel | undefined> {
+    async update(signup: SignupModel, filter?: SignupFilterModel): Promise<SignupModel | undefined> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const refetchQueries: Array<{query: any, variables?: any}> = [listSignupsRefetchQuery()]
+        const refetchQueries: Array<{query: any, variables?: any}> = [listSignupsRefetchQuery(filter)]
         if (signup.id) {
             refetchQueries.push(getSignupRefetchQuery(signup.id));
         }
 
+        const data = {...signup, id: undefined};
+
         return this.client
             .mutate<UpdateSignupMutation, UpdateSignupVariables>({
                 mutation: UPDATE_SIGNUP,
-                variables: {signupId: signup.id, data: signup},
+                variables: {signupId: signup.id, data},
                 refetchQueries,
                 awaitRefetchQueries: true
             })
             .then(result => result.data?.updateSignup)
     }
 
-    async delete(signup: SignupModel): Promise<boolean> {
+    async delete(signup: ModelRef, filter?: SignupFilterModel): Promise<boolean> {
         return this.client
             .mutate<DeleteSignupMutation, DeleteSignupVariables>({
                 mutation: DELETE_SIGNUP,
                 variables: {signupId: signup.id},
-                refetchQueries: [listSignupsRefetchQuery(), listUserSignupsRefetchQuery(), getSignupRefetchQuery(signup.id)],
+                refetchQueries: [listSignupsRefetchQuery(filter), listUserSignupsRefetchQuery(filter), getSignupRefetchQuery(signup.id)],
                 awaitRefetchQueries: true
             })
             .then(() => true)

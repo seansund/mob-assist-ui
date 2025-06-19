@@ -1,12 +1,11 @@
 "use client"
 
 import {useEffect, useState} from "react";
-import {useAtom, useAtomValue, useSetAtom} from "jotai";
+import {useAtom, useAtomValue} from "jotai";
 import {Grid, Skeleton} from "@mui/material";
 
-import {currentMemberAtom, currentMemberIdAtom, currentSelectionAtom} from "@/atoms";
+import {currentMemberAtom, currentMemberIdAtom} from "@/atoms";
 import {MemberSignupResponseTable} from "./_components";
-import {MemberModel} from "@/models";
 import {classnames, formatPhone} from "@/util";
 
 import styles from './page.module.css';

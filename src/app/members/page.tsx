@@ -1,7 +1,7 @@
 "use client"
 
 import {useRouter} from "next/navigation";
-import {Button} from "@mui/material";
+import {Button, Chip} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import {DataGrid, GridColDef} from '@mui/x-data-grid';
 import {useAtomValue, useSetAtom} from "jotai";
@@ -9,7 +9,7 @@ import {useAtomValue, useSetAtom} from "jotai";
 import {currentMemberIdAtom, listMembersAtom} from "@/atoms";
 import {showAddUpdateDialogAtom, showDeleteDialogAtom} from "./_atoms";
 import {AddUpdateMemberDialog, DeleteMemberDialog} from "./_components";
-import {MemberModel} from "@/models";
+import {GroupModel, MemberModel} from "@/models";
 
 import styles from './page.module.css';
 import {formatPhone} from "@/util";
@@ -70,6 +70,13 @@ const buildColumns = ({deleteRow, showUpdateRow, showRowDetails}: BuildColumnsPa
         {field: 'lastName', headerName: 'Last Name', minWidth: 175, flex: 1},
         {field: 'phone', headerName: 'Phone', minWidth: 150, flex: 1, valueGetter: (value) => formatPhone(value)},
         {field: 'email', headerName: 'Email', minWidth: 300, flex: 1},
+        {
+            field: 'groups',
+            headerName: 'Groups',
+            minWidth: 300,
+            flex: 1,
+            renderCell: ({row: member}) => <MemberGroups groups={member.groups} />
+        },
         {field: 'preferredContact', headerName: 'Preferred Contact', width: 150, align: 'center'},
         {
             field: '',
@@ -101,5 +108,13 @@ const GridToolbar = () => {
         <Button variant="outlined" aria-label="add member" startIcon={<AddIcon />} onClick={showAddMember} sx={{float: 'right'}}>
             Add
         </Button>
+    </div>
+}
+
+const MemberGroups = ({groups}: Readonly<{groups?: GroupModel[]}>) => {
+    if (!groups) return <></>
+
+    return <div className={styles.groupNameContainer}>
+        {groups.map((group) => <Chip key={group.id} label={group.name} size="small" />)}
     </div>
 }

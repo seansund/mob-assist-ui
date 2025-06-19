@@ -87,7 +87,12 @@ export const SignupResponseTableView = ({currentSignup}: Readonly<SignupResponse
     }
 
     return (<div>
-        <AssignmentDialog open={openAssignmentDialog} onClose={onClose} currentAssignments={currentAssignments} refetch={refetchResponses} />
+        <AssignmentDialog
+            open={openAssignmentDialog}
+            onClose={onClose}
+            currentAssignments={currentAssignments}
+            refetch={refetchResponses}
+        />
         {options.map((option?: OptionModel) => (
             <SignupResponseAccordion
                 key={option?.value || 'no-response'}

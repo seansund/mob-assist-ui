@@ -1,11 +1,14 @@
 import {gql} from "@apollo/client";
-import {MemberSignupResponseInputModel, SignupFilterModel, SignupModel} from "@/models";
+import {MemberSignupResponseInputModel, SignupFilterModel, SignupInputModel, SignupModel} from "@/models";
 
 
 export const SIGNUP_FRAGMENT = gql`fragment SignupFragment on Signup {
     id
     date
     title
+    assignmentSetId
+    groupId
+    optionSetId
     group {
         id
         name
@@ -59,6 +62,9 @@ export const SIGNUP_LIST_FRAGMENT = gql`fragment SignupListFragment on Signup {
     id
     date
     title
+    assignmentSetId
+    groupId
+    optionSetId
     group {
         id
         name
@@ -92,6 +98,9 @@ export const SIGNUP_FOR_USER_FRAGMENT = gql`fragment SignupForUserFragment on Si
     id
     date
     title
+    assignmentSetId
+    groupId
+    optionSetId
     group {
         id
         name
@@ -135,6 +144,9 @@ export const SIGNUP_DETAIL_FRAGMENT = gql`fragment SignupDetailFragment on Signu
     id
     date
     title
+    assignmentSetId
+    groupId
+    optionSetId
     group {
         id
         name
@@ -205,10 +217,10 @@ export interface CreateSignupMutation {
     createSignup: SignupModel
 }
 export interface CreateSignupVariables {
-    signup: Omit<SignupModel, 'id'>;
+    signup: SignupInputModel;
 }
 
-export const UPDATE_SIGNUP = gql`mutation UpdateSignup($data: SignupUpdateModel!, $signupId: ID!) {
+export const UPDATE_SIGNUP = gql`mutation UpdateSignup($signupId: ID!, $data: SignupUpdate!) {
     updateSignup(signupId: $signupId, data: $data) {
         ...SignupFragment
     }

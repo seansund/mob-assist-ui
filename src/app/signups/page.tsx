@@ -2,6 +2,7 @@
 
 import {MouseEvent} from "react";
 import {useAtom, useAtomValue, useSetAtom} from "jotai";
+import {useRouter} from "next/navigation";
 import {
     Box,
     Button,
@@ -17,18 +18,22 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 
-import {currentSignupIdAtom, listSignupsAtom, signupScopeAtom} from "@/atoms";
-import {lookupSignupScope, SignupModel, SignupScope} from "@/models";
-
-import {showAddUpdateDialogAtom, showDeleteDialogAtom} from "./_atoms";
-import {SignupListMenu, SignupOptionSummary, SignupResponseSummary} from "./_components";
+import {listSignupsAtom, signupScopeAtom} from "@/atoms";
+import {resetSelectedSignupAtom, selectedSignupAtom, showAddUpdateDialogAtom, showDeleteDialogAtom} from "./_atoms";
+import {
+    AddUpdateSignupDialog,
+    DeleteSignupDialog,
+    SignupListMenu,
+    SignupOptionSummary,
+    SignupResponseSummary
+} from "./_components";
+import {lookupSignupScope, SignupInputModel, SignupModel, SignupScope} from "@/models";
 
 import styles from './page.module.css';
-import {useRouter} from "next/navigation";
 
 export default function SignupsPage() {
-    const {data: signups, isPending, isError} = useAtomValue(listSignupsAtom);
-    const setCurrentSignupId = useSetAtom(currentSignupIdAtom);
+    const {data: signups, isPending, isError, refetch} = useAtomValue(listSignupsAtom);
+    const setSelectedSignup = useSetAtom(selectedSignupAtom);
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
     const showDeleteDialog = useSetAtom(showDeleteDialogAtom);
 
@@ -38,18 +43,22 @@ export default function SignupsPage() {
         return <div>Error</div>
     }
 
+    const refetchSignups = async (): Promise<void> => {
+        return refetch().then(() => undefined);
+    }
+
     const showUpdateSignup = (signup: SignupModel) => {
-        setCurrentSignupId(signup.id);
+        setSelectedSignup(signupToSignupInput(signup));
         showAddUpdateDialog();
     }
 
     const duplicateSignup = (signup: SignupModel) => {
-        setCurrentSignupId(signup.id);
+        setSelectedSignup(signupToSignupInput(signup, true));
         showAddUpdateDialog();
     }
 
     const deleteSignup = (signup: SignupModel) => {
-        setCurrentSignupId(signup.id);
+        setSelectedSignup(signupToSignupInput(signup));
         showDeleteDialog();
     }
 
@@ -58,6 +67,8 @@ export default function SignupsPage() {
     }
 
     return <div className={styles.signupsContainer}>
+        <AddUpdateSignupDialog refetch={refetchSignups} />
+        <DeleteSignupDialog refetch={refetchSignups} />
         <DataGrid
             rows={signups || []}
             columns={buildColumns({deleteRow: deleteSignup, showUpdateRow: showUpdateSignup, showRowDetails: showSignupDetails, duplicateRow: duplicateSignup})}
@@ -92,13 +103,12 @@ const buildColumns = ({deleteRow, showUpdateRow, showRowDetails, duplicateRow}: 
         {
             field: 'date',
             headerName: 'Date',
-            minWidth: 100,
-            flex: 1
+            minWidth: 125,
         },
         {
             field: 'title',
             headerName: 'Title',
-            minWidth: 175,
+            minWidth: 125,
             flex: 1
         },
         {
@@ -112,7 +122,7 @@ const buildColumns = ({deleteRow, showUpdateRow, showRowDetails, duplicateRow}: 
         {
             field: 'responseSummaries',
             headerName: 'Total Responses',
-            minWidth: 200,
+            minWidth: 350,
             flex: 1,
             renderCell: ({value: optionSummaries}) => <SignupResponseSummary optionSummaries={optionSummaries} />
         },
@@ -145,8 +155,10 @@ const initialDataGridState = (pageSize: number) => ({
 const GridToolbar = () => {
     const [signupScope, setSignupScope] = useAtom(signupScopeAtom)
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
+    const resetSelectedSignup = useSetAtom(resetSelectedSignupAtom);
 
     const showAddView = () => {
+        resetSelectedSignup();
         showAddUpdateDialog();
     }
 
@@ -195,4 +207,15 @@ const DetailPanel = ({row: signup}: {row: SignupModel}) => {
             </TableBody>
         </Table>
     </Box>
+}
+
+const signupToSignupInput = (signup: SignupModel, duplicate?: boolean): SignupInputModel => {
+    return {
+        id: !duplicate ? signup.id : undefined,
+        date: signup.date,
+        title: signup.title,
+        optionSetId: signup.optionSetId,
+        assignmentSetId: signup.assignmentSetId,
+        groupId: signup.groupId,
+    }
 }

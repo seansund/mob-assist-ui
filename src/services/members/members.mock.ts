@@ -2,7 +2,7 @@ import {BehaviorSubject} from "rxjs";
 
 import {MembersApi} from "./members.api";
 import {BaseMock} from "../base.mock";
-import {MemberIdentity, MemberModel} from "@/models";
+import {MemberIdentifier, MemberModel} from "@/models";
 
 const members: MemberModel[] = [
     {
@@ -32,7 +32,7 @@ export class MembersMock extends BaseMock<MemberModel> implements MembersApi {
         super(members);
     }
 
-    getByIdentity(memberId: MemberIdentity): Promise<MemberModel | undefined> {
+    getByIdentity(memberId: MemberIdentifier): Promise<MemberModel | undefined> {
         // eslint-disable-next-line
         return this.get((memberId as any).id)
     }

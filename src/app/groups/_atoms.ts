@@ -30,13 +30,10 @@ export const hideDeleteDialogAtom = atom(
 );
 
 export const selectedGroupAtom = atom<GroupModel>();
-
-export const groupListAtom = atomWithQuery(() => ({
-    queryKey: ['groups'],
-    queryFn: async () => {
-        return service.list();
-    }
-}));
+export const resetSelectedGroupAtom = atom(
+    get => get(selectedGroupAtom),
+    (_, set) => set(selectedGroupAtom, undefined),
+)
 
 export const addUpdateGroupAtom = atomWithMutation(() => ({
     mutationFn: async ({groupId, data}: {groupId?: string, data: GroupDataModel}): Promise<GroupModel | undefined> => {

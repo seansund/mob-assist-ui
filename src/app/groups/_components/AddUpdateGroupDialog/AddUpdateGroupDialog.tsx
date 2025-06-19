@@ -1,7 +1,15 @@
 import {ChangeEvent, FormEvent, useState} from "react";
 import {useAtom, useAtomValue} from "jotai";
-import {Button, Dialog, DialogTitle, LinearProgress, Stack, TextField} from "@mui/material";
-import {isDeepStrictEqual} from "util";
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    LinearProgress,
+    Stack,
+    TextField
+} from "@mui/material";
 
 import styles from './page.module.css';
 import {addUpdateGroupAtom, hideAddUpdateDialogAtom, selectedGroupAtom} from "@/app/groups/_atoms";
@@ -52,8 +60,8 @@ export const AddUpdateGroupDialog = ({refetch}: Readonly<AddUpdateGroupDialogPro
 
     return <Dialog open={open}>
         <DialogTitle>{currentGroup ? 'Update group' : 'Add group'}</DialogTitle>
-        <div className={styles.formContainer}>
-            <form onSubmit={submitAction}>
+        <form onSubmit={submitAction}>
+            <DialogContent className={styles.formContainer}>
                 <Stack spacing={3}>
                     <ErrorMessage errorMessage={errorMessage} />
                     <TextField
@@ -66,13 +74,13 @@ export const AddUpdateGroupDialog = ({refetch}: Readonly<AddUpdateGroupDialogPro
                         onChange={updateGroup}
                     />
                     <LinearProgress sx={{visibility: isPending ? 'visible' : 'hidden'}}/>
-                    <Stack direction="row" spacing={2} className={styles.formButtonContainer}>
-                        <Button variant="outlined" onClick={closeDialog} disabled={isPending}>Cancel</Button>
-                        <Button variant="contained" type="submit" disabled={isPending}>Submit</Button>
-                    </Stack>
                 </Stack>
-            </form>
-        </div>
+            </DialogContent>
+            <DialogActions className={styles.formButtonContainer}>
+                <Button variant="outlined" onClick={closeDialog} disabled={isPending}>Cancel</Button>
+                <Button variant="contained" type="submit" disabled={isPending}>Submit</Button>
+            </DialogActions>
+        </form>
     </Dialog>
 }
 

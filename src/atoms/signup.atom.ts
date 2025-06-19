@@ -18,22 +18,6 @@ import {currentSelectionAtom} from "@/atoms/member-responses.atom";
 
 const service: SignupsApi = signupsApi();
 
-const isSignupModel = (value: unknown): value is SignupModel => {
-    return !!value && !!(value as SignupModel).id
-}
-
-const baseSignupAtom = atom<SignupModel | SignupInputModel>()
-export const selectedSignupAtom1 = atom(
-    get => get(baseSignupAtom),
-    (get, set, value: SignupModel | SignupInputModel) => {
-        set(baseSignupAtom, value);
-        if (isSignupModel(value)) {
-            set(currentSignupIdAtom, value.id);
-            set(currentSelectionAtom, value);
-        }
-    }
-);
-
 export const currentSignupIdAtom = atom<string>()
 
 export const currentSignupAtom = atomWithQuery<SignupModel>(get => ({

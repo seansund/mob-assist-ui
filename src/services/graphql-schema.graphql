@@ -135,7 +135,7 @@ type Mutation {
   addAssignment(assignment: AssignmentInput!, assignmentSetId: ID!): AssignmentSet!
   addMemberRole(name: String!): MemberRole!
   addMemberToGroup(groupId: ID!, memberId: ID!): Group
-  addMembersToGroup(groupId: ID!, memberIds: [ID!]!): [Member!]!
+  addMembersToGroup(groupId: ID!, memberIds: [ID!]!): Group
   addOption(option: OptionInput!, optionSetId: ID!): OptionSet!
   addRoleToMember(memberId: ID!, memberRoleId: ID!): Member!
   addUpdateMember(member: MemberInput!): Member!
@@ -255,13 +255,16 @@ type Query {
 """Signup"""
 type Signup {
   assignmentSet: AssignmentSet!
+  assignmentSetId: ID!
   assignments: [Assignment!]!
   date: String!
   description: String
   group: Group!
+  groupId: ID!
   id: ID!
   members: [Member!]!
   optionSet: OptionSet!
+  optionSetId: ID!
   options: [Option!]!
   responseSummaries: [OptionSummary!]!
   responses: [MemberSignupResponse!]

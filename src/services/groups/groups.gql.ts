@@ -91,6 +91,23 @@ export interface AddRemoveGroupMemberVariables {
     memberId: string;
 }
 
+
+export const ADD_MEMBERS_TO_GROUP = gql`mutation AddMembersToGroup($groupId: ID!, $memberIds: [ID!]!) {
+    addMembersToGroup(groupId: $groupId, memberIds: $memberIds) {
+        ...GroupDetailFragment
+    }
+}
+
+${GROUP_DETAIL_FRAGMENT}
+`;
+export interface AddMembersToGroupMutation {
+    addMembersToGroup?: GroupModel;
+}
+export interface AddMembersToGroupVariables {
+    groupId: string;
+    memberIds: string[];
+}
+
 export const REMOVE_MEMBER_FROM_GROUP = gql`mutation RemoveMemberFromGroup($groupId: ID!, $memberId: ID!) {
     removeMemberFromGroup(groupId: $groupId, memberId: $memberId) {
         ...GroupDetailFragment

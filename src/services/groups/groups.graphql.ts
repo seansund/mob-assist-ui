@@ -4,7 +4,7 @@ import {getApolloClient} from "@/backends";
 import {GroupsApi} from "@/services/groups/groups.api";
 import {GroupModel} from "@/models";
 import {
-    ADD_MEMBER_TO_GROUP,
+    ADD_MEMBER_TO_GROUP, ADD_MEMBERS_TO_GROUP, AddMembersToGroupMutation, AddMembersToGroupVariables,
     AddMemberToGroupMutation,
     AddRemoveGroupMemberVariables,
     CREATE_GROUP,
@@ -92,6 +92,17 @@ export class GroupsGraphql implements GroupsApi {
                 awaitRefetchQueries: true,
             })
             .then(result => result.data?.addMemberToGroup);
+    }
+
+    async addMembers(group: GroupModel, memberIds: string[]): Promise<GroupModel | undefined> {
+        return this.client
+            .mutate<AddMembersToGroupMutation, AddMembersToGroupVariables>({
+                mutation: ADD_MEMBERS_TO_GROUP,
+                variables: {groupId: group.id, memberIds},
+                refetchQueries: [listGroupsRefetchQuery()],
+                awaitRefetchQueries: true,
+            })
+            .then(result => result.data?.addMembersToGroup);
     }
 
     async removeMember(group: GroupModel, memberId: string): Promise<GroupModel | undefined> {

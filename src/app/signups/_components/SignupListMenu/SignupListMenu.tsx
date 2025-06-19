@@ -1,6 +1,6 @@
 import React, {useState} from "react";
-import {Avatar, Button, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Popover} from "@mui/material";
 import {useAtomValue} from "jotai";
+import {Avatar, Button, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Popover} from "@mui/material";
 import UpdateIcon from '@mui/icons-material/Update';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CopyIcon from '@mui/icons-material/CopyAll';
@@ -25,6 +25,13 @@ export const SignupListMenu = ({onDelete, onUpdate, onDetail, onDuplicate}: Sign
 
     const handleClose = () => {
         setAnchorEl(null);
+    };
+
+    const handleMenuClick = (fn: () => void) => {
+        return () => {
+            fn();
+            handleClose();
+        };
     };
 
     const open = Boolean(anchorEl);
@@ -57,7 +64,7 @@ export const SignupListMenu = ({onDelete, onUpdate, onDetail, onDuplicate}: Sign
                     <ListItem disableGutters>
                         <ListItemButton
                             autoFocus
-                            onClick={onDetail}
+                            onClick={handleMenuClick(onDetail)}
                         >
                             <ListItemAvatar>
                                 <Avatar>
@@ -70,7 +77,7 @@ export const SignupListMenu = ({onDelete, onUpdate, onDetail, onDuplicate}: Sign
                     <ListItem disableGutters>
                         <ListItemButton
                             autoFocus
-                            onClick={onUpdate}
+                            onClick={handleMenuClick(onUpdate)}
                         >
                             <ListItemAvatar>
                                 <Avatar>
@@ -83,7 +90,7 @@ export const SignupListMenu = ({onDelete, onUpdate, onDetail, onDuplicate}: Sign
                     <ListItem disableGutters>
                         <ListItemButton
                             autoFocus
-                            onClick={onDuplicate}
+                            onClick={handleMenuClick(onDuplicate)}
                         >
                             <ListItemAvatar>
                                 <Avatar>
@@ -96,7 +103,7 @@ export const SignupListMenu = ({onDelete, onUpdate, onDetail, onDuplicate}: Sign
                     <ListItem disableGutters>
                         <ListItemButton
                             autoFocus
-                            onClick={onDelete}
+                            onClick={handleMenuClick(onDelete)}
                         >
                             <ListItemAvatar>
                                 <Avatar>

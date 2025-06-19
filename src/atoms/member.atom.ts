@@ -8,6 +8,10 @@ import {currentUserAtom} from "@/atoms/user.atom";
 const service: MembersApi = membersApi();
 
 export const selectedMemberAtom = atom<MemberModel>()
+export const resetSelectedMemberAtom = atom(
+    get => get(selectedMemberAtom),
+    (_, set) => set(selectedMemberAtom, undefined),
+)
 
 export const listMembersAtom = atomWithQuery(() => ({
     queryKey: ['members'],
@@ -28,8 +32,8 @@ export const addUpdateMemberAtom = atomWithMutation(() => ({
 }))
 
 export const deleteMemberAtom = atomWithMutation(() => ({
-    mutationFn: async (member: MemberModel) => {
-        return service.delete(member);
+    mutationFn: async ({data}: {data: MemberModel}) => {
+        return service.delete(data);
     },
     onSuccess: async () => {
         const client = getQueryClient();

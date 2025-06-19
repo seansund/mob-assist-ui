@@ -3,7 +3,7 @@ import {atomWithDefault, RESET} from "jotai/vanilla/utils";
 import {atomWithMutation, AtomWithMutationResult} from "jotai-tanstack-query";
 
 import {signupScopeAtom} from "@/atoms";
-import {ModelRef, SignupInputModel} from "@/models";
+import {SignupInputModel} from "@/models";
 import {signupsApi} from "@/services";
 import {getQueryClient} from "@/util";
 
@@ -54,11 +54,12 @@ export const addUpdateSignupAtom = atomWithMutation(get => ({
 }));
 
 // eslint-disable-next-line
-export const deleteSignupAtom: Atom<AtomWithMutationResult<boolean, unknown, {signup: ModelRef}, any>> = atomWithMutation(get => ({
-    mutationFn: async ({signup}: {signup: ModelRef}) => {
+export const deleteSignupAtom: Atom<AtomWithMutationResult<boolean, unknown, {data: SignupInputModel}, any>> = atomWithMutation(get => ({
+    mutationFn: async ({data}: {data: SignupInputModel}) => {
         const scope = get(signupScopeAtom);
 
-        return service.delete(signup, {scope});
+        // eslint-disable-next-line
+        return service.delete(data as any, {scope});
     },
     onSuccess: async () => {
         const client = getQueryClient();

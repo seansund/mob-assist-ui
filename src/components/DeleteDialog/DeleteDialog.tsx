@@ -1,31 +1,23 @@
 import {ReactNode, useState} from "react";
 import {Atom, useAtom, useAtomValue, WritableAtom} from "jotai";
 import {AtomWithMutationResult} from "jotai-tanstack-query";
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
-    LinearProgress,
-    Stack
-} from "@mui/material";
+import {Button, Dialog, DialogActions, DialogContent, DialogTitle, LinearProgress, Stack} from "@mui/material";
 
 import {hideDeleteDialogAtom} from "@/atoms";
 import {ErrorMessage} from "@/components";
+import {ModelRef} from "@/models";
 
 import styles from './page.module.css';
 
-interface DeleteDialogProps<T, R> {
+interface DeleteDialogProps<T extends Partial<ModelRef>, R> {
     title: string;
-    resetSelectionAtom: WritableAtom<T, [], void>;
+    resetSelectionAtom: WritableAtom<T | undefined, [], void>;
     deleteSelectionAtom: Atom<AtomWithMutationResult<R, unknown, {data: T}, unknown>>;
     refetch: () => Promise<void>;
-    content: ReactNode;
+    buildContent: (value: T) => ReactNode;
 }
 
-export function DeleteDialog<T, R> ({title, content, resetSelectionAtom, deleteSelectionAtom, refetch}: Readonly<DeleteDialogProps<T, R>>) {
+export function DeleteDialog<T extends Partial<ModelRef>, R> ({title, buildContent, resetSelectionAtom, deleteSelectionAtom, refetch}: Readonly<DeleteDialogProps<T, R>>) {
     const [open, closeDialog] = useAtom(hideDeleteDialogAtom);
     const [currentSelection, resetSelection] = useAtom(resetSelectionAtom);
     const {mutateAsync: deleteSelection, isPending} = useAtomValue(deleteSelectionAtom);
@@ -33,6 +25,11 @@ export function DeleteDialog<T, R> ({title, content, resetSelectionAtom, deleteS
 
     const yesAction = async (event: {preventDefault: () => void}) => {
         event.preventDefault();
+
+        if (!currentSelection) {
+            console.log('Current selection is undefined.');
+            return
+        }
 
         deleteSelection({data: currentSelection})
             .then(refetch)
@@ -53,12 +50,17 @@ export function DeleteDialog<T, R> ({title, content, resetSelectionAtom, deleteS
         return <></>
     }
 
+    if (!currentSelection?.id) {
+        console.log('Current selection is undefined.');
+        return <div>Error</div>
+    }
+
     return <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{title}</DialogTitle>
         <DialogContent className={styles.deleteContainer}>
             <Stack spacing={2}>
                 <ErrorMessage errorMessage={errorMessage} />
-                {content}
+                {buildContent(currentSelection)}
                 <LinearProgress sx={{visibility: isPending ? 'visible' : 'hidden'}}/>
             </Stack>
         </DialogContent>

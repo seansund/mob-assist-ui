@@ -1,37 +1,23 @@
-import {Box, Button, Dialog, DialogTitle, LinearProgress} from "@mui/material";
-import {useAtom, useAtomValue} from "jotai";
-import {deleteMemberAtom, hideDeleteDialogAtom, selectedMemberAtom} from "@/atoms";
+import {DialogContentText, Stack} from "@mui/material";
 
+import {deleteMemberAtom, resetSelectedMemberAtom} from "@/atoms";
+import {DeleteDialog} from "@/components";
+import {MemberModel} from "@/models";
 
-export const DeleteMemberDialog = () => {
-    const [display, hideDialog] = useAtom(hideDeleteDialogAtom)
-    const member = useAtomValue(selectedMemberAtom)
-    const {mutateAsync: deleteMember, isPending} = useAtomValue(deleteMemberAtom);
+interface DeleteMemberDialogProps {
+    refetch: () => Promise<void>
+}
 
-    if (!display) {
-        return <></>
-    }
+export const DeleteMemberDialog = ({refetch}: Readonly<DeleteMemberDialogProps>) => {
+    return <DeleteDialog
+        title="Delete member?"
+        resetSelectionAtom={resetSelectedMemberAtom}
+        deleteSelectionAtom={deleteMemberAtom}
+        refetch={refetch}
+        buildContent={buildContent}
+    />
+}
 
-    if (!member) {
-        console.log('No member selected')
-        return <></>
-    }
-
-    const yesAction = async (event: {preventDefault: () => void}) => {
-        event.preventDefault()
-
-        deleteMember(member).finally(hideDialog)
-    }
-
-    return (
-        <Dialog open={display}>
-            <DialogTitle>Delete member?</DialogTitle>
-            <Box>
-                <div>{member.firstName} {member.lastName}</div>
-                <LinearProgress sx={{visibility: isPending ? 'visible' : 'hidden'}}/>
-                <Button variant="outlined" onClick={hideDialog} disabled={isPending}>Cancel</Button>
-                <Button variant="contained" onClick={yesAction} disabled={isPending}>Yes</Button>
-            </Box>
-        </Dialog>
-    )
+const buildContent = (member: MemberModel) => {
+    return <DialogContentText>{member.firstName} {member.lastName}</DialogContentText>
 }

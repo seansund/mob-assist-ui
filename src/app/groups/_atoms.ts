@@ -30,8 +30,8 @@ export const addUpdateGroupAtom = atomWithMutation(() => ({
 }))
 
 export const deleteGroupAtom = atomWithMutation(() => ({
-    mutationFn: async (group: GroupModel) => {
-        return service.delete(group);
+    mutationFn: async ({data}: {data: GroupModel}) => {
+        return service.delete(data);
     },
     onSuccess: async () => {
         const client = getQueryClient();

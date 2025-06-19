@@ -1,15 +1,5 @@
 
-.deleteContainer {
-    padding: 15px;
-    min-width: 400px !important;
-}
-
 .content {
     text-align: center;
     font-size: large;
-}
-
-.buttonContainer {
-    display: flex !important;
-    justify-content: center !important;
 }

@@ -1,93 +1,36 @@
-import {FormEvent, useState} from "react";
-import {useAtom, useAtomValue} from "jotai";
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle, FormControl, InputLabel, LinearProgress,
-    MenuItem,
-    Select,
-    Skeleton,
-    Stack,
-    TextField, useTheme
-} from "@mui/material";
+import {useAtomValue} from "jotai";
 import dayjs from 'dayjs';
+import {FormControl, InputLabel, MenuItem, Select, Skeleton, TextField, useTheme} from "@mui/material";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
 import {DatePicker} from "@mui/x-date-pickers";
 
 import {addUpdateSignupAtom, resetSelectedSignupAtom} from "@/app/signups/_atoms";
-import {assignmentSetListAtom, groupListAtom, hideAddUpdateDialogAtom, optionSetListAtom} from "@/atoms";
-import {ErrorMessage} from "@/components";
+import {assignmentSetListAtom, groupListAtom, optionSetListAtom} from "@/atoms";
+import {AddUpdateDialog} from "@/components";
 import {SignupInputModel} from "@/models";
-
-import styles from './page.module.css';
-import useMediaQuery from "@mui/material/useMediaQuery";
 
 interface AddUpdateSignupDialogProps {
     refetch: () => Promise<void>;
 }
 
 export const AddUpdateSignupDialog = ({refetch}: Readonly<AddUpdateSignupDialogProps>) => {
-    const [open, closeDialog] = useAtom(hideAddUpdateDialogAtom);
-    const [currentSignup, resetSignup] = useAtom(resetSelectedSignupAtom);
-    const {mutateAsync: addUpdate, isPending} = useAtomValue(addUpdateSignupAtom);
-    const [errorMessage, setErrorMessage] = useState<string>();
-
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const formData = new FormData(event.currentTarget);
-        // eslint-disable-next-line
-        const data: SignupInputModel = Object.fromEntries((formData as any).entries()) as any;
-
-        console.log('handleSubmit()', {data, id: currentSignup?.id})
-
-        addUpdate({id: currentSignup?.id, data})
-            .then(refetch)
-            .then(closeDialog)
-            .catch(() => setErrorMessage(currentSignup.id ? 'Error updating signup' : 'Error adding signup'))
-    }
-
-    const handleClose = () => {
-        closeDialog();
-        resetSignup();
-    }
-
-    return <Dialog
-        open={open}
+    return <AddUpdateDialog
+        title={(value?: SignupInputModel) => value?.id ? 'Update signup' : 'Add signup'}
+        refetch={refetch}
+        resetSelectionAtom={resetSelectedSignupAtom}
+        addUpdateSelectionAtom={addUpdateSignupAtom}
+        buildContent={buildContent}
         fullScreen={fullScreen}
-        slotProps={{
-            paper: {
-                component: 'form',
-                onSubmit: handleSubmit
-            },
-        }}>
-        <DialogTitle>{currentSignup ? 'Update signup' : 'Add signup'}</DialogTitle>
-        <DialogContent className={styles.addSignupDialog}>
-            <Stack spacing={2}>
-                <ErrorMessage errorMessage={errorMessage} />
-                <TextField name="title" label="Title" required defaultValue={currentSignup?.title ?? ''} />
-                <DateField name="date" label="Date" defaultValue={currentSignup?.date} />
-                <TextField name="description" label="Description" multiline maxRows={4} defaultValue={currentSignup?.description} />
-                <GroupSelect defaultValue={currentSignup?.groupId} />
-                <OptionSetSelect defaultValue={currentSignup?.optionSetId} />
-                <AssignmentSetSelect defaultValue={currentSignup?.assignmentSetId} />
-                <LinearProgress sx={{visibility: isPending ? 'visible' : 'hidden'}}/>
-            </Stack>
-        </DialogContent>
-        <DialogActions className={styles.formButtonContainer}>
-            <Button variant="outlined" onClick={handleClose} disabled={isPending}>Cancel</Button>
-            <Button variant="contained" type="submit" disabled={isPending}>Submit</Button>
-        </DialogActions>
-    </Dialog>;
+    />
 }
 
 interface SelectProps {
-    defaultValue: string;
+    defaultValue?: string;
 }
 
 const GroupSelect = ({defaultValue}: Readonly<SelectProps>) => {
@@ -140,16 +83,29 @@ interface DateFieldProps {
     label: string;
     format?: string;
     defaultValue?: string;
+    disabled?: boolean;
 }
 
-const DateField = ({name, label, format, defaultValue}: Readonly<DateFieldProps>) => {
+const DateField = ({name, label, format, defaultValue, disabled}: Readonly<DateFieldProps>) => {
     return <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
             name={name}
             label={label}
             format={format ?? "YYYY-MM-DD"}
             defaultValue={dayjs(defaultValue ?? '')}
+            disabled={disabled}
         />
     </LocalizationProvider>
 
+}
+
+const buildContent = (isPending: boolean, currentSignup?: SignupInputModel) => {
+    return <>
+        <TextField name="title" label="Title" required defaultValue={currentSignup?.title ?? ''} disabled={isPending} />
+        <DateField name="date" label="Date" defaultValue={currentSignup?.date} disabled={isPending} />
+        <TextField name="description" label="Description" multiline maxRows={4} defaultValue={currentSignup?.description} disabled={isPending} />
+        <GroupSelect defaultValue={currentSignup?.groupId} />
+        <OptionSetSelect defaultValue={currentSignup?.optionSetId} />
+        <AssignmentSetSelect defaultValue={currentSignup?.assignmentSetId} />
+    </>
 }

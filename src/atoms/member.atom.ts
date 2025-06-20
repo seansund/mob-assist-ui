@@ -21,8 +21,12 @@ export const listMembersAtom = atomWithQuery(() => ({
 }))
 
 export const addUpdateMemberAtom = atomWithMutation(() => ({
-    mutationFn: async (member: MemberModel) => {
-        return service.delete(member);
+    mutationFn: async ({id, data}: {id?: string, data: MemberModel}) => {
+        if (id) {
+            return service.update({...data, id});
+        } else {
+            return service.create(data);
+        }
     },
     onSuccess: async () => {
         const client = getQueryClient();

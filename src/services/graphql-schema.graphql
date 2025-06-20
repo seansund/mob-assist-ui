@@ -221,12 +221,18 @@ type OptionSet {
   id: ID!
   name: String!
   options: [Option!]
+  summary: OptionSetSummary
 }
 
 """Option set input"""
 input OptionSetInput {
   name: String!
   options: [OptionInput!]!
+}
+
+"""Summary of an option set"""
+type OptionSetSummary {
+  signupCount: Float!
 }
 
 type OptionSummary {

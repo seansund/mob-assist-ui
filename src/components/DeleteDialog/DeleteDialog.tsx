@@ -35,9 +35,7 @@ export function DeleteDialog<T extends Partial<ModelRef>, R> ({title, buildConte
             .then(refetch)
             .then(resetSelection)
             .then(closeDialog)
-            .catch(() => {
-                setErrorMessage('Error deleting signup');
-            });
+            .catch(() => setErrorMessage('Error deleting signup'));
     }
 
     const handleClose = () => {

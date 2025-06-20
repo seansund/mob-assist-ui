@@ -31,7 +31,7 @@ const todayDate = (): string => {
     return '';
 }
 
-export const addUpdateSignupAtom = atomWithMutation(get => ({
+export const addUpdateSignupAtom: Atom<AtomWithMutationResult<SignupInputModel | undefined, unknown, {id?: string, data: SignupInputModel}, unknown>> = atomWithMutation(get => ({
     mutationFn: async ({id, data}: {id?: string, data: SignupInputModel}) => {
         const scope = get(signupScopeAtom);
 

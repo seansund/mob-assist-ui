@@ -1,3 +1,5 @@
+"use client"
+
 import {useAtomValue, useSetAtom} from "jotai";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {Button, Grid} from "@mui/material";

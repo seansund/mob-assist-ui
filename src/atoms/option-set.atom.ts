@@ -1,9 +1,11 @@
-import {atomWithQuery} from "jotai-tanstack-query";
-import {optionSetsApi} from "@/services";
 import {atom} from "jotai";
-import {OptionSetModel} from "@/models";
+import {atomWithMutation, atomWithQuery} from "jotai-tanstack-query";
 
-const service = optionSetsApi();
+import {OptionSetModel} from "@/models";
+import {OptionSetsApi, optionSetsApi} from "@/services";
+import {getQueryClient} from "@/util";
+
+const service: OptionSetsApi = optionSetsApi();
 
 export const optionSetListAtom = atomWithQuery(() => ({
    queryKey: ['options'],
@@ -19,3 +21,30 @@ export const resetSelectedOptionSetAtom = atom(
     get => get(selectedOptionSetAtom),
     (_, set) => set(selectedOptionSetAtom, undefined),
 );
+
+
+export const addUpdateOptionSetAtom = atomWithMutation(() => ({
+    mutationFn: async ({id, data}: {id?: string, data: OptionSetModel}) => {
+        if (id) {
+            return service.update({name: data.name, id});
+        } else {
+            return service.create(data);
+        }
+    },
+    onSuccess: async () => {
+        const client = getQueryClient();
+
+        await client.invalidateQueries({queryKey: ['options']})
+    },
+}))
+
+export const deleteOptionSetAtom = atomWithMutation(() => ({
+    mutationFn: async ({data}: {data: OptionSetModel}) => {
+        return service.delete(data);
+    },
+    onSuccess: async () => {
+        const client = getQueryClient();
+
+        await client.invalidateQueries({queryKey: ['options']})
+    },
+}));

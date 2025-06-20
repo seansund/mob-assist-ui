@@ -1,22 +1,29 @@
 import {atom} from "jotai";
-import {atomWithMutation, atomWithQuery} from "jotai-tanstack-query";
+import {atomWithMutation} from "jotai-tanstack-query";
 
-import {GroupDataModel, GroupModel} from "@/models";
+import {GroupDataModel, GroupInputModel, GroupModel} from "@/models";
 import {groupsApi} from "@/services";
 import {getQueryClient} from "@/util";
+import {atomWithDefault} from "jotai/vanilla/utils";
 
 const service = groupsApi();
 
-export const selectedGroupAtom = atom<GroupModel>();
+export const selectedGroupAtom = atomWithDefault<GroupInputModel>(() => createInitialGroup());
 export const resetSelectedGroupAtom = atom(
     get => get(selectedGroupAtom),
-    (_, set) => set(selectedGroupAtom, undefined),
+    (_, set) => set(selectedGroupAtom, createInitialGroup()),
 )
 
+const createInitialGroup = (): GroupInputModel => {
+    return {
+        name: '',
+    }
+}
+
 export const addUpdateGroupAtom = atomWithMutation(() => ({
-    mutationFn: async ({groupId, data}: {groupId?: string, data: GroupDataModel}): Promise<GroupModel | undefined> => {
-        if (groupId) {
-            return service.update({id: groupId, ...data});
+    mutationFn: async ({id, data}: {id?: string, data: GroupDataModel}): Promise<GroupModel | undefined> => {
+        if (id) {
+            return service.update({id, ...data});
         } else {
             return service.create(data.name);
         }

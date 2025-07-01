@@ -15,7 +15,7 @@ import {formatPhone} from "@/util";
 import {ListMenu} from "@/components";
 
 export default function MembersPage() {
-    const {data: members, isPending, isError} = useAtomValue(listMembersAtom);
+    const {data: members, isPending, isError, refetch} = useAtomValue(listMembersAtom);
     const setCurrentMemberId = useSetAtom(currentMemberIdAtom);
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
     const showDeleteDialog = useSetAtom(showDeleteDialogAtom);
@@ -24,6 +24,10 @@ export default function MembersPage() {
 
     if (isError) {
         return <div>Error loading members...</div>
+    }
+
+    const refetchMembers = async () => {
+        return refetch().then(() => undefined);
     }
 
     const showUpdateMember = (member: MemberModel) => {
@@ -41,8 +45,8 @@ export default function MembersPage() {
     }
 
     return <div className={styles.membersContainer}>
-        <AddUpdateMemberDialog />
-        <DeleteMemberDialog />
+        <AddUpdateMemberDialog refetch={refetchMembers} />
+        <DeleteMemberDialog refetch={refetchMembers} />
         <DataGrid
             rows={members || []}
             columns={buildColumns({deleteRow: deleteMember, showUpdateRow: showUpdateMember, showRowDetails: showMemberDetails})}

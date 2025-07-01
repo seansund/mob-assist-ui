@@ -75,8 +75,8 @@ export interface UpdateGroupVariables {
     data: Partial<GroupDataModel>;
 }
 
-export const ADD_MEMBER_TO_GROUP = gql`mutation AddMemberToGroup($groupId: ID!, $memberId: ID!) {
-    addMemberToGroup(groupId: $groupId, memberId: $memberId) {
+export const ADD_MEMBER_TO_GROUP = gql`mutation AddMemberToGroup($groupId: ID!, $memberId: ID!, $roleId: ID) {
+    addMemberToGroup(groupId: $groupId, memberId: $memberId, roleId: $roleId) {
         ...GroupDetailFragment
     }
 }
@@ -89,11 +89,12 @@ export interface AddMemberToGroupMutation {
 export interface AddRemoveGroupMemberVariables {
     groupId: string;
     memberId: string;
+    roleId?: string;
 }
 
 
-export const ADD_MEMBERS_TO_GROUP = gql`mutation AddMembersToGroup($groupId: ID!, $memberIds: [ID!]!) {
-    addMembersToGroup(groupId: $groupId, memberIds: $memberIds) {
+export const ADD_MEMBERS_TO_GROUP = gql`mutation AddMembersToGroup($groupId: ID!, $memberIds: [ID!]!, $roleId: ID) {
+    addMembersToGroup(groupId: $groupId, memberIds: $memberIds, roleId: $roleId) {
         ...GroupDetailFragment
     }
 }
@@ -106,6 +107,7 @@ export interface AddMembersToGroupMutation {
 export interface AddMembersToGroupVariables {
     groupId: string;
     memberIds: string[];
+    roleId?: string;
 }
 
 export const REMOVE_MEMBER_FROM_GROUP = gql`mutation RemoveMemberFromGroup($groupId: ID!, $memberId: ID!) {

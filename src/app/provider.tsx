@@ -25,13 +25,13 @@ const pages: PageConfig[] = [
     {name: 'Signups', requiredRole: 'admin'},
     {name: 'Members', requiredRole: 'admin'},
     {name: 'Groups', requiredRole: 'admin'},
-    {name: 'Option Sets', requiredRole: 'admin'},
+    {name: 'Options', requiredRole: 'admin'},
 ];
 const links: {[page: string]: string} = {
     'Members': '/members',
     'Signups': '/signups',
     'Groups': '/groups',
-    'Option Sets': '/options',
+    'Options': '/options',
 }
 
 

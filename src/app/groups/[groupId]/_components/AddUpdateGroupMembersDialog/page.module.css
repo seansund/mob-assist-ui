@@ -13,7 +13,17 @@
     max-width: 600px;
 }
 
+.memberName {
+    padding: 5px;
+    width: 550px;
+}
+
 .memberSelect {
+    margin-top: 5px;
+    width: 550px;
+}
+
+.memberRoleSelect {
     margin-top: 5px;
     width: 550px;
 }

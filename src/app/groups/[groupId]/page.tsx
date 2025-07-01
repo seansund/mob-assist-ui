@@ -2,21 +2,18 @@
 
 import React, {useEffect, useState} from "react";
 import {useAtom, useAtomValue, useSetAtom} from "jotai";
-import {Button, IconButton, Skeleton} from "@mui/material";
+import {Button, Skeleton} from "@mui/material";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
-import RemoveCircleRoundedIcon from '@mui/icons-material/RemoveCircleRounded';
 
-import {
-    currentGroupAtom,
-    currentGroupIdAtom, selectedMemberAtom,
-} from "./_atoms";
-import {AddMembersToGroupDialog, RemoveMemberFromGroupDialog} from "./_components";
+import {currentGroupAtom, currentGroupIdAtom, selectedMemberAtom,} from "./_atoms";
+import {AddUpdateGroupMembersDialog, RemoveMemberFromGroupDialog} from "./_components";
 import {GroupModel, MemberModel} from "@/models";
 import {formatPhone} from "@/util";
 
 import styles from './page.module.css';
-import {showAddUpdateDialogAtom, showDeleteDialogAtom} from "@/atoms";
+import {resetSelectedMemberAtom, showAddUpdateDialogAtom, showDeleteDialogAtom} from "@/atoms";
+import {ListMenu} from "@/components";
 
 interface GroupResolverPageQueryParams {
     groupId: string;
@@ -55,6 +52,7 @@ interface GroupDetailViewProps {
 const GroupDetailView = ({groupId}: Readonly<GroupDetailViewProps>) => {
     const {data: group, isPending, isError, refetch} = useAtomValue(currentGroupAtom);
     const setSelectedMember = useSetAtom(selectedMemberAtom);
+    const showUpdateMembershipDialog = useSetAtom(showAddUpdateDialogAtom);
     const showRemoveMemberDialog = useSetAtom(showDeleteDialogAtom);
 
     if (isError) return <GroupError />
@@ -65,18 +63,23 @@ const GroupDetailView = ({groupId}: Readonly<GroupDetailViewProps>) => {
         refetch().then(() => undefined);
     }
 
-    const handleRemoveRow = (member: MemberModel) => {
+    const showUpdateRow = (member: MemberModel) => {
+        setSelectedMember(member);
+        showUpdateMembershipDialog();
+    }
+
+    const deleteRow = (member: MemberModel) => {
         setSelectedMember(member);
         showRemoveMemberDialog();
     }
 
     return <div className={styles.groupContainer}>
         <GroupTitle isPending={isPending} group={group} />
-        <AddMembersToGroupDialog refetch={refetchGroup} group={group} />
+        <AddUpdateGroupMembersDialog refetch={refetchGroup} group={group} />
         <RemoveMemberFromGroupDialog refetch={refetchGroup} group={group} />
         <DataGrid
             rows={group?.members}
-            columns={buildColumns({handleRemoveRow})}
+            columns={buildColumns({deleteRow, showUpdateRow})}
             pageSizeOptions={[10, 30, 60, 100]}
             initialState={initialDataGridState(10)}
             loading={isPending}
@@ -106,10 +109,11 @@ const initialDataGridState = (pageSize: number) => ({
 })
 
 interface BuildColumnsParams {
-    handleRemoveRow: (member: MemberModel) => void;
+    deleteRow: (member: MemberModel) => void;
+    showUpdateRow: (value: MemberModel) => void;
 }
 
-const buildColumns = ({handleRemoveRow}: Readonly<BuildColumnsParams>): GridColDef<MemberModel>[] => {
+const buildColumns = ({deleteRow, showUpdateRow}: Readonly<BuildColumnsParams>): GridColDef<MemberModel>[] => {
     return [
         {field: 'firstName', headerName: 'First Name', minWidth: 100, flex: 1},
         {field: 'lastName', headerName: 'Last Name', minWidth: 175, flex: 1},
@@ -121,19 +125,9 @@ const buildColumns = ({handleRemoveRow}: Readonly<BuildColumnsParams>): GridColD
             width: 100,
             align: 'center',
             sortable: false,
-            renderCell: ({row: member}) => <RemoveButton onClick={() => handleRemoveRow(member)} />
+            renderCell: ({row: member}) => (<ListMenu onDelete={() => deleteRow(member)} onUpdate={() => showUpdateRow(member)} deleteText="Remove membership" updateText="Update membership"></ListMenu>)
         }
     ]
-}
-
-interface RemoveButtonProps {
-    onClick: () => void;
-}
-
-const RemoveButton = ({onClick}: Readonly<RemoveButtonProps>) => {
-    return <IconButton aria-label="remove" onClick={onClick}>
-        <RemoveCircleRoundedIcon />
-    </IconButton>
 }
 
 const GroupLoading = () => {
@@ -162,8 +156,10 @@ const GridNoMembersOverlay = () => {
 
 const GridToolbar = () => {
     const showAddMemberDialog = useSetAtom(showAddUpdateDialogAtom);
+    const resetSelectedMember = useSetAtom(resetSelectedMemberAtom);
 
     const showAddMember = () => {
+        resetSelectedMember();
         showAddMemberDialog();
     }
 

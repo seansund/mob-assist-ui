@@ -83,22 +83,22 @@ export class GroupsGraphql implements GroupsApi {
             .then(result => result.data?.updateGroup);
     }
 
-    async addMember(group: GroupModel, memberId: string): Promise<GroupModel | undefined> {
+    async addMember(group: GroupModel, memberId: string, roleId?: string): Promise<GroupModel | undefined> {
         return this.client
             .mutate<AddMemberToGroupMutation, AddRemoveGroupMemberVariables>({
                 mutation: ADD_MEMBER_TO_GROUP,
-                variables: {groupId: group.id, memberId},
+                variables: {groupId: group.id, memberId, roleId},
                 refetchQueries: [listGroupsRefetchQuery()],
                 awaitRefetchQueries: true,
             })
             .then(result => result.data?.addMemberToGroup);
     }
 
-    async addMembers(group: GroupModel, memberIds: string[]): Promise<GroupModel | undefined> {
+    async addMembers(group: GroupModel, memberIds: string[], roleId?: string): Promise<GroupModel | undefined> {
         return this.client
             .mutate<AddMembersToGroupMutation, AddMembersToGroupVariables>({
                 mutation: ADD_MEMBERS_TO_GROUP,
-                variables: {groupId: group.id, memberIds},
+                variables: {groupId: group.id, memberIds, roleId},
                 refetchQueries: [listGroupsRefetchQuery()],
                 awaitRefetchQueries: true,
             })

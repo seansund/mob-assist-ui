@@ -27,8 +27,24 @@ export const currentGroupAtom = atomWithQuery<GroupModel | undefined>(get => ({
 export const selectedMemberAtom = atom<MemberModel>();
 
 export const addMembersToGroupAtom = atomWithMutation(get => ({
-    mutationFn: async ({group, memberIds}: {group: GroupModel, memberIds: string[]}) => {
-        return service.addMembers(group, memberIds);
+    mutationFn: async ({group, memberIds, roleId}: {group: GroupModel, memberIds: string[], roleId?: string}) => {
+        return service.addMembers(group, memberIds, roleId);
+    },
+    onSuccess: async () => {
+        const client = getQueryClient();
+
+        await client.invalidateQueries({queryKey: ['groups']})
+
+        const groupId = get(currentGroupIdAtom);
+        if (groupId) {
+            await client.invalidateQueries({queryKey: ['groups', groupId]})
+        }
+    },
+}))
+
+export const updateGroupMembershipAtom = atomWithMutation(get => ({
+    mutationFn: async ({group, memberId, roleId}: {group: GroupModel, memberId: string, roleId?: string}) => {
+        return service.addMember(group, memberId, roleId);
     },
     onSuccess: async () => {
         const client = getQueryClient();

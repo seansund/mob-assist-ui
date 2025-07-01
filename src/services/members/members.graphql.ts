@@ -3,7 +3,7 @@ import {BehaviorSubject} from "rxjs";
 
 import {MembersApi} from "./members.api";
 import {getApolloClient} from "@/backends";
-import {MemberIdentifier, MemberModel} from "@/models";
+import {MemberIdentifier, MemberModel, MemberRoleModel} from "@/models";
 
 export const MEMBER_FRAGMENT = gql`fragment MemberFragment on Member {
     id
@@ -91,6 +91,16 @@ interface DeleteMemberVariables {
     memberId: MemberIdentifier;
 }
 
+const LIST_MEMBER_ROLES = gql`query ListMemberRoles {
+    listMemberRoles {
+        id
+        name
+    }
+}`
+interface ListMemberRolesQuery {
+    listMemberRoles: MemberRoleModel[];
+}
+
 export class MembersGraphql implements MembersApi {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     client: ApolloClient<any>
@@ -166,6 +176,13 @@ export class MembersGraphql implements MembersApi {
             .then(() => true)
     }
 
+    async listRoles(): Promise<MemberRoleModel[]> {
+        return this.client
+            .query<ListMemberRolesQuery>({
+                query: LIST_MEMBER_ROLES,
+            })
+            .then(result => result.data.listMemberRoles)
+    }
 }
 
 // eslint-disable-next-line

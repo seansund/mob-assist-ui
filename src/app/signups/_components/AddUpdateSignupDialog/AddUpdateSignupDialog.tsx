@@ -57,7 +57,7 @@ const AssignmentSetSelect = ({defaultValue}: Readonly<SelectProps>) => {
 
     return <FormControl fullWidth>
         <InputLabel>Assignment Set</InputLabel>
-        <Select name="assignmentSetId" label="Assignment Set" required defaultValue={defaultValue}>
+        <Select name="assignmentSetId" label="Assignment Set" defaultValue={defaultValue}>
             {(assignmentSets ?? []).map(item => <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>)}
         </Select>
     </FormControl>

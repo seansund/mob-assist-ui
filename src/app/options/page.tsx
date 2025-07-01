@@ -2,7 +2,7 @@
 
 import {useAtomValue, useSetAtom} from "jotai";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
-import {Button, Grid} from "@mui/material";
+import {Button, Grid, useTheme} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
 import {
@@ -17,12 +17,19 @@ import {ListMenu, SignupOptionSummary} from "@/components";
 
 import {OptionSetModel} from "@/models";
 import styles from './page.module.css';
+import useMediaQuery from "@mui/material/useMediaQuery";
+import {useRouter} from "next/navigation";
 
-export default function Page() {
+export default function OptionSetPage() {
     const {data: optionSets, isPending, isError, refetch} = useAtomValue(optionSetListAtom);
     const setSelectedOptionSet = useSetAtom(selectedOptionSetAtom);
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
     const showDeleteDialog = useSetAtom(showDeleteDialogAtom);
+
+    const router = useRouter();
+
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     if (isError) {
         return <div>Error</div>
@@ -30,6 +37,10 @@ export default function Page() {
 
     const refetchOptions = async () => {
         return refetch().then(() => undefined);
+    }
+
+    const showOptionSetDetails = (optionSet: OptionSetModel) => {
+        router.push(`/options/${optionSet.id}`);
     }
 
     const showUpdateOptionSet = (optionSet: OptionSetModel) => {
@@ -47,7 +58,7 @@ export default function Page() {
         <DeleteOptionSetDialog refetch={refetchOptions} />
         <DataGrid
             rows={optionSets || []}
-            columns={buildColumns({deleteRow: deleteOptionSet, showUpdateRow: showUpdateOptionSet})}
+            columns={buildColumns({deleteRow: deleteOptionSet, showUpdateRow: showUpdateOptionSet, showRowDetails: showOptionSetDetails, isMobile})}
             pageSizeOptions={[10, 30, 50, 100]}
             initialState={initialDataGridState(10)}
             showToolbar
@@ -61,10 +72,13 @@ export default function Page() {
 interface BuildColumnsParams<T> {
     deleteRow: (value: T) => void;
     showUpdateRow: (value: T) => void;
+    showRowDetails: (value: T) => void;
+    isMobile: boolean;
 }
 
-const buildColumns = ({deleteRow, showUpdateRow}: BuildColumnsParams<OptionSetModel>): GridColDef<OptionSetModel>[] => {
-    return [
+const buildColumns = ({deleteRow, showUpdateRow, showRowDetails, isMobile}: BuildColumnsParams<OptionSetModel>): GridColDef<OptionSetModel>[] => {
+
+    const columns: GridColDef<OptionSetModel>[] = [
         {
             field: 'name',
             headerName: 'Name',
@@ -77,21 +91,38 @@ const buildColumns = ({deleteRow, showUpdateRow}: BuildColumnsParams<OptionSetMo
             flex: 1,
             sortable: false,
             renderCell: ({row: optionSet}) => <SignupOptionSummary options={optionSet.options ?? []} />
-        },
-        {
-            field: '',
-            headerName: 'Actions',
-            width: 100,
-            align: 'center',
-            sortable: false,
-            renderCell: ({row: signup}) => (
-                <ListMenu
-                    onDelete={() => deleteRow(signup)}
-                    onUpdate={() => showUpdateRow(signup)}
-                />
-            )
-        }
-    ]
+        }];
+
+    if (!isMobile) {
+        columns.push({
+            field: 'signupCount',
+            headerName: 'Used in signups',
+            minWidth: 100,
+            flex: 1,
+            sortable: true,
+            valueGetter: (_, row) => row.summary?.signupCount ?? '?'
+        });
+    }
+
+    columns.push({
+        field: '',
+        headerName: 'Actions',
+        width: 100,
+        align: 'center',
+        sortable: false,
+        renderCell: ({row: signup}) => (
+            <ListMenu
+                detailText="View details"
+                onDetail={() => showRowDetails(signup)}
+                deleteText="Delete option set"
+                onDelete={() => deleteRow(signup)}
+                updateText="Update option set"
+                onUpdate={() => showUpdateRow(signup)}
+            />
+        )
+    });
+
+    return columns;
 }
 
 const initialDataGridState = (pageSize: number) => ({
@@ -111,11 +142,9 @@ const GridToolbar = () => {
         showAddUpdateDialog();
     }
 
-    return <Grid container className={styles.actionContainer}>
-        <Grid size={{xs: 6}} className={styles.actionAdd}>
-            <Button variant="outlined" onClick={showAddView} aria-label="add option set" startIcon={<AddIcon />}>
-                Add
-            </Button>
-        </Grid>
-    </Grid>
+    return <div className={styles.actionContainer}>
+        <Button variant="outlined" onClick={showAddView} aria-label="add option set" startIcon={<AddIcon />}>
+            Add
+        </Button>
+    </div>
 }

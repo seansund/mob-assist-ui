@@ -55,7 +55,7 @@ export interface BaseSignupModel extends Partial<ModelRef>, SignupDataModel {
 export interface SignupRelationsIdsModel {
   groupId: string;
   optionSetId: string;
-  assignmentSetId: string;
+  assignmentSetId?: string;
 }
 
 export interface SignupRelationsModel {

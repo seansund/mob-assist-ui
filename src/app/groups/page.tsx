@@ -7,7 +7,7 @@ import {Button} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
 import {groupListAtom, showAddUpdateDialogAtom, showDeleteDialogAtom} from "@/atoms";
-import {selectedGroupAtom} from "@/app/groups/_atoms";
+import {resetSelectedGroupAtom, selectedGroupAtom} from "@/app/groups/_atoms";
 import {AddUpdateGroupDialog, DeleteGroupDialog} from "@/app/groups/_components";
 import {ListMenu} from "@/components";
 import {GroupModel} from "@/models";
@@ -106,10 +106,10 @@ const GridNoGroupsOverlay = () => {
 
 const GridToolbar = () => {
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
-    const setSelectedGroup = useSetAtom(selectedGroupAtom);
+    const resetSelectedGroup = useSetAtom(resetSelectedGroupAtom);
 
     const handleClick = () => {
-        setSelectedGroup(undefined);
+        resetSelectedGroup();
         showAddUpdateDialog();
     }
 

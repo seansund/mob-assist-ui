@@ -96,3 +96,11 @@ const memberIdentifierString = (id: MemberIdentifier = {id: ''}): string => {
 
     return values[0]
 }
+
+
+export const listMemberRolesAtom = atomWithQuery(() => ({
+    queryKey: ['memberRoles'],
+    queryFn: async () => {
+        return service.listRoles();
+    }
+}))

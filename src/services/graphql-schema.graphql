@@ -134,8 +134,8 @@ input MemberUpdateInput {
 type Mutation {
   addAssignment(assignment: AssignmentInput!, assignmentSetId: ID!): AssignmentSet!
   addMemberRole(name: String!): MemberRole!
-  addMemberToGroup(groupId: ID!, memberId: ID!): Group
-  addMembersToGroup(groupId: ID!, memberIds: [ID!]!): Group
+  addMemberToGroup(groupId: ID!, memberId: ID!, roleId: ID): Group
+  addMembersToGroup(groupId: ID!, memberIds: [ID!]!, roleId: ID): Group
   addOption(option: OptionInput!, optionSetId: ID!): OptionSet!
   addRoleToMember(memberId: ID!, memberRoleId: ID!): Member!
   addUpdateMember(member: MemberInput!): Member!
@@ -155,7 +155,7 @@ type Mutation {
   duplicateSignup(date: String!, fromSignupId: ID!): Signup!
   removeMemberFromGroup(groupId: ID!, memberId: ID!): Group
   removeMembersFromGroup(groupId: ID!, memberIds: [ID!]!): [Member!]!
-  removeOption(optionId: String!, optionSetId: ID!): OptionSet!
+  removeOption(optionId: ID!, optionSetId: ID!): OptionSet!
   removeRoleFromMember(memberId: ID!, memberRoleId: ID!): Member!
   respondToSignup(data: MemberSignupResponseInput!): Signup
   sendSignupAssignments(signupId: ID!): NotificationResult!
@@ -168,6 +168,7 @@ type Mutation {
   updateGroup(data: GroupInput!, groupId: ID!): Group
   updateMember(member: MemberUpdateInput!, memberId: ID!): Member!
   updateMemberSignupResponse(data: MemberSignupResponseUpdateInput!, id: ID!): MemberSignupResponse!
+  updateOption(option: OptionInput!, optionId: ID!, optionSetId: ID!): OptionSet!
   updateOptionSet(name: String!, optionSetId: ID!): OptionSet!
   updateSignup(data: SignupUpdate!, signupId: ID!): Signup!
 }
@@ -203,6 +204,7 @@ type Option {
   declineOption: Boolean
   id: ID!
   optionSet: OptionSet
+  optionSetId: String!
   shortName: String!
   sortIndex: Float!
   value: String!
@@ -211,6 +213,7 @@ type Option {
 """Option input"""
 input OptionInput {
   declineOption: Boolean
+  optionSetId: String!
   shortName: String!
   sortIndex: Float!
   value: String!
@@ -260,8 +263,8 @@ type Query {
 
 """Signup"""
 type Signup {
-  assignmentSet: AssignmentSet!
-  assignmentSetId: ID!
+  assignmentSet: AssignmentSet
+  assignmentSetId: ID
   assignments: [Assignment!]!
   date: String!
   description: String

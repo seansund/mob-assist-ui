@@ -1,23 +1,28 @@
 "use client"
 import {ReactNode, useEffect} from "react";
-import { useMediaQuery } from 'react-responsive';
-import {isMobileAtom} from "@/atoms/media-query.atom";
 import {useSetAtom} from "jotai";
+
+import {useTheme, useMediaQuery} from "@mui/material";
+
+import {responsiveBreakpointsAtom} from "@/atoms/media-query.atom";
 
 interface MediaQueryProviderProps {
     children: ReactNode
 }
 
 export const MediaQueryProvider = ({children}: Readonly<MediaQueryProviderProps>) => {
-    const setIsMobile = useSetAtom(isMobileAtom);
-    const queryIsMobile = useMediaQuery({ maxWidth: 1224 });
+    const setResponsiveBreakpoint = useSetAtom(responsiveBreakpointsAtom);
+
+    const theme = useTheme();
+    const lg: boolean = useMediaQuery(theme.breakpoints.down('lg'));
+    const md: boolean = useMediaQuery(theme.breakpoints.down('md'));
+    const sm: boolean = useMediaQuery(theme.breakpoints.down('sm'));
 
     useEffect(() => {
-        console.log('Render MediaQueryProvider.useEffect: ', {queryIsMobile})
+        console.log('Render MediaQueryProvider.useEffect: ', {lg, md, sm})
 
-        setIsMobile(queryIsMobile);
-    }, [queryIsMobile, setIsMobile])
-
+        setResponsiveBreakpoint({lg, md, sm})
+    }, [sm, md, lg, setResponsiveBreakpoint])
 
    return <>{children}</>
 }

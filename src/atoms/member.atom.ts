@@ -1,13 +1,21 @@
 import {atom} from "jotai";
 import {atomWithMutation, atomWithQuery} from "jotai-tanstack-query";
-import {MemberEmailModel, MemberIdentifier, MemberModel, MemberPhoneModel, ModelRef, UserModel} from "@/models";
+import {
+    MemberEmailModel,
+    MemberIdentifier,
+    MemberModel,
+    MemberOfGroupModel,
+    MemberPhoneModel,
+    ModelRef,
+    UserModel
+} from "@/models";
 import {membersApi, MembersApi} from "@/services";
 import {getQueryClient} from "@/util";
 import {currentUserAtom} from "@/atoms/user.atom";
 
 const service: MembersApi = membersApi();
 
-export const selectedMemberAtom = atom<MemberModel>()
+export const selectedMemberAtom = atom<MemberModel | MemberOfGroupModel>()
 export const resetSelectedMemberAtom = atom(
     get => get(selectedMemberAtom),
     (_, set) => set(selectedMemberAtom, undefined),

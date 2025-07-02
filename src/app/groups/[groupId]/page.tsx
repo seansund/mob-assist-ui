@@ -6,13 +6,20 @@ import {Button, Skeleton} from "@mui/material";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
 
-import {currentGroupAtom, currentGroupIdAtom, selectedMemberAtom,} from "./_atoms";
 import {AddUpdateGroupMembersDialog, RemoveMemberFromGroupDialog} from "./_components";
-import {GroupModel, MemberModel} from "@/models";
+import {GroupModel, MemberOfGroupModel, MemberRoleModel} from "@/models";
 import {formatPhone} from "@/util";
 
 import styles from './page.module.css';
-import {resetSelectedMemberAtom, showAddUpdateDialogAtom, showDeleteDialogAtom} from "@/atoms";
+import {
+    currentGroupAtom,
+    currentGroupIdAtom,
+    listMemberRolesAtom,
+    resetSelectedMemberAtom,
+    selectedMemberAtom,
+    showAddUpdateDialogAtom,
+    showDeleteDialogAtom
+} from "@/atoms";
 import {ListMenu} from "@/components";
 
 interface GroupResolverPageQueryParams {
@@ -51,6 +58,7 @@ interface GroupDetailViewProps {
 
 const GroupDetailView = ({groupId}: Readonly<GroupDetailViewProps>) => {
     const {data: group, isPending, isError, refetch} = useAtomValue(currentGroupAtom);
+    const {data: roles, isPending: rolesPending} = useAtomValue(listMemberRolesAtom);
     const setSelectedMember = useSetAtom(selectedMemberAtom);
     const showUpdateMembershipDialog = useSetAtom(showAddUpdateDialogAtom);
     const showRemoveMemberDialog = useSetAtom(showDeleteDialogAtom);
@@ -63,26 +71,26 @@ const GroupDetailView = ({groupId}: Readonly<GroupDetailViewProps>) => {
         refetch().then(() => undefined);
     }
 
-    const showUpdateRow = (member: MemberModel) => {
+    const showUpdateRow = (member: MemberOfGroupModel) => {
         setSelectedMember(member);
         showUpdateMembershipDialog();
     }
 
-    const deleteRow = (member: MemberModel) => {
+    const deleteRow = (member: MemberOfGroupModel) => {
         setSelectedMember(member);
         showRemoveMemberDialog();
     }
 
     return <div className={styles.groupContainer}>
-        <GroupTitle isPending={isPending} group={group} />
+        <GroupTitle isPending={isPending || rolesPending} group={group} />
         <AddUpdateGroupMembersDialog refetch={refetchGroup} group={group} />
         <RemoveMemberFromGroupDialog refetch={refetchGroup} group={group} />
         <DataGrid
             rows={group?.members}
-            columns={buildColumns({deleteRow, showUpdateRow})}
+            columns={buildColumns({deleteRow, showUpdateRow, roles})}
             pageSizeOptions={[10, 30, 60, 100]}
             initialState={initialDataGridState(10)}
-            loading={isPending}
+            loading={isPending || rolesPending}
             disableRowSelectionOnClick
             showToolbar
             slots={{toolbar: GridToolbar, noRowsOverlay: GridNoMembersOverlay}}
@@ -109,16 +117,23 @@ const initialDataGridState = (pageSize: number) => ({
 })
 
 interface BuildColumnsParams {
-    deleteRow: (member: MemberModel) => void;
-    showUpdateRow: (value: MemberModel) => void;
+    deleteRow: (member: MemberOfGroupModel) => void;
+    showUpdateRow: (value: MemberOfGroupModel) => void;
+    roles?: MemberRoleModel[];
 }
 
-const buildColumns = ({deleteRow, showUpdateRow}: Readonly<BuildColumnsParams>): GridColDef<MemberModel>[] => {
+const buildColumns = ({deleteRow, showUpdateRow, roles}: Readonly<BuildColumnsParams>): GridColDef<MemberOfGroupModel>[] => {
     return [
         {field: 'firstName', headerName: 'First Name', minWidth: 100, flex: 1},
         {field: 'lastName', headerName: 'Last Name', minWidth: 175, flex: 1},
         {field: 'phone', headerName: 'Phone', minWidth: 150, flex: 1, valueGetter: (value) => formatPhone(value)},
         {field: 'email', headerName: 'Email', minWidth: 300, flex: 1},
+        {
+            field: 'roleId',
+            headerName: 'Role',
+            minWidth: 100,
+            valueGetter: (value: string) => (roles ?? []).find(role => role.id === value)?.name ?? 'Member',
+        },
         {
             field: '',
             headerName: 'Remove',

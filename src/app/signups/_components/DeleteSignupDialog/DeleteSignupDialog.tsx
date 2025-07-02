@@ -1,6 +1,6 @@
 import {DialogContentText, Stack} from "@mui/material";
 
-import {deleteSignupAtom, resetSelectedSignupAtom} from "@/app/signups/_atoms";
+import {deleteSignupAtom, resetSelectedSignupAtom} from "@/atoms";
 import {DeleteDialog} from "@/components";
 import {SignupInputModel} from "@/models";
 

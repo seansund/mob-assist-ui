@@ -12,6 +12,7 @@ const GROUP_DETAIL_FRAGMENT = gql`fragment GroupDetailFragment on Group {
         lastName
         phone
         preferredContact
+        roleId
     }
 }`;
 

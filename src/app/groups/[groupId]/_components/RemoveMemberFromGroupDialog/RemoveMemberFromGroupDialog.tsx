@@ -11,8 +11,7 @@ import {
     Stack
 } from "@mui/material";
 
-import {removeMemberFromGroupAtom, selectedMemberAtom} from "@/app/groups/[groupId]/_atoms";
-import {hideDeleteDialogAtom} from "@/atoms";
+import {hideDeleteDialogAtom, removeMemberFromGroupAtom, selectedMemberAtom} from "@/atoms";
 import {ErrorMessage} from "@/components";
 import {GroupModel} from "@/models";
 

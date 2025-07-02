@@ -15,6 +15,7 @@ export const MEMBER_FRAGMENT = gql`fragment MemberFragment on Member {
     groups {
         id
         name
+        roleId
     }
 }`
 

@@ -38,7 +38,7 @@ input AssignmentSetInput {
 """Group of members"""
 type Group {
   id: ID!
-  members: [Member!]
+  members: [MemberOfGroup!]
   name: String!
   summary: GroupSummary
 }
@@ -56,13 +56,19 @@ type GroupSummary {
 type Member {
   email: String!
   firstName: String!
-  groups: [Group!]
+  groups: [MemberGroup!]
   id: ID!
   lastName: String!
   notifications: [Notification!]
   phone: String!
   preferredContact: String
   roles: [MemberRole!]
+}
+
+type MemberGroup {
+  id: ID!
+  name: String!
+  roleId: ID
 }
 
 input MemberIdentityInput {
@@ -77,6 +83,17 @@ input MemberInput {
   lastName: String!
   phone: String!
   preferredContact: String
+}
+
+type MemberOfGroup {
+  email: String!
+  firstName: String!
+  id: ID!
+  lastName: String!
+  phone: String!
+  preferredContact: String!
+  roleId: ID
+  roles: [MemberRole!]
 }
 
 """Member role"""

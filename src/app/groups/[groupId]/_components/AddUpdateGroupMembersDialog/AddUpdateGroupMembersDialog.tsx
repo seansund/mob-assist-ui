@@ -8,15 +8,20 @@ import {
     DialogContent,
     DialogTitle,
     LinearProgress,
-    TextField,
-    useTheme
+    TextField
 } from "@mui/material";
-import useMediaQuery from '@mui/material/useMediaQuery';
 
-import {addMembersToGroupAtom, updateGroupMembershipAtom} from "@/app/groups/[groupId]/_atoms";
-import {hideAddUpdateDialogAtom, listMemberRolesAtom, listMembersAtom, selectedMemberAtom} from "@/atoms";
+import {
+    addMembersToGroupAtom,
+    hideAddUpdateDialogAtom,
+    isTabletAtom,
+    listMemberRolesAtom,
+    listMembersAtom,
+    selectedMemberAtom,
+    updateGroupMembershipAtom
+} from "@/atoms";
 import {ErrorMessage} from "@/components";
-import {GroupModel, MemberModel, MemberRoleModel} from "@/models";
+import {GroupModel, MemberModel, MemberOfGroupModel, MemberRoleModel} from "@/models";
 
 import styles from "./page.module.css";
 
@@ -28,9 +33,7 @@ interface AddUpdateGroupMembersDialogProps {
 export const AddUpdateGroupMembersDialog = ({group, refetch}: Readonly<AddUpdateGroupMembersDialogProps>) => {
     const open = useAtomValue(hideAddUpdateDialogAtom);
     const selectedMember = useAtomValue(selectedMemberAtom);
-
-    const theme = useTheme();
-    const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+    const fullScreen = useAtomValue(isTabletAtom);
 
     if (!open) {
         return <></>
@@ -44,6 +47,7 @@ interface AddUpdateMembershipFormProps extends AddMemberToGroupProps {
 }
 
 const AddUpdateMembershipForm = ({selectedMember, ...props}: Readonly<AddUpdateMembershipFormProps>) => {
+    console.log('Selected member: ', {selectedMember})
     if (selectedMember) {
         return <UpdateGroupMembership {...props} selectedMember={selectedMember} />
     }
@@ -64,7 +68,7 @@ const AddMemberToGroup = ({group, fullScreen, refetch}: Readonly<AddMemberToGrou
     const closeDialog = useSetAtom(hideAddUpdateDialogAtom);
 
     const [members, setMembers] = useState<MemberModel[]>([]);
-    const [role, setRole] = useState<MemberRoleModel>();
+    const [role, setRole] = useState<MemberRoleModel | undefined>(getMemberRole(memberRoleList));
     const [errorMessage, setErrorMessage] = useState<string>();
 
     const currentMemberIds: string[] = (group?.members ?? [])
@@ -148,7 +152,7 @@ const UpdateGroupMembership = ({group, fullScreen, refetch, selectedMember}: Rea
     const {mutateAsync: updateMembership, isPending} = useAtomValue(updateGroupMembershipAtom);
     const closeDialog = useSetAtom(hideAddUpdateDialogAtom);
 
-    const [role, setRole] = useState<MemberRoleModel>();
+    const [role, setRole] = useState<MemberRoleModel | undefined>(getMemberRole(memberRoleList, selectedMember));
     const [errorMessage, setErrorMessage] = useState<string>();
 
     const resetState = () => {
@@ -202,3 +206,12 @@ const UpdateGroupMembership = ({group, fullScreen, refetch, selectedMember}: Rea
     </Dialog>
 }
 
+const getMemberRole = (memberRoleList: MemberRoleModel[] = [], member?: MemberOfGroupModel): MemberRoleModel | undefined => {
+    const memberRole = memberRoleList.find(role => role.id === member?.roleId);
+
+    if (!memberRole) {
+        return memberRoleList.find(role => role.name === 'Member');
+    }
+
+    return memberRole;
+}

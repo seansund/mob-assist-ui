@@ -11,7 +11,7 @@ export const SignupResponseSummary = ({optionSummaries}: Readonly<SignupResponse
 
     return (<div className={styles.signupResponseContainer}>{optionSummaries
         .map((summary: OptionSummaryModel) => <SignupOptionSummary
-            key={summary.option?.value ?? 'noresponse'}
+            key={summary.option?.id ?? 'no-response'}
             summary={summary}
         />)}</div>)
 }

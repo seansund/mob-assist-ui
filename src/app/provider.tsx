@@ -53,15 +53,15 @@ export default function Provider({children}: BaseProviderProps) {
             <SessionProvider>
                 <UserStateProvider>
                     <AppRouterCacheProvider>
-                        <MediaQueryProvider>
-                            <ThemeProvider theme={theme}>
+                        <ThemeProvider theme={theme}>
+                            <MediaQueryProvider>
                                 <LayoutProvider pages={pages} links={links} settings={settings}>
                                     <AuthenticationProvider>
                                         {children}
                                     </AuthenticationProvider>
                                 </LayoutProvider>
-                            </ThemeProvider>
-                        </MediaQueryProvider>
+                            </MediaQueryProvider>
+                        </ThemeProvider>
                     </AppRouterCacheProvider>
                 </UserStateProvider>
             </SessionProvider>

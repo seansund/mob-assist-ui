@@ -18,13 +18,15 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 
-import {listSignupsAtom, showAddUpdateDialogAtom, showDeleteDialogAtom, signupScopeAtom} from "@/atoms";
-import {resetSelectedSignupAtom, selectedSignupAtom} from "./_atoms";
 import {
-    AddUpdateSignupDialog,
-    DeleteSignupDialog,
-    SignupResponseSummary
-} from "./_components";
+    listSignupsAtom,
+    resetSelectedSignupAtom,
+    selectedSignupAtom,
+    showAddUpdateDialogAtom,
+    showDeleteDialogAtom,
+    signupScopeAtom
+} from "@/atoms";
+import {AddUpdateSignupDialog, DeleteSignupDialog, SignupResponseSummary} from "./_components";
 import {ListMenu, SignupOptionSummary} from "@/components";
 import {lookupSignupScope, SignupInputModel, SignupModel, SignupScope} from "@/models";
 
@@ -198,7 +200,7 @@ const DetailPanel = ({row: signup}: {row: SignupModel}) => {
             </TableHead>
             <TableBody>
                 {(signup.responseSummaries ?? []).map(response => (
-                    <TableRow key={response.option?.value || 'no-response'}>
+                    <TableRow key={response.option?.id || 'no-response'}>
                         <TableCell component="th" scope="row">
                             {response.option?.value || 'No response'}
                         </TableCell>

@@ -63,6 +63,7 @@ const SignupOption = ({option, signedUp, onClick, disabled}: Readonly<SignupOpti
 
     return <ToggleButton selected={signedUp}
                          value={option.value}
+                         color={option.declineOption ? 'error' : 'success'}
                          size="small"
                          disabled={disabled}
                          onClick={() => onClick(option, signedUp)}>{option.value}</ToggleButton>

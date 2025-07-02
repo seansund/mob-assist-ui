@@ -1,12 +1,12 @@
-import {ModelRef} from "./base.model";
-import {GroupModel} from "@/models/group.model";
+import {ModelRef} from './base.model';
+import {MemberGroupModel} from './group-member.model';
 
 export const isMemberId = (val: unknown): val is ModelRef => {
   return !!val && (val as ModelRef).id !== undefined;
 }
 
 export interface MemberPhoneModel {
-    phone: string;
+  phone: string;
 }
 
 export const isMemberPhone = (val: unknown): val is MemberPhoneModel => {
@@ -14,7 +14,7 @@ export const isMemberPhone = (val: unknown): val is MemberPhoneModel => {
 }
 
 export interface MemberEmailModel {
-    email: string;
+  email: string;
 }
 
 export const isMemberEmail = (val: unknown): val is MemberEmailModel => {
@@ -34,16 +34,13 @@ export interface MemberDataModel {
 
 export const isMemberModel = (val: unknown): val is MemberModel => {
   return !!val
-    && (val as MemberModel).id !== undefined
-    && (val as MemberModel).email !== undefined
-    && (val as MemberModel).lastName !== undefined;
+      && (val as MemberModel).id !== undefined
+      && (val as MemberModel).email !== undefined
+      && (val as MemberModel).lastName !== undefined;
 }
 
-export interface MemberReferencesModel {
-  groups?: GroupModel[];
-}
-
-export interface MemberModel extends ModelRef, MemberDataModel, MemberReferencesModel {
+export interface MemberModel extends ModelRef, MemberDataModel {
+  groups?: MemberGroupModel[];
 }
 
 export interface MemberModelEntity extends Partial<ModelRef>, MemberDataModel {

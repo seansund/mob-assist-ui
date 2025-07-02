@@ -2,10 +2,11 @@
 
 import {useAtomValue, useSetAtom} from "jotai";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
-import {Button, Grid, useTheme} from "@mui/material";
+import {Button} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
 import {
+    isMobileAtom,
     optionSetListAtom,
     resetSelectedOptionSetAtom,
     selectedOptionSetAtom,
@@ -17,7 +18,6 @@ import {ListMenu, SignupOptionSummary} from "@/components";
 
 import {OptionSetModel} from "@/models";
 import styles from './page.module.css';
-import useMediaQuery from "@mui/material/useMediaQuery";
 import {useRouter} from "next/navigation";
 
 export default function OptionSetPage() {
@@ -25,11 +25,9 @@ export default function OptionSetPage() {
     const setSelectedOptionSet = useSetAtom(selectedOptionSetAtom);
     const showAddUpdateDialog = useSetAtom(showAddUpdateDialogAtom);
     const showDeleteDialog = useSetAtom(showDeleteDialogAtom);
+    const isMobile = useAtomValue(isMobileAtom);
 
     const router = useRouter();
-
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     if (isError) {
         return <div>Error</div>

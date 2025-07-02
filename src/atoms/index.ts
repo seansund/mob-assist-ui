@@ -9,3 +9,4 @@ export * from './group.atom';
 export * from './assignment-set.atom';
 export * from './option-set.atom';
 export * from './dialogs.atom';
+export * from './media-query.atom';

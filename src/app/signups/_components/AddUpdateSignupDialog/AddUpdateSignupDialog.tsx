@@ -1,13 +1,18 @@
 import {useAtomValue} from "jotai";
 import dayjs from 'dayjs';
-import {FormControl, InputLabel, MenuItem, Select, Skeleton, TextField, useTheme} from "@mui/material";
-import useMediaQuery from "@mui/material/useMediaQuery";
+import {FormControl, InputLabel, MenuItem, Select, Skeleton, TextField} from "@mui/material";
 import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider';
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
 import {DatePicker} from "@mui/x-date-pickers";
 
-import {addUpdateSignupAtom, resetSelectedSignupAtom} from "@/app/signups/_atoms";
-import {assignmentSetListAtom, groupListAtom, optionSetListAtom} from "@/atoms";
+import {
+    addUpdateSignupAtom,
+    assignmentSetListAtom,
+    groupListAtom,
+    isTabletAtom,
+    optionSetListAtom,
+    resetSelectedSignupAtom
+} from "@/atoms";
 import {AddUpdateDialog} from "@/components";
 import {SignupInputModel} from "@/models";
 
@@ -16,8 +21,7 @@ interface AddUpdateSignupDialogProps {
 }
 
 export const AddUpdateSignupDialog = ({refetch}: Readonly<AddUpdateSignupDialogProps>) => {
-    const theme = useTheme();
-    const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+    const fullScreen = useAtomValue(isTabletAtom);
 
     return <AddUpdateDialog
         title={(value?: SignupInputModel) => value?.id ? 'Update signup' : 'Add signup'}

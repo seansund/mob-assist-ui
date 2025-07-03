@@ -44,7 +44,7 @@ jobs:
           cp /tmp/Chart.yaml chart/appid-binding/Chart.yaml
           
           cat package.json | \
-            sed "s/\"version\":.*/\version\": \"${TAG_NAME}\",/g" \
+            sed "s/\"version\":.*/\"version\": \"${TAG_NAME}\",/g" \
             > /tmp/package.json
           cp /tmp/package.json package.json
           

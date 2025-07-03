@@ -1,6 +1,4 @@
 
-import styles from './page.module.css';
-
 interface AssignmentDiagramProps {
     parentWidth: number
     parentHeight: number

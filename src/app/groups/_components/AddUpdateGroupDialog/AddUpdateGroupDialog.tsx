@@ -1,8 +1,8 @@
 import {TextField} from "@mui/material";
 
-import {addUpdateGroupAtom, resetSelectedGroupAtom} from "@/app/groups/_atoms";
 import {AddUpdateDialog} from "@/components";
 import {GroupInputModel} from "@/models";
+import {addUpdateGroupAtom, resetSelectedGroupAtom} from "@/atoms";
 
 interface AddUpdateGroupDialogProps {
     refetch: () => Promise<void>;

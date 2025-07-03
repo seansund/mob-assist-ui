@@ -1,10 +1,10 @@
 import {DialogContentText} from "@mui/material";
 
-import {deleteGroupAtom, resetSelectedGroupAtom} from "@/app/groups/_atoms";
 import {DeleteDialog} from "@/components";
 import {GroupModel} from "@/models";
 
 import styles from './page.module.css';
+import {deleteGroupAtom, resetSelectedGroupAtom} from "@/atoms";
 
 interface DeleteGroupDialogProps {
     refetch: () => Promise<void>;

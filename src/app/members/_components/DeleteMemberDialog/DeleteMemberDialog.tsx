@@ -1,4 +1,4 @@
-import {DialogContentText, Stack} from "@mui/material";
+import {DialogContentText} from "@mui/material";
 
 import {deleteMemberAtom, resetSelectedMemberAtom} from "@/atoms";
 import {DeleteDialog} from "@/components";

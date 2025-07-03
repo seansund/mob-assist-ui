@@ -6,8 +6,13 @@ import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {Button} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
-import {groupListAtom, showAddUpdateDialogAtom, showDeleteDialogAtom} from "@/atoms";
-import {resetSelectedGroupAtom, selectedGroupAtom} from "@/app/groups/_atoms";
+import {
+    groupListAtom,
+    resetSelectedGroupAtom,
+    selectedGroupAtom,
+    showAddUpdateDialogAtom,
+    showDeleteDialogAtom
+} from "@/atoms";
 import {AddUpdateGroupDialog, DeleteGroupDialog} from "@/app/groups/_components";
 import {ListMenu} from "@/components";
 import {GroupModel} from "@/models";

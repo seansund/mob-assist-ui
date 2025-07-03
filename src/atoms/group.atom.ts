@@ -1,8 +1,9 @@
 import {atomWithMutation, atomWithQuery} from "jotai-tanstack-query";
 import {groupsApi} from "@/services";
 import {atom} from "jotai";
-import {GroupModel} from "@/models";
+import {GroupDataModel, GroupModel} from "@/models";
 import {getQueryClient} from "@/util";
+import {atomWithDefault} from "jotai/vanilla/utils";
 
 const service = groupsApi();
 
@@ -12,6 +13,45 @@ export const groupListAtom = atomWithQuery(() => ({
         return service.list();
     }
 }));
+
+export const selectedGroupAtom = atomWithDefault<GroupModel>(() => createInitialGroup());
+export const resetSelectedGroupAtom = atom(
+    get => get(selectedGroupAtom),
+    (_, set) => set(selectedGroupAtom, createInitialGroup()),
+)
+
+const createInitialGroup = (): GroupModel => {
+    return {
+        name: '',
+    } as GroupModel;
+}
+
+export const addUpdateGroupAtom = atomWithMutation(() => ({
+    mutationFn: async ({id, data}: {id?: string, data: GroupDataModel}): Promise<GroupModel | undefined> => {
+        if (id) {
+            return service.update({id, ...data});
+        } else {
+            return service.create(data.name);
+        }
+    },
+    onSuccess: async () => {
+        const client = getQueryClient();
+
+        await client.invalidateQueries({queryKey: ['groups']});
+        // TODO invalidate get by id query
+    },
+}))
+
+export const deleteGroupAtom = atomWithMutation(() => ({
+    mutationFn: async ({data}: {data: GroupModel}) => {
+        return service.delete(data);
+    },
+    onSuccess: async () => {
+        const client = getQueryClient();
+
+        await client.invalidateQueries({queryKey: ['groups']})
+    },
+}))
 
 
 export const currentGroupIdAtom = atom<string>();
@@ -79,3 +119,4 @@ export const removeMemberFromGroupAtom = atomWithMutation(get => ({
         }
     },
 }))
+

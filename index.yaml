@@ -2,15 +2,15 @@ apiVersion: v1
 entries:
   appid-binding:
   - apiVersion: v2
-    appVersion: 1.0.2
-    created: "2025-07-03T21:29:49.454288994Z"
+    appVersion: 1.0.3
+    created: "2025-07-03T21:33:10.223233309Z"
     description: A Helm chart for Kubernetes
-    digest: 03bff0f9778d87e1d797aa01468cb816536d279c0187248473c16684a12f259c
+    digest: ae721add28846850291bfa76c39d9deecf817d6335ba3b9af3079701735cc236
     name: appid-binding
     type: application
     urls:
-    - https://github.com/seansund/mob-assist-ui/releases/download/v1.0.2/appid-binding-1.0.2.tgz
-    version: 1.0.2
+    - https://github.com/seansund/mob-assist-ui/releases/download/v1.0.3/appid-binding-1.0.3.tgz
+    version: 1.0.3
   mob-assist-api:
   - apiVersion: v2
     appVersion: 0.7.2
@@ -262,4 +262,4 @@ entries:
     urls:
     - https://github.com/seansund/mob-assist-api/releases/download/v0.1.2/mob-assist-api-0.1.2.tgz
     version: 0.1.2
-generated: "2025-07-03T21:29:49.454044156Z"
+generated: "2025-07-03T21:33:10.222942612Z"

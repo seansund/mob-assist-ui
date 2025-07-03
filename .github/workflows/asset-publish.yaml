@@ -12,8 +12,8 @@ jobs:
     strategy:
       matrix:
         chart_name:
-          - mob-assist-ui
           - appid-binding
+          - mob-assist-ui
 
     steps:
       - name: Checkout release
@@ -64,6 +64,9 @@ jobs:
           
           echo "Repo url: ${REPO_URL}"
           echo "repo-url=$REPO_URL" >> $GITHUB_OUTPUT
+
+      - name: Update helm dependencies
+        run: helm dep update ${{ steps.variables.outputs.chart-path }}
 
       - name: Build helm package
         run: helm package ${{ steps.variables.outputs.chart-path }} -d ./${{ steps.variables.outputs.package-dir }}

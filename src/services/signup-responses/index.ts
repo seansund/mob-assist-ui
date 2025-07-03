@@ -1,8 +1,13 @@
-import {Container} from "typescript-ioc";
 import {SignupResponsesApi} from "./signup-responses.api";
-import {SignupResponsesMock} from "./signup-responses.mock";
 import {SignupResponsesGraphql} from "./signup-responses.graphql";
+import {getServiceInstance} from "@/services/service-instance";
 
 export * from './signup-responses.api'
 
-Container.bind(SignupResponsesApi).to(SignupResponsesGraphql)
+let _instance: SignupResponsesApi;
+export const signupResponsesApi = (): SignupResponsesApi => {
+    if (!_instance) {
+        _instance = getServiceInstance(() => new SignupResponsesGraphql());
+    }
+    return _instance;
+}

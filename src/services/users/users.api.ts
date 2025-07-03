@@ -1,6 +1,5 @@
-import {BaseApi} from "../base.api";
-import {UserModel} from "../../models/user.model";
+import {UserModel} from "@/models";
 
-export abstract class UsersApi extends BaseApi<UserModel> {
+export abstract class UsersApi {
     abstract current(): Promise<UserModel>
 }

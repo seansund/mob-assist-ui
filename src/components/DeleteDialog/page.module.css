@@ -1,0 +1,10 @@
+
+.deleteContainer {
+    padding: 15px;
+    min-width: 400px !important;
+}
+
+.buttonContainer {
+    display: flex !important;
+    justify-content: center !important;
+}

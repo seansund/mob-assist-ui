@@ -1,0 +1,19 @@
+
+.removeContainer {
+    padding: 15px;
+    min-width: 400px !important;
+}
+
+.content {
+    padding: 0 20px;
+    font-size: large;
+}
+
+.label {
+    font-weight: bold;
+}
+
+.buttonContainer {
+    display: flex !important;
+    justify-content: center !important;
+}

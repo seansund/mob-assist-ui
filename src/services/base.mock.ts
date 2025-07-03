@@ -1,7 +1,8 @@
 import {BaseApi} from "./base.api";
-import {Comparator, first, invertFilter, timer} from "../util";
+import {Comparator, first, invertFilter, timer} from "@/util";
 
-export abstract class BaseMock<T> extends BaseApi<T> {
+
+export abstract class BaseMock<T extends {id: string}> extends BaseApi<T> {
     protected constructor(private values: T[] | Promise<T[]>) {
         super();
     }
@@ -20,14 +21,28 @@ export abstract class BaseMock<T> extends BaseApi<T> {
         const values: T[] = await this.values
 
         return first(values.filter(this.filter(id)))
+            // eslint-disable-next-line
             .orElse(undefined as any)
     }
 
-    async addUpdate(toUpdate: T): Promise<T> {
+    async update(toUpdate: T): Promise<T> {
         const values: T[] = await this.values
 
         return first(values.filter(this.filter(this.getId(toUpdate))))
-            .ifPresent(val => Object.assign(val as any, toUpdate))
+            .ifPresent(val => Object.assign(val as never, toUpdate))
+            .orElseGet(() => {
+                console.log('Adding new value: ', toUpdate)
+                values.push(toUpdate)
+
+                return toUpdate
+            })
+    }
+
+    async create(toUpdate: T): Promise<T> {
+        const values: T[] = await this.values
+
+        return first(values.filter(this.filter(this.getId(toUpdate))))
+            .ifPresent(val => Object.assign(val as never, toUpdate))
             .orElseGet(() => {
                 console.log('Adding new value: ', toUpdate)
                 values.push(toUpdate)

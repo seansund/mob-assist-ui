@@ -1,17 +1,33 @@
-import {ApolloClient, FetchResult, gql} from "@apollo/client";
-import {BehaviorSubject, Observable} from "rxjs";
+import {ApolloClient, DocumentNode} from "@apollo/client";
+import {BehaviorSubject} from "rxjs";
 
 import {SignupsApi} from "./signups.api";
-import {getApolloClient} from "../../backends";
-import {MemberModel, SignupModel, SignupScope} from "../../models";
-
-const LIST_SIGNUPS = gql`query ListSignups($scope: String) { listSignups(scope:$scope) { id date title options { id name options { id value declineOption sortIndex } } responses { option { id value declineOption } count assignments } } }`;
-const GET_SIGNUP_BY_ID = gql`query GetSignupById($id: ID!) { getSignupById(id: $id) { id date title options { id name options { id value declineOption sortIndex } } responses { option { id value declineOption } count assignments } assignmentSet { id name assignments { id group name row } } } }`;
-const ADD_UPDATE_SIGNUP = gql`mutation AddUpdateSignup($id: ID, $date: String!, $title: String!, $optionSetId: ID!, $assignmentSetId: ID) { addUpdateSignup(id: $id, date: $date, title: $title, optionSetId: $optionSetId, assignmentSetId: $assignmentSetId) { id date title options { id } assignmentSet { id } } } `;
-const DELETE_SIGNUP = gql`query DeleteSignup($id: ID!) { removeSignup(id: $id) { result } }`;
-const SIGNUPS_SUBSCRIPTION = gql`subscription { signups { id date title options { id name options { id value declineOption } } responses { option { id value declineOption } count assignments } } }`;
+import {getApolloClient} from "@/backends";
+import {MemberSignupResponseInputModel, ModelRef, SignupFilterModel, SignupInputModel, SignupModel} from "@/models";
+import {
+    CREATE_SIGNUP,
+    CreateSignupMutation,
+    CreateSignupVariables,
+    DELETE_SIGNUP,
+    DeleteSignupMutation,
+    DeleteSignupVariables,
+    GET_SIGNUP_BY_ID,
+    GetSignupQuery,
+    GetSignupVariables,
+    LIST_SIGNUPS,
+    LIST_SIGNUPS_FOR_USER,
+    ListSignupsQuery,
+    ListSignupsVariables,
+    RESPOND_TO_SIGNUP,
+    RespondToSignupMutation,
+    RespondToSignupVariables,
+    UPDATE_SIGNUP,
+    UpdateSignupMutation,
+    UpdateSignupVariables
+} from "./signups.gql";
 
 export class SignupsGraphql implements SignupsApi {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     client: ApolloClient<any>
     subject: BehaviorSubject<SignupModel[]>
 
@@ -20,81 +36,111 @@ export class SignupsGraphql implements SignupsApi {
         this.subject = new BehaviorSubject<SignupModel[]>([])
     }
 
-    list(scope?: SignupScope): Promise<Array<SignupModel>> {
-        console.log('Loading signups with scope: ', {scope})
+    async list(filter?: SignupFilterModel): Promise<SignupModel[]> {
+        return this.listInternal(LIST_SIGNUPS, filter)
+    }
 
+    async listForUser(filter?: SignupFilterModel): Promise<SignupModel[]> {
+        return this.listInternal(LIST_SIGNUPS_FOR_USER, filter)
+    }
+
+    async listInternal(query: DocumentNode, filter?: SignupFilterModel): Promise<SignupModel[]> {
         return this.client
-            .query<{listSignups: SignupModel[]}>({
-                query: LIST_SIGNUPS,
-                variables: {scope}
+            .query<ListSignupsQuery, ListSignupsVariables>({
+                query,
+                variables: {filter}
             })
             .then(result => result.data.listSignups)
             .catch(err => {
                 console.log('Error querying members: ', err)
                 throw err
-            }) as any
-    }
-
-    get(id: string): Promise<SignupModel | undefined> {
-        return this.client
-            .query<{getSignupById: SignupModel}>({
-                query: GET_SIGNUP_BY_ID,
-                variables: {id}
             })
-            .then(result => result.data.getSignupById)
     }
 
-    async addUpdate(signup: SignupModel): Promise<SignupModel | undefined> {
-        const refetchQueries: any[] = [{query: LIST_SIGNUPS}]
+    async get(signupId: string): Promise<SignupModel | undefined> {
+        return this.client
+            .query<GetSignupQuery, GetSignupVariables>({
+                query: GET_SIGNUP_BY_ID,
+                variables: {signupId}
+            })
+            .then(result => result.data.getSignup)
+    }
+
+    async create(signup: SignupInputModel, filter?: SignupFilterModel): Promise<SignupModel | undefined> {
+
+        // eslint-disable-next-line
+        delete (signup as any).id;
+
+        return this.client
+            .mutate<CreateSignupMutation, CreateSignupVariables>({
+                mutation: CREATE_SIGNUP,
+                variables: {signup},
+                refetchQueries: [listSignupsRefetchQuery(filter)],
+                awaitRefetchQueries: true
+            })
+            .then(result => result.data?.createSignup)
+    }
+
+    async update(signup: SignupModel, filter?: SignupFilterModel): Promise<SignupModel | undefined> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const refetchQueries: Array<{query: any, variables?: any}> = [listSignupsRefetchQuery(filter)]
         if (signup.id) {
-            refetchQueries.push({query: GET_SIGNUP_BY_ID, variables: {id: signup.id}});
+            refetchQueries.push(getSignupRefetchQuery(signup.id));
         }
 
+        const data = {...signup, id: undefined};
+
         return this.client
-            .mutate<{addUpdateSignup: SignupModel}>({
-                mutation: ADD_UPDATE_SIGNUP,
-                variables: {id: signup.id, date: signup.date, title: signup.title, optionSetId: signup.options.id, assignmentSetId: signup.assignmentSet?.id},
+            .mutate<UpdateSignupMutation, UpdateSignupVariables>({
+                mutation: UPDATE_SIGNUP,
+                variables: {signupId: signup.id, data},
                 refetchQueries,
                 awaitRefetchQueries: true
             })
-            .then(async (result: FetchResult<{addUpdateSignup: SignupModel}>) => await result.data?.addUpdateSignup || undefined)
+            .then(result => result.data?.updateSignup)
     }
 
-    delete(signup: SignupModel): Promise<boolean> {
+    async delete(signup: ModelRef, filter?: SignupFilterModel): Promise<boolean> {
         return this.client
-            .mutate<{removeSignup: {}}>({
+            .mutate<DeleteSignupMutation, DeleteSignupVariables>({
                 mutation: DELETE_SIGNUP,
-                variables: {id: signup.id},
-                refetchQueries: [{query: LIST_SIGNUPS}, {query: GET_SIGNUP_BY_ID, variables: {id: signup.id}}],
+                variables: {signupId: signup.id},
+                refetchQueries: [listSignupsRefetchQuery(filter), listUserSignupsRefetchQuery(filter), getSignupRefetchQuery(signup.id)],
                 awaitRefetchQueries: true
             })
             .then(() => true)
     }
 
-    observeList(skipQuery?: boolean): Observable<SignupModel[]> {
-        if (skipQuery) {
-            return this.subject
-        }
-
-        this.client
-            .subscribe<{signups: SignupModel[]}>({
-                query: SIGNUPS_SUBSCRIPTION
+    async respondToSignup(data: MemberSignupResponseInputModel, filter?: SignupFilterModel): Promise<SignupModel | undefined> {
+        return this.client
+            .mutate<RespondToSignupMutation, RespondToSignupVariables>({
+                mutation: RESPOND_TO_SIGNUP,
+                variables: {data},
+                refetchQueries: [listUserSignupsRefetchQuery(filter), getSignupRefetchQuery(data.signupId)],
+                awaitRefetchQueries: true,
             })
-            .map((config: FetchResult<{signups: SignupModel[]}>) => config.data?.signups)
-            .subscribe({
-                next: (val: SignupModel[]) => {
-                    this.subject.next(val)
-                },
-                complete: () => {
-                    console.log('Complete subscription!!!!')
-                },
-                error: err => {
-                    console.log('Error with subscription', err)
-                    this.subject.error(err)
-                }
-            })
+            .then(result => result.data?.respondToSignup)
+    }
+}
 
-        return this.subject;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const listSignupsRefetchQuery = (filter?: SignupFilterModel): {query: any, variables?: ListSignupsVariables} => {
+    if (filter) {
+        return {query: LIST_SIGNUPS, variables: {filter}}
     }
 
+    return {query: LIST_SIGNUPS}
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const listUserSignupsRefetchQuery = (filter?: SignupFilterModel): {query: any, variables?: ListSignupsVariables} => {
+    if (filter) {
+        return {query: LIST_SIGNUPS_FOR_USER, variables: {filter}}
+    }
+
+    return {query: LIST_SIGNUPS}
+}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getSignupRefetchQuery = (signupId: string): {query: any, variables: GetSignupVariables} => {
+    return {query: GET_SIGNUP_BY_ID, variables: {signupId}}
 }

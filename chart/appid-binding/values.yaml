@@ -1,0 +1,9 @@
+
+nameOverride: ""
+fullnameOverride: ""
+
+discoveryEndpoint: ""
+tenantId: ""
+clientId: ""
+clientSecret: ""
+url: ""

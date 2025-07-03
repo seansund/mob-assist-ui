@@ -1,3 +1,4 @@
+import React, {FormEvent} from "react";
 import {
     Box,
     Button,
@@ -12,8 +13,6 @@ import {
     Radio,
     RadioGroup
 } from "@mui/material";
-import React, {FormEvent, useState} from "react";
-import {first} from "../../util";
 
 export interface SimpleModel {
     value: string;
@@ -31,16 +30,19 @@ export interface SimpleSelectionDialogProps<T extends SimpleModel> {
     multiSelect: boolean
 }
 
-export const SimpleSelectionDialog = (props: SimpleSelectionDialogProps<any>) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SelectionType = any;
+
+export const SimpleSelectionDialog = (props: SimpleSelectionDialogProps<SelectionType>) => {
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
-        const formData = new FormData(e.currentTarget as any)
+        const formData = new FormData(e.currentTarget as SelectionType);
 
         const values: string[] = props.multiSelect
             ? props.options.map(option => option.label || option.value).map(label => formData.get(label) ? label : undefined).filter(val => !!val).map(val => val.toString())
-            : ([formData.get(props.label)] || []).filter(val => !!val).map(val => (val as any).toString())
+            : ([formData.get(props.label)]).filter(val => !!val).map(val => (val as SelectionType).toString())
 
         const selectedOptions = props.options.filter(option => values.includes(option.value))
 
@@ -88,8 +90,8 @@ export const SimpleSelectionDialog = (props: SimpleSelectionDialogProps<any>) =>
                 <ControlGroup labelId={props.id + '-label'} />
             </FormControl>
             <Grid container>
-                <Grid item xs={6}><Button variant="outlined" onClick={handleClose}>Cancel</Button></Grid>
-                <Grid item xs={6}><Button variant="contained" type="submit">Submit</Button></Grid>
+                <Grid size={{xs: 6}}><Button variant="outlined" onClick={handleClose}>Cancel</Button></Grid>
+                <Grid size={{xs: 6}}><Button variant="contained" type="submit">Submit</Button></Grid>
             </Grid>
         </form>
         </Box>

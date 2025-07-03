@@ -1,0 +1,19 @@
+
+.signupOptionContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 100%;
+    @media only screen and (max-width: 600px) {
+        justify-content: space-between;
+    }
+}
+
+.selected {
+    font-weight: bold;
+    color: darkgoldenrod;
+}
+
+.notSelected {
+    color: gray;
+}

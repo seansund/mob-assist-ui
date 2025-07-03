@@ -1,0 +1,11 @@
+
+.addSignupDialog {
+    min-width: 500px !important;
+    padding: 0 40px !important;
+}
+
+.formButtonContainer {
+    display: flex !important;
+    justify-content: center !important;
+    padding-bottom: 15px !important;
+}

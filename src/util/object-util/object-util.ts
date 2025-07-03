@@ -1,21 +1,21 @@
 
-export function isUndefined(value: any): value is undefined {
+export function isUndefined(value: unknown): value is undefined {
   return value === undefined;
 }
 
-export function isUndefinedOrEmpty(value: any): boolean {
+export function isUndefinedOrEmpty(value: unknown): boolean {
   return value === undefined || (Array.isArray(value) && value.length === 0);
 }
 
-export function isUndefinedOrNull(value: any): boolean {
+export function isUndefinedOrNull(value: unknown): boolean {
   return value === undefined || value === null;
 }
 
-export function isDefined(value: any): boolean {
+export function isDefined(value: unknown): boolean {
   return value !== undefined;
 }
 
-export function isDefinedAndNotNull(value: any): boolean {
+export function isDefinedAndNotNull(value: unknown): boolean {
   return value !== undefined && value !== null;
 }
 

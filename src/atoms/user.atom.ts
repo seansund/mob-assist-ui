@@ -1,21 +1,17 @@
 import {atom} from "jotai";
-import {atomWithDefault, loadable} from "jotai/utils";
-import {Container} from "typescript-ioc";
+import {atomWithQuery} from "jotai-tanstack-query";
+import {usersApi} from "@/services";
+import {UserModel} from "@/models";
 
-import {UserModel} from "../models";
-import {UsersApi} from "../services";
+export type UserStatus = 'unauthenticated' | 'authenticated' | 'loading';
 
-const service: UsersApi = Container.get(UsersApi)
+export const currentUserStatusAtom = atom<UserStatus | undefined>();
+export const currentUserAtom = atom<UserModel | undefined>();
 
-const baseAtom = atomWithDefault<Promise<UserModel>>(async () => service.current())
-export const currentUserAtom = atom(
-    get => get(baseAtom),
-    async (_get, set, inUser: UserModel | Promise<UserModel> | undefined) => {
-        const newUser = (!inUser) ? service.current() : inUser
-
-        set(baseAtom, await newUser)
-
-        return newUser
+export const loggedInUserAtom = atomWithQuery(() => ({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+        return usersApi().current();
     }
-)
-export const currentUserAtomLoadable = loadable(currentUserAtom)
+}))
+

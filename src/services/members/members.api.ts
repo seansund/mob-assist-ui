@@ -1,7 +1,7 @@
-import {MemberModel} from "../../models";
+import {MemberIdentifier, MemberModel, MemberRoleModel} from "@/models";
 import {BaseApi} from "../base.api";
-import {Observable} from "rxjs";
 
 export abstract class MembersApi extends BaseApi<MemberModel> {
-    abstract observeList(skipQuery?: boolean): Observable<MemberModel[]>
+    abstract getByIdentity(memberId: MemberIdentifier): Promise<MemberModel | undefined>;
+    abstract listRoles(): Promise<MemberRoleModel[]>;
 }

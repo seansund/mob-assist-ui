@@ -1,22 +1,24 @@
 import React from "react";
 import {useSetAtom} from "jotai";
 
-import './MemberResponseView.css';
-import {selectedMemberResponseAtom} from "../../../atoms";
-import {MemberResponseModel, signupOptionBySortIndex, SignupOptionModel} from "../../../models";
+import {selectedMemberResponseAtom} from "@/atoms";
+import {MemberSignupResponseModel, OptionModel} from "@/models";
+
+import styles from './page.module.css';
+import {classnames} from "@/util";
 
 export interface MemberResponseViewProps {
-    response: MemberResponseModel;
+    response: MemberSignupResponseModel;
     onClick: () => void;
 }
 
-export const MemberResponseView = (props: MemberResponseViewProps) => {
+export const MemberResponseView = ({response, onClick}: MemberResponseViewProps) => {
     const setSelectedMemberResponse = useSetAtom(selectedMemberResponseAtom)
 
-    const selectedOption = props.response.selectedOption
-    const options = props.response.signup.options
+    const selectedOption = response.option
+    const options: OptionModel[] = response.signup.options
 
-    const isSelected = (option: SignupOptionModel): boolean => {
+    const isSelected = (option: OptionModel): boolean => {
         if (!selectedOption) {
             return false
         }
@@ -24,12 +26,12 @@ export const MemberResponseView = (props: MemberResponseViewProps) => {
         return option.value === selectedOption.value
     }
 
-    const onClick = () => {
-        setSelectedMemberResponse(props.response)
-        props.onClick()
+    const handleClick = () => {
+        setSelectedMemberResponse(response)
+        onClick()
     }
 
-    return (<div onClick={onClick}>{options.options.sort(signupOptionBySortIndex).map(option => (
-        <span key={option.value} className={`signup-response ${isSelected(option) ? "active": ""}`}>{option.value}</span>
+    return (<div onClick={handleClick}>{options.map(option => (
+        <span key={option.value} className={classnames(styles.signupResponse, isSelected(option) ? styles.active: "")}>{option.value}</span>
     ))}</div>)
 }

@@ -2,6 +2,7 @@ import {Button, Modal} from "@mui/material";
 import React from "react";
 
 export interface BasicModalProps {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     contents: any
 }
 

@@ -1,11 +1,11 @@
 
-export interface AssignmentDiagramProps {
+interface AssignmentDiagramProps {
     parentWidth: number
     parentHeight: number
     layers?: string[]
 }
 
-export const AssignmentDiagram = (props: AssignmentDiagramProps) => {
+export const AssignmentDiagram = (props: Readonly<AssignmentDiagramProps>) => {
 
     const width = props.parentWidth || 816;
 
@@ -20,18 +20,18 @@ export const AssignmentDiagram = (props: AssignmentDiagramProps) => {
         <div style={{
             position: 'relative',
             overflow: 'visible',
-            height: '1px'
+            height: '1px',
         }}>
-        <svg style={{ overflow: 'visible' }}
+        <svg style={{ overflow: 'visible', backgroundColor: 'white' }}
              preserveAspectRatio="xMinYMin slice"
              viewBox={`0 0 ${width} ${height}`}
-            width={width} height={height}
+             width={width} height={height}
              xmlns="http://www.w3.org/2000/svg">
             <image
                 href="/images/assignments/sanctuary-base.svg"
                 x="0" y="0" width={width} height={height} />
             {layers
-                .map(layer => "/images/assignments/sanctuary-layer.svg".replace("layer", layer))
+                .map(layer => `/images/assignments/sanctuary-${layer}.svg`)
                 .map(image =>
                     <image key={image} href={image} x="0" y="0" z={zValue++} width={width} height={height} />
             )}

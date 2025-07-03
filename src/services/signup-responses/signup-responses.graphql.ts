@@ -1,235 +1,341 @@
-import {ApolloClient, FetchResult, gql} from "@apollo/client";
-import {BehaviorSubject, Observable} from "rxjs";
+import {ApolloClient, gql} from "@apollo/client";
 
 import {SignupResponsesApi} from "./signup-responses.api";
-import {getApolloClient} from "../../backends";
-import {AssignmentModel, MemberResponseModel, SignupModel} from "../../models";
+import {getApolloClient} from "@/backends";
+import {
+    isMemberModel,
+    MemberModel,
+    MemberSignupResponseFilterModel,
+    MemberSignupResponseInputModel,
+    MemberSignupResponseModel,
+    SignupModel
+} from "@/models";
+import {GET_SIGNUP_BY_ID, GetSignupVariables} from "@/services/signups/signups.gql";
 
-const LIST_SIGNUP_RESPONSES = gql`query ListSignupResponses { listSignupResponses { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
-const LIST_SIGNUP_RESPONSES_BY_SIGNUP = gql`query ListSignupResponsesBySignup($id: ID!) { listSignupResponsesBySignup(id: $id) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
-const LIST_SIGNUP_RESPONSES_BY_MEMBER = gql`query ListSignupResponsesByMember($phone: ID!) { listSignupResponsesByUser(phone: $phone) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
-const GET_SIGNUP_RESPONSE_BY_ID = gql`query GetSignupResponseById($id: ID!) { getSignupResponseById(id: $id) { id signup { id date title assignmentSet { id name assignments { id group name row } } options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
-const ADD_UPDATE_SIGNUP_RESPONSE = gql`mutation AddUpdateSignupResponse($id: ID, $signupId: ID!, $memberPhone: ID!, $selectedOptionId: ID, $assignmentIds: [String], $message: String) { addUpdateSignupResponse(id: $id, signupId: $signupId, memberPhone: $memberPhone, selectedOptionId: $selectedOptionId, assignmentIds: $assignmentIds, message: $message) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
-const DELETE_SIGNUP_RESPONSE = gql`mutation DeleteSignupResponse($id: ID!) { removeSignupResponse(id: $id) { result } }`;
-const CHECKIN_SIGNUP_RESPONSE = gql`mutation CheckIn($id: ID!) { checkIn(id: $id) { id signup { id date title assignmentSet { id name assignments { id group name row } } options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
-const REMOVE_CHECKIN_SIGNUP_RESPONSE = gql`mutation RemoveCheckIn($id: ID!) { removeCheckIn(id: $id) { id signup { id date title assignmentSet { id name assignments { id group name row } } options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
-const SIGNUP_RESPONSES_SUBSCRIPTION = gql`subscription SignupResponses { signupResponses { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
-const SIGNUP_RESPONSES_BY_USER_SUBSCRIPTION = gql`subscription SignupResponsesByUser($phone: ID!){ signupResponsesByUser(phone: $phone) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
-const SIGNUP_RESPONSES_BY_SIGNUP_SUBSCRIPTION = gql`subscription SignupResponsesBySignup($id: ID!) { signupResponsesBySignup(id: $id) { id signup { id date title options { id name options { id value declineOption } } } member { phone firstName lastName email preferredContact } selectedOption { id value declineOption } assignments { id group name row } message checkedIn } }`;
+const RESPONSE_FRAGMENT = gql`fragment ResponseFragment on MemberSignupResponse {
+    id
+    signedUp
+    signup {
+        id
+        date
+        title
+        options {
+            id
+            value
+            shortName
+            declineOption
+        }
+    }
+    member {
+        id
+        phone
+        firstName
+        lastName
+        email
+        preferredContact
+    }
+    option {
+        id
+        value
+        shortName
+        declineOption
+    }
+    assignments {
+        id
+        group
+        name
+        row
+        hidden
+    }
+    message
+    checkedIn
+}`
+
+
+const LIST_ALL_SIGNUP_RESPONSES = gql`query ListSignupResponses($filter: MemberSignupResponseFilter) { 
+    listAllResponses(filter: $filter) {
+        ...ResponseFragment
+    }
+}
+
+${RESPONSE_FRAGMENT}
+`;
+interface ListAllSignupResponsesQuery {
+    listAllResponses: MemberSignupResponseModel[];
+}
+
+const LIST_SIGNUP_RESPONSES = gql`query ListSignupResponses($filter: MemberSignupResponseFilter) { 
+    listResponses(filter: $filter) {
+        ...ResponseFragment
+    } 
+}
+
+${RESPONSE_FRAGMENT}
+`;
+interface ListSignupResponsesQuery {
+    listResponses: MemberSignupResponseModel[];
+}
+interface ListSignupResponsesVariables {
+    filter?: MemberSignupResponseFilterModel;
+}
+
+const GET_SIGNUP_RESPONSE_BY_ID = gql`query GetResponse($id: ID!) { 
+    getResponse(id: $id) {
+        ...ResponseFragment
+    } 
+}
+
+${RESPONSE_FRAGMENT}
+`;
+interface GetSignupResponseQuery {
+    getResponse: MemberSignupResponseModel;
+}
+interface GetSignupResponseVariables {
+    id: string;
+}
+
+const SIGNUP = gql`mutation Signup($data: MemberSignupResponseInput!) {
+    signup(data: $data) {
+        ...ResponseFragment
+    } 
+}
+
+${RESPONSE_FRAGMENT}
+`;
+interface SignupMutation {
+    signup: MemberSignupResponseModel;
+}
+interface SignupVariables {
+    data: MemberSignupResponseInputModel;
+}
+
+const UPDATE_SIGNUP_RESPONSE = gql`mutation UpdateSignupResponse($id: ID!, $data: MemberSignupResponseUpdateInput!) { 
+    updateMemberSignupResponse(data: $data, id: $id) {
+        ...ResponseFragment
+    } 
+}
+
+${RESPONSE_FRAGMENT}
+`;
+interface UpdateSignupMutation {
+    updateMemberSignupResponse: MemberSignupResponseModel;
+}
+interface UpdateSignupVariables {
+    id: string;
+    data: Partial<MemberSignupResponseModel>;
+}
+
+const SET_RESPONSE_ASSIGNMENT = gql`mutation SetResponseAssignments($id: ID!, $assignmentIds: [String!]!) {
+    setResponseAssignments(id: $id, assignmentIds: $assignmentIds) {
+        ...ResponseFragment
+    }
+}
+
+${RESPONSE_FRAGMENT}
+`;
+interface SetResponseAssignmentMutation {
+    setResponseAssignments: MemberSignupResponseModel;
+}
+interface SetResponseAssignmentVariables {
+    id: string;
+    assignmentIds: string[];
+}
+
+interface CacheInput {
+    signupId: string;
+    memberId: string;
+}
+
+// eslint-disable-next-line
+type RefetchQueryType<V = any> = {query: any, variables?: V};
 
 export class SignupResponsesGraphql implements SignupResponsesApi {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     client: ApolloClient<any>
-    subject: BehaviorSubject<MemberResponseModel[]>
 
     constructor() {
         this.client = getApolloClient()
-        this.subject = new BehaviorSubject<MemberResponseModel[]>([])
     }
 
-    list(): Promise<Array<MemberResponseModel>> {
+    async listByType(parent: MemberModel | SignupModel): Promise<MemberSignupResponseModel[]> {
+        if (isMemberModel(parent)) {
+            return this.listByMember(parent.phone)
+        } else {
+            return this.listBySignup(parent.id)
+        }
+    }
+
+    async listAllByType(parent: MemberModel | SignupModel): Promise<MemberSignupResponseModel[]> {
+        if (isMemberModel(parent)) {
+            return this.listAllByMember(parent.phone)
+        } else {
+            return this.listAllBySignup(parent.id)
+        }
+    }
+
+    async list(filter?: MemberSignupResponseFilterModel): Promise<MemberSignupResponseModel[]> {
+        const variables: {filter?: MemberSignupResponseFilterModel} = filter ? {filter} : {};
+
+        // TODO additional filters (timeframe?) and pagination?
         return this.client
-            .query<{listSignupResponses: SignupModel[]}>({
+            .query<ListSignupResponsesQuery, ListSignupResponsesVariables>({
                 query: LIST_SIGNUP_RESPONSES,
+                variables,
             })
-            .then(result => result.data.listSignupResponses)
+            .then(result => result.data.listResponses)
             .catch(err => {
                 console.log('Error querying members: ', err)
                 throw err
-            }) as any
+            })
     }
 
-    listBySignup(id: string): Promise<MemberResponseModel[]> {
-        console.log('Querying responses by signup: ', {id})
+    async listAll(filter?: MemberSignupResponseFilterModel): Promise<MemberSignupResponseModel[]> {
+        const variables: {filter?: MemberSignupResponseFilterModel} = filter ? {filter} : {};
+
+        // TODO additional filters (timeframe?) and pagination?
         return this.client
-            .query<{listSignupResponsesBySignup: SignupModel[]}>({
-                query: LIST_SIGNUP_RESPONSES_BY_SIGNUP,
-                variables: {id},
-                fetchPolicy: 'no-cache'
+            .query<ListAllSignupResponsesQuery, ListSignupResponsesVariables>({
+                query: LIST_ALL_SIGNUP_RESPONSES,
+                variables,
             })
-            .then(result => {
-                return result.data.listSignupResponsesBySignup
-            })
+            .then(result => result.data.listAllResponses)
             .catch(err => {
                 console.log('Error querying members: ', err)
                 throw err
-            }) as any
-    }
-
-    listByUser(phone: string): Promise<MemberResponseModel[]> {
-        return this.client
-            .query<{listSignupResponsesByUser: SignupModel[]}>({
-                query: LIST_SIGNUP_RESPONSES_BY_MEMBER,
-                variables: {phone}
             })
-            .then(result => result.data.listSignupResponsesByUser)
-            .catch(err => {
-                console.log('Error querying members: ', err)
-                throw err
-            }) as any
     }
 
-    get(id: string): Promise<MemberResponseModel | undefined> {
+    async listBySignup(signupId: string): Promise<MemberSignupResponseModel[]> {
+        console.log('Querying responses by signup: ', {signupId})
+
+        return this.list({signupId})
+    }
+
+    async listAllBySignup(signupId: string): Promise<MemberSignupResponseModel[]> {
+        console.log('Querying responses by signup: ', {signupId})
+
+        return this.listAll({signupId})
+    }
+
+    async listByMember(memberId: string): Promise<MemberSignupResponseModel[]> {
+        console.log('Querying responses by member: ', {memberId})
+
+        return this.list({memberId})
+    }
+
+    async listAllByMember(memberId: string): Promise<MemberSignupResponseModel[]> {
+        console.log('Querying responses by member: ', {memberId})
+
+        return this.listAll({memberId})
+    }
+
+    async get(id: string): Promise<MemberSignupResponseModel | undefined> {
         return this.client
-            .query<{getSignupResponseById: MemberResponseModel}>({
+            .query<GetSignupResponseQuery, GetSignupResponseVariables>({
                 query: GET_SIGNUP_RESPONSE_BY_ID,
                 variables: {id}
             })
-            .then(result => result.data.getSignupResponseById)
+            .then(result => result.data.getResponse)
     }
 
-    addUpdate(response: MemberResponseModel): Promise<MemberResponseModel | undefined> {
-        const refetchQueries: any[] = [{query: LIST_SIGNUP_RESPONSES}]
-        if (response.id) {
-            refetchQueries.push({query: GET_SIGNUP_RESPONSE_BY_ID, variables: {id: response.id}});
-        }
-        if (response.signup.id) {
-            refetchQueries.push({query: LIST_SIGNUP_RESPONSES_BY_SIGNUP, variables: {id: response.signup.id}});
-        }
-        if (response.member.phone) {
-            refetchQueries.push({query: LIST_SIGNUP_RESPONSES_BY_MEMBER, variables: {phone: response.member.phone}});
-        }
+    async create(data: MemberSignupResponseInputModel): Promise<MemberSignupResponseModel | undefined> {
 
         return this.client
-            .mutate<{addUpdateSignupResponse: MemberResponseModel}>({
-                mutation: ADD_UPDATE_SIGNUP_RESPONSE,
-                variables: {id: response.id, signupId: response.signup.id, memberPhone: response.member.phone, selectedOptionId: response.selectedOption?.id, assignmentIds: (response.assignments || []).map((assignment: AssignmentModel) => assignment.id), message: response.message},
-                refetchQueries,
+            .mutate<SignupMutation, SignupVariables>({
+                mutation: SIGNUP,
+                variables: {data},
+                refetchQueries: refetchQueries(data),
                 awaitRefetchQueries: true
             })
-            .then(async (result: FetchResult<{addUpdateSignupResponse: MemberResponseModel}>) => await result.data?.addUpdateSignupResponse || undefined)
+            .then(result => result.data?.signup)
     }
 
-    delete(response: MemberResponseModel): Promise<boolean> {
+    async signup(data: MemberSignupResponseInputModel): Promise<MemberSignupResponseModel | undefined> {
+
         return this.client
-            .mutate<{removeSignupResponse: {}}>({
-                mutation: DELETE_SIGNUP_RESPONSE,
-                variables: {id: response.id},
-                refetchQueries: [{query: LIST_SIGNUP_RESPONSES}, {query: GET_SIGNUP_RESPONSE_BY_ID, variables: {id: response.id}}],
+            .mutate<SignupMutation, SignupVariables>({
+                mutation: SIGNUP,
+                variables: {data},
+                refetchQueries: refetchQueries(data),
                 awaitRefetchQueries: true
             })
-            .then(() => true)
+            .then(result => result.data?.signup)
     }
 
-    subscribeToResponses(skipQuery?: boolean): Observable<MemberResponseModel[]> {
-        if (skipQuery) {
-            return this.subject
-        }
+    async update(data: Partial<MemberSignupResponseModel> & {id: string}): Promise<MemberSignupResponseModel | undefined> {
 
-        this.client
-            .subscribe<{signupResponses: MemberResponseModel[]}>({
-                query: SIGNUP_RESPONSES_SUBSCRIPTION
+        // TODO implement refetch queries
+        return this.client
+            .mutate<UpdateSignupMutation, UpdateSignupVariables>({
+                mutation: UPDATE_SIGNUP_RESPONSE,
+                variables: {id: data.id, data},
             })
-            .map((config: FetchResult<{signupResponses: MemberResponseModel[]}>) => config.data?.signupResponses)
-            .subscribe({
-                next: (val: MemberResponseModel[]) => {
-                    this.subject.next(val)
-                },
-                complete: () => {
-                    console.log('Complete subscription!!!!')
-                },
-                error: err => {
-                    console.log('Error with subscription', err)
-                    this.subject.error(err)
-                }
-            })
-
-        return this.subject;
+            .then(result => result.data?.updateMemberSignupResponse)
     }
 
-    subscribeToSignupResponses(id: string): Observable<MemberResponseModel[]> {
-
-        this.client
-            .subscribe<{signupResponsesBySignup: MemberResponseModel[]}>({
-                query: SIGNUP_RESPONSES_BY_SIGNUP_SUBSCRIPTION,
-                variables: {id}
-            })
-            .map((config: FetchResult<{signupResponsesBySignup: MemberResponseModel[]}>) => config.data?.signupResponsesBySignup)
-            .subscribe({
-                next: (val: MemberResponseModel[]) => {
-                    this.subject.next(val)
-                },
-                complete: () => {
-                    console.log('Complete subscription!!!!')
-                },
-                error: err => {
-                    console.log('Error with subscription', err)
-                    this.subject.error(err)
-                }
-            })
-
-        return this.subject;
+    async delete(response: MemberSignupResponseModel): Promise<boolean> {
+        return this.updateInternal({id: response.id, signedUp: false}, getCacheInput(response))
+            .then(() => true);
     }
 
-    subscribeToUserResponses(phone: string): Observable<MemberResponseModel[]> {
-
-        this.client
-            .subscribe<{signupResponsesByUser: MemberResponseModel[]}>({
-                query: SIGNUP_RESPONSES_BY_USER_SUBSCRIPTION,
-                variables: {phone}
-            })
-            .map((config: FetchResult<{signupResponsesByUser: MemberResponseModel[]}>) => config.data?.signupResponsesByUser)
-            .subscribe({
-                next: (val: MemberResponseModel[]) => {
-                    this.subject.next(val)
-                },
-                complete: () => {
-                    console.log('Complete subscription!!!!')
-                },
-                error: err => {
-                    console.log('Error with subscription', err)
-                    this.subject.error(err)
-                }
-            })
-
-        return this.subject;
+    async checkIn(response: MemberSignupResponseModel): Promise<MemberSignupResponseModel | undefined> {
+        return this.updateInternal({id: response.id, checkedIn: true}, getCacheInput(response));
     }
 
-    async checkIn(id: string): Promise<MemberResponseModel> {
-        const refetchQueries: any[] = [
-            {query: LIST_SIGNUP_RESPONSES},
-            {query: GET_SIGNUP_RESPONSE_BY_ID, variables: {id}}
-        ]
+    async removeCheckIn(response: MemberSignupResponseModel): Promise<MemberSignupResponseModel | undefined> {
+        return this.updateInternal({id: response.id, checkedIn: false}, getCacheInput(response));
+    }
 
-        const result: MemberResponseModel | undefined = await this.client
-            .mutate<{checkIn: MemberResponseModel | undefined}>({
-                mutation: CHECKIN_SIGNUP_RESPONSE,
-                variables: {id},
-                refetchQueries,
+    async updateInternal(data: Partial<MemberSignupResponseModel> & {id: string}, cacheInput: CacheInput) {
+
+        return this.client
+            .mutate<UpdateSignupMutation, UpdateSignupVariables>({
+                mutation: UPDATE_SIGNUP_RESPONSE,
+                variables: {id: data.id, data},
+                refetchQueries: refetchQueries(cacheInput),
                 awaitRefetchQueries: true
             })
-            .then(async (result: FetchResult<{checkIn: MemberResponseModel | undefined}>) => await result.data?.checkIn)
-
-        if (!result) {
-            throw new Error('Signup response not found: ' + id)
-        }
-
-        console.log('Check in result: ', result)
-
-        return result
+            .then(result => result.data?.updateMemberSignupResponse);
     }
 
-    async removeCheckIn(id: string): Promise<MemberResponseModel> {
-        const refetchQueries: any[] = [
-            {query: LIST_SIGNUP_RESPONSES},
-            {query: GET_SIGNUP_RESPONSE_BY_ID, variables: {id}}
-        ]
+    async setResponseAssignments(response: MemberSignupResponseModel, assignmentIds: string[]): Promise<MemberSignupResponseModel | undefined> {
 
-        const result: MemberResponseModel | undefined = await this.client
-            .mutate<{removeCheckIn: MemberResponseModel | undefined}>({
-                mutation: REMOVE_CHECKIN_SIGNUP_RESPONSE,
-                variables: {id},
-                refetchQueries,
+        return this.client
+            .mutate<SetResponseAssignmentMutation, SetResponseAssignmentVariables>({
+                mutation: SET_RESPONSE_ASSIGNMENT,
+                variables: {id: response.id, assignmentIds},
+                refetchQueries: refetchQueries(getCacheInput(response)),
                 awaitRefetchQueries: true
             })
-            .then(async (result: FetchResult<{removeCheckIn: MemberResponseModel | undefined}>) => await result.data?.removeCheckIn)
-
-        if (!result) {
-            throw new Error('Signup response not found: ' + id)
-        }
-
-        console.log('Remove check in result: ', result)
-
-        return result
+            .then(result => result.data?.setResponseAssignments)
     }
+}
 
+const getCacheInput = (response: MemberSignupResponseModel): CacheInput => {
+    return {
+        signupId: response.signup.id,
+        memberId: response.member.id,
+    }
+}
+
+const refetchQueries  = (data: {signupId: string, memberId: string}): RefetchQueryType[] => {
+    const refetchQueries: RefetchQueryType[] = [{query: LIST_ALL_SIGNUP_RESPONSES}]
+
+    refetchQueries.push(...getSignupResponseRefetchQuery(data));
+    refetchQueries.push(...getMemberResponseRefetchQuery(data));
+    refetchQueries.push(...getGetSignupRefetchQuery(data));
+
+    return refetchQueries;
+}
+
+const getSignupResponseRefetchQuery = (data: {signupId: string, memberId: string}): RefetchQueryType<ListSignupResponsesVariables>[] => {
+    return [{query: LIST_ALL_SIGNUP_RESPONSES, variables: {filter: {signupId: data.signupId}}}];
+}
+
+const getMemberResponseRefetchQuery = (data: {signupId: string, memberId: string}): RefetchQueryType<ListSignupResponsesVariables>[] => {
+    return [{query: LIST_ALL_SIGNUP_RESPONSES, variables: {filter: {memberId: data.memberId}}}];
+}
+
+const getGetSignupRefetchQuery = (data: {signupId: string, memberId: string}): RefetchQueryType<GetSignupVariables>[] => {
+    return [{query: GET_SIGNUP_BY_ID, variables: {signupId: data.signupId}}]
 }

@@ -9,15 +9,21 @@ jobs:
   publish-assets:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        chart_name:
+          - mob-assist-ui
+          - appid-binding
+
     steps:
       - name: Checkout release
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.release.tag_name }}
           path: release
 
       - name: Install helm
-        uses: azure/setup-helm@v3
+        uses: azure/setup-helm@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -28,8 +34,8 @@ jobs:
           FULL_RELEASE_TAG=${{ github.event.release.tag_name }}
           RELEASE_TAG=${FULL_RELEASE_TAG/v/}
           
-          REPO_NAME="mob-assist-ui"
-          CHART_NAME="mob-assist-ui"
+          REPO_NAME="mob-assist-api"
+          CHART_NAME="${{ matrix.platform }}"
           CHART_PATH="release/chart/${CHART_NAME}"
           CHART_PACKAGE="${CHART_NAME}-${RELEASE_TAG}.tgz"
           PACKAGE_DIR="packages"
@@ -74,12 +80,13 @@ jobs:
 
       - name: Generate helm index
         run: |
+          curl -Lo index.current.yaml ${{ steps.variables.outputs.repo-url }}
           helm repo index ${{ steps.variables.outputs.package-dir }} \
             --url ${{ steps.variables.outputs.asset-url }} \
-            --merge ${{ steps.variables.outputs.repo-url }}
+            --merge ./index.current.yaml
 
       - name: Checkout gh-pages
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: gh-pages
           path: pages
@@ -93,7 +100,7 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add index.yaml
-          git commit -m "Update helm repo with release ${{ steps.variables.outputs.release-tag }}"
+          git commit -m "Update helm repo with ${{ steps.variables.outputs.chart-name }} release ${{ steps.variables.outputs.release-tag }}"
 
       - name: Push changes
         uses: ad-m/github-push-action@master

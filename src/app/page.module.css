@@ -1,0 +1,23 @@
+
+.signupsContainer {
+  margin: 0 100px;
+  padding-top: 20px;
+  @media only screen and (min-width: 768px) {
+    margin: 0 50px;
+  }
+  @media only screen and (max-width: 768px) {
+    margin: 0;
+  }
+}
+
+.actionContainer {
+  padding: 10px;
+}
+
+.actionFilter {
+  text-align: left;
+}
+
+.actionAdd {
+  text-align: right;
+}

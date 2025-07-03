@@ -1,0 +1,329 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+"""Assignment definitions"""
+type Assignment {
+  assignmentSet: AssignmentSet
+  group: String!
+  hidden: Boolean
+  id: ID!
+  name: String!
+  partnerId: String
+  row: Float!
+}
+
+"""Assignment input"""
+input AssignmentInput {
+  group: String!
+  name: String!
+  partnerId: String
+  row: Float!
+}
+
+"""Collection of assignments"""
+type AssignmentSet {
+  assignments: [Assignment!]
+  id: ID!
+  name: String!
+}
+
+"""Assignment set input for creating an assignment set"""
+input AssignmentSetInput {
+  assignments: [AssignmentInput!]!
+  name: String!
+}
+
+"""Group of members"""
+type Group {
+  id: ID!
+  members: [MemberOfGroup!]
+  name: String!
+  summary: GroupSummary
+}
+
+"""Group update"""
+input GroupInput {
+  name: String
+}
+
+type GroupSummary {
+  memberCount: Float!
+}
+
+"""Member of the application"""
+type Member {
+  email: String!
+  firstName: String!
+  groups: [MemberGroup!]
+  id: ID!
+  lastName: String!
+  notifications: [Notification!]
+  phone: String!
+  preferredContact: String
+  roles: [MemberRole!]
+}
+
+type MemberGroup {
+  id: ID!
+  name: String!
+  roleId: ID
+}
+
+input MemberIdentityInput {
+  email: String
+  id: ID
+  phone: String
+}
+
+input MemberInput {
+  email: String!
+  firstName: String!
+  lastName: String!
+  phone: String!
+  preferredContact: String
+}
+
+type MemberOfGroup {
+  email: String!
+  firstName: String!
+  id: ID!
+  lastName: String!
+  phone: String!
+  preferredContact: String!
+  roleId: ID
+  roles: [MemberRole!]
+}
+
+"""Member role"""
+type MemberRole {
+  id: ID!
+  name: String!
+}
+
+"""Member response to signup"""
+type MemberSignupResponse {
+  assignments: [Assignment!]
+  checkedIn: Boolean
+  id: ID!
+  member: Member!
+  message: String
+  option: Option
+  signedUp: Boolean!
+  signup: Signup!
+}
+
+"""Member signup response filter"""
+input MemberSignupResponseFilter {
+  memberId: String
+  signupId: String
+}
+
+"""Member signup response input"""
+input MemberSignupResponseInput {
+  checkedIn: Boolean
+  memberId: String!
+  message: String
+  optionId: String!
+  signedUp: Boolean!
+  signupId: String!
+}
+
+"""Member signup response update"""
+input MemberSignupResponseUpdateInput {
+  checkedIn: Boolean
+  memberId: String
+  message: String
+  optionId: String
+  signedUp: Boolean
+  signupId: String
+}
+
+input MemberUpdateInput {
+  email: String
+  firstName: String
+  lastName: String
+  phone: String
+  preferredContact: String
+}
+
+type Mutation {
+  addAssignment(assignment: AssignmentInput!, assignmentSetId: ID!): AssignmentSet!
+  addMemberRole(name: String!): MemberRole!
+  addMemberToGroup(groupId: ID!, memberId: ID!, roleId: ID): Group
+  addMembersToGroup(groupId: ID!, memberIds: [ID!]!, roleId: ID): Group
+  addOption(option: OptionInput!, optionSetId: ID!): OptionSet!
+  addRoleToMember(memberId: ID!, memberRoleId: ID!): Member!
+  addUpdateMember(member: MemberInput!): Member!
+  createAssignmentSet(assignmentSet: AssignmentSetInput!): AssignmentSet!
+  createGroup(name: String!): Group!
+  createMember(member: MemberInput!): Member!
+  createMembers(members: [MemberInput!]!): [Member!]!
+  createOptionSet(optionSet: OptionSetInput!): OptionSet!
+  createSignup(signup: SignupInput!): Signup!
+  deleteAssignment(assignmentId: String!, assignmentSetId: ID!): AssignmentSet
+  deleteAssignmentSet(assignmentSetId: ID!): AssignmentSet!
+  deleteGroup(groupId: ID!): Group!
+  deleteMember(memberId: MemberIdentityInput!): Member!
+  deleteMemberRole(memberRoleId: ID!): MemberRole!
+  deleteOptionSet(optionSetId: ID!): OptionSet!
+  deleteSignup(signupId: ID!): Signup!
+  duplicateSignup(date: String!, fromSignupId: ID!): Signup!
+  removeMemberFromGroup(groupId: ID!, memberId: ID!): Group
+  removeMembersFromGroup(groupId: ID!, memberIds: [ID!]!): [Member!]!
+  removeOption(optionId: ID!, optionSetId: ID!): OptionSet!
+  removeRoleFromMember(memberId: ID!, memberRoleId: ID!): Member!
+  respondToSignup(data: MemberSignupResponseInput!): Signup
+  sendSignupAssignments(signupId: ID!): NotificationResult!
+  sendSignupCheckin(signupId: ID!): NotificationResult!
+  sendSignupRequest(signupId: ID!): NotificationResult!
+  sendSignupRequestToNoResponse(signupId: ID!): NotificationResult!
+  setResponseAssignments(assignmentIds: [String!]!, id: ID!): MemberSignupResponse!
+  signup(data: MemberSignupResponseInput!): MemberSignupResponse!
+  updateAssignmentSet(assignmentSetId: ID!, name: String!): AssignmentSet!
+  updateGroup(data: GroupInput!, groupId: ID!): Group
+  updateMember(member: MemberUpdateInput!, memberId: ID!): Member!
+  updateMemberSignupResponse(data: MemberSignupResponseUpdateInput!, id: ID!): MemberSignupResponse!
+  updateOption(option: OptionInput!, optionId: ID!, optionSetId: ID!): OptionSet!
+  updateOptionSet(name: String!, optionSetId: ID!): OptionSet!
+  updateSignup(data: SignupUpdate!, signupId: ID!): Signup!
+}
+
+"""Notification"""
+type Notification {
+  date: String!
+  emailChannel: Boolean!
+  fromMember: Member
+  id: ID
+  message: String!
+  read: Boolean
+  subject: String!
+  textAction: String!
+  textChannel: Boolean!
+  toMember: Member!
+  type: String!
+  webChannel: Boolean!
+}
+
+type NotificationChannelResult {
+  channel: String!
+  count: Float!
+}
+
+type NotificationResult {
+  channels: [NotificationChannelResult!]!
+  type: String!
+}
+
+"""Signup option"""
+type Option {
+  declineOption: Boolean
+  id: ID!
+  optionSet: OptionSet
+  optionSetId: String!
+  shortName: String!
+  sortIndex: Float!
+  value: String!
+}
+
+"""Option input"""
+input OptionInput {
+  declineOption: Boolean
+  optionSetId: String!
+  shortName: String!
+  sortIndex: Float!
+  value: String!
+}
+
+"""Collection of options"""
+type OptionSet {
+  id: ID!
+  name: String!
+  options: [Option!]
+  summary: OptionSetSummary
+}
+
+"""Option set input"""
+input OptionSetInput {
+  name: String!
+  options: [OptionInput!]!
+}
+
+"""Summary of an option set"""
+type OptionSetSummary {
+  signupCount: Float!
+}
+
+type OptionSummary {
+  assignmentCount: Float!
+  count: Float!
+  option: Option
+}
+
+type Query {
+  getAssignmentSet(assignmentSetId: String!): AssignmentSet
+  getGroup(groupId: ID!): Group!
+  getMember(memberId: MemberIdentityInput!): Member
+  getOptionSet(optionSetId: ID!): OptionSet
+  getResponse(id: ID!): MemberSignupResponse
+  getSignup(signupId: ID!): Signup
+  listAllResponses(filter: MemberSignupResponseFilter): [MemberSignupResponse!]!
+  listAssignmentSets: [AssignmentSet!]!
+  listGroups: [Group!]!
+  listMemberRoles: [MemberRole!]!
+  listMembers: [Member!]!
+  listOptionSets: [OptionSet!]!
+  listResponses(filter: MemberSignupResponseFilter): [MemberSignupResponse!]!
+  listSignups(filter: SignupFilter): [Signup!]!
+}
+
+"""Signup"""
+type Signup {
+  assignmentSet: AssignmentSet
+  assignmentSetId: ID
+  assignments: [Assignment!]!
+  date: String!
+  description: String
+  group: Group!
+  groupId: ID!
+  id: ID!
+  members: [Member!]!
+  optionSet: OptionSet!
+  optionSetId: ID!
+  options: [Option!]!
+  responseSummaries: [OptionSummary!]!
+  responses: [MemberSignupResponse!]
+  title: String!
+}
+
+input SignupFilter {
+  memberId: MemberIdentityInput
+  scope: SignupScope!
+}
+
+"""Signup input"""
+input SignupInput {
+  assignmentSetId: String!
+  date: String!
+  description: String
+  groupId: String!
+  optionSetId: String!
+  title: String!
+}
+
+enum SignupScope {
+  ALL
+  FUTURE
+  UPCOMING
+}
+
+"""Signup update model"""
+input SignupUpdate {
+  assignmentSetId: String
+  date: String
+  description: String
+  groupId: String
+  optionSetId: String
+  title: String
+}

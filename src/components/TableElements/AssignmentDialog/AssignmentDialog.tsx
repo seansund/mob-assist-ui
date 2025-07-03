@@ -1,5 +1,5 @@
 import React, {FormEvent} from "react";
-import {useAtomValue, useSetAtom} from "jotai";
+import {useAtomValue} from "jotai";
 import {
     Box,
     Button,
@@ -12,45 +12,33 @@ import {
     FormLabel,
     Grid
 } from "@mui/material";
-import {Container} from "typescript-ioc";
 
-import {currentSignupAtom, loadableSelectedMemberResponseAtom, memberResponsesAtom} from "../../../atoms";
-import {
-    AssignmentGroup,
-    AssignmentModel,
-    AssignmentSetModel,
-    getGroupIndex,
-    groupAssignments,
-    MemberModel,
-    MemberResponseModel,
-    SignupModel
-} from "../../../models";
-import {SignupResponsesApi} from "../../../services";
-import {first} from "../../../util";
+import {currentSignupAtom, selectedMemberResponseAtom, updateResponseAssignmentsAtom} from "@/atoms";
+import {AssignmentGroupModel, AssignmentModel, groupAssignments, MemberSignupResponseModel} from "@/models";
+import {first} from "@/util";
+
 
 export interface AssignmentDialogProps {
-    open: boolean
-    onClose: () => void
-    baseType: SignupModel | MemberModel
-    currentAssignments: AssignmentModel[]
+    open: boolean;
+    onClose: () => void;
+    currentAssignments: AssignmentModel[];
+    refetch: () => Promise<void>;
 }
 
-export const AssignmentDialog = (props: AssignmentDialogProps) => {
-    const loadableResponse = useAtomValue(loadableSelectedMemberResponseAtom)
-    const signup = useAtomValue(currentSignupAtom)
-    const loadResponses = useSetAtom(memberResponsesAtom)
+export const AssignmentDialog = ({open, onClose, currentAssignments, refetch}: Readonly<AssignmentDialogProps>) => {
+    const {data: signup, status} = useAtomValue(currentSignupAtom)
+    const response: MemberSignupResponseModel | undefined = useAtomValue(selectedMemberResponseAtom)
+    const {mutateAsync} = useAtomValue(updateResponseAssignmentsAtom)
 
-    if (loadableResponse.state === 'loading' || loadableResponse.state === 'hasError') {
+    if (status === 'pending' || status === 'error') {
         return (<></>)
     }
 
-    const response: MemberResponseModel | undefined = loadableResponse.data
-
-    if (!response || !signup?.assignmentSet) {
+    if (!response) {
         return (<></>)
     }
 
-    const assignmentSet: AssignmentSetModel = signup.assignmentSet
+    const assignments: AssignmentModel[] = signup.assignments ?? [];
 
     const formDataToObject = (formData: FormData): {[name: string]: string} => {
         const result: {[name: string]: string} = {}
@@ -63,76 +51,59 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
     }
 
     const lookupAssignment = (name: string): AssignmentModel | undefined => {
-        return first(assignmentSet.assignments.filter(assignment => assignment.name === name))
-            .orElse(undefined as any)
+        return first(assignments.filter(assignment => assignment.name === name))
+            .orElse(undefined as never)
     }
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault()
         e.stopPropagation()
 
-        const formData = new FormData(e.currentTarget as any)
+        const formData = new FormData(e.currentTarget as never)
 
         const assignments: AssignmentModel[] = Object.values(formDataToObject(formData))
             .map(lookupAssignment)
             .filter(assignment => !!assignment) as AssignmentModel[]
 
-        handleAssignmentChange(assignments)
+        handleAssignmentChange(assignments).catch(err => console.log('Error updating assignments: ', err))
 
-        props.onClose()
+        onClose()
     }
 
     const handleClose = () => {
-        props.onClose()
+        onClose()
     }
 
     const handleAssignmentChange = async (assignments?: AssignmentModel[]) => {
         if (assignments) {
-            response.assignments = assignments
-
-            const service: SignupResponsesApi = Container.get(SignupResponsesApi)
-
-            await service.addUpdate(response)
-
-            loadResponses(props.baseType)
+            mutateAsync({response, assignments}).then(refetch);
         }
     }
 
-    const assignmentsByGroup: AssignmentGroup[] = groupAssignments(assignmentSet)
+    const assignmentsByGroup: AssignmentGroupModel[] = groupAssignments(assignments)
 
     const isChecked = (assignment: AssignmentModel): boolean => {
         return first((response.assignments || []).filter(current => current.name === assignment.name)).isPresent()
     }
 
     const isDisabled = (assignment: AssignmentModel): boolean => {
-        return !isChecked(assignment) && props.currentAssignments.map(assn => assn.name).includes(assignment.name)
+        return !isChecked(assignment) && currentAssignments.map(assn => assn.name).includes(assignment.name)
     }
 
-    const getDirection = (group: string): 'row' | 'row-reverse' => {
-        return getGroupIndex(group) % 2 === 0 ? 'row-reverse' : 'row'
-    }
-
-    return (<Dialog open={props.open} onClose={handleClose} >
+    return (<Dialog open={open} onClose={handleClose} >
         <DialogTitle>Update assignments: {response.member.firstName} {response.member.lastName}</DialogTitle>
         <Box sx={{padding: '10px'}}>
             <form onSubmit={handleSubmit}>
         <FormControl>
             <Grid container sx={{pr: '15px'}}>
             {assignmentsByGroup.map(group => (
-                <Grid key={group.group} item xs={6}>
-                <FormLabel component="div" style={{textAlign: 'center', width: '100%'}}>{group.group}</FormLabel>
+                <Grid key={group.group} size={{xs: 6}}>
+                <FormLabel component="div" style={{textAlign: 'center', width: '100%', fontWeight: 'bold'}}>{group.group}</FormLabel>
                 <FormGroup>
-                    <Grid container direction={getDirection(group.group)}>
+                    <Grid container direction="row-reverse">
                 {group.assignments.map(assignment => (
-                    <Grid key={assignment.group + '-' + assignment.name} item xs={2}>
-                    <FormControlLabel
-                        labelPlacement="top"
-                        control={
-                            <Checkbox defaultChecked={isChecked(assignment)} disabled={isDisabled(assignment)} name={assignment.name} value={assignment.name}/>
-                        }
-                        label={assignment.name}
-                        key={assignment.group + '-' + assignment.name}
-                    />
+                    <Grid key={assignment.id} size={{xs: 2}}>
+                        <AssignmentCheck assignment={assignment} isChecked={isChecked} isDisabled={isDisabled} />
                     </Grid>
                 ))}
                     </Grid>
@@ -142,11 +113,31 @@ export const AssignmentDialog = (props: AssignmentDialogProps) => {
             </Grid>
         </FormControl>
                 <Grid container sx={{paddingTop: '5px'}}>
-                    <Grid item xs={6}><Button variant="outlined" onClick={handleClose}>Cancel</Button></Grid>
-                    <Grid item xs={6}><Button variant="contained" type="submit">Submit</Button></Grid>
+                    <Grid size={{xs: 6}}><Button variant="outlined" onClick={handleClose}>Cancel</Button></Grid>
+                    <Grid size={{xs: 6}}><Button variant="contained" type="submit">Submit</Button></Grid>
                 </Grid>
-
             </form>
         </Box>
     </Dialog>)
+}
+
+interface AssignmentCheck {
+    assignment: AssignmentModel;
+    isChecked: (assignment: AssignmentModel) => boolean;
+    isDisabled: (assignment: AssignmentModel) => boolean;
+}
+
+const AssignmentCheck = ({assignment, isChecked, isDisabled}: Readonly<AssignmentCheck>) => {
+    if (assignment.hidden) {
+        return <span> </span>
+    }
+
+    return <FormControlLabel
+        labelPlacement="top"
+        control={
+            <Checkbox defaultChecked={isChecked(assignment)} disabled={isDisabled(assignment)} name={assignment.name} value={assignment.name}/>
+        }
+        label={assignment.name}
+        key={assignment.group + '-' + assignment.name}
+    />
 }

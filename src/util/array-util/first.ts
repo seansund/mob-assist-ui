@@ -1,17 +1,17 @@
-import {Optional} from '../optional'
+import {OptionalValue} from '../optional'
 
-export const first = <T>(arr: T[] = []): Optional<T> => {
+export const first = <T>(arr: T[] = []): OptionalValue<T> => {
   if (arr.length === 0) {
-    return Optional.empty()
+    return OptionalValue.empty()
   }
 
-  return Optional.ofNullable(arr[0])
+  return OptionalValue.ofNullable(arr[0])
 }
 
-export const last = <T>(arr: T[] = []): Optional<T> => {
+export const last = <T>(arr: T[] = []): OptionalValue<T> => {
   if (arr.length === 0) {
-    return Optional.empty()
+    return OptionalValue.empty()
   }
 
-  return Optional.ofNullable(arr[arr.length - 1])
+  return OptionalValue.ofNullable(arr[arr.length - 1])
 }

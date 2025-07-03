@@ -7,7 +7,7 @@ replicaCount: 1
 image:
   repository: quay.io/seansund/mob-assist-ui
   pullPolicy: IfNotPresent
-  port: 8080
+  port: 3000
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
@@ -86,3 +86,7 @@ serverUrl: "http://mob-assist-api"
 
 route:
   enabled: true
+
+appid-binding:
+  enabled: false
+  fullnameOverride: "appid-binding"

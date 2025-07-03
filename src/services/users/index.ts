@@ -1,7 +1,13 @@
-import {Container} from "typescript-ioc";
 import {UsersApi} from "./users.api";
-import {UsersMock} from "./users.mock";
+import {UsersRest} from "@/services/users/users.rest";
+import {getServiceInstance} from "@/services/service-instance";
 
 export * from './users.api'
 
-Container.bind(UsersApi).to(UsersMock)
+let _instance: UsersApi;
+export const usersApi = (): UsersApi => {
+    if (!_instance) {
+        _instance = getServiceInstance(() => new UsersRest());
+    }
+    return _instance;
+}

@@ -1,0 +1,10 @@
+
+.formContainer {
+    min-width: 400px !important;
+}
+
+.formButtonContainer {
+    display: flex !important;
+    justify-content: center !important;
+    padding-bottom: 15px !important;
+}

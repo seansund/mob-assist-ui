@@ -82,7 +82,7 @@ jobs:
       - name: Update helm cache
         run: |
           mkdir cache
-          ln -s ./pages/index.yaml ./cache/${{ steps.variables.outputs.repo-name }}-index.yaml
+          cp ./pages/index.yaml ./cache/${{ steps.variables.outputs.repo-name }}-index.yaml
 
       - name: Update helm dependencies
         run: |

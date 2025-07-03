@@ -37,12 +37,6 @@ jobs:
             > /tmp/Chart.yaml
           cp /tmp/Chart.yaml chart/mob-assist-ui/Chart.yaml
           
-          cat chart/appid-binding/Chart.yaml | \
-            sed "s/appVersion:.*/appVersion: \"${TAG_NAME}\"/g" | \
-            sed "s/version:.*/version: \"${TAG_NAME}\"/g" \
-            > /tmp/Chart.yaml
-          cp /tmp/Chart.yaml chart/appid-binding/Chart.yaml
-          
           cat package.json | \
             sed "s/\"version\":.*/\"version\": \"${TAG_NAME}\",/g" \
             > /tmp/package.json

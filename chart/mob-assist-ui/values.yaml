@@ -86,3 +86,7 @@ serverUrl: "http://mob-assist-api"
 
 route:
   enabled: true
+
+appid-binding:
+  enabled: false
+  fullnameOverride: "appid-binding"

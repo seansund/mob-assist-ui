@@ -1,4 +1,7 @@
 
+nameOverride: ""
+fullnameOverride: ""
+
 discoveryEndpoint: ""
 tenantId: ""
 clientId: ""

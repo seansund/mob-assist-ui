@@ -31,11 +31,11 @@ jobs:
       - name: Update chart version
         run: |
           TAG_NAME=$(echo "${{ steps.create-release.outputs.tag_name }}" | sed "s/v//g")
-          cat chart/mob-assist-api/Chart.yaml | \
+          cat chart/mob-assist-ui/Chart.yaml | \
             sed "s/appVersion:.*/appVersion: \"${TAG_NAME}\"/g" | \
             sed "s/version:.*/version: \"${TAG_NAME}\"/g" \
             > /tmp/Chart.yaml
-          cp /tmp/Chart.yaml chart/mob-assist-api/Chart.yaml
+          cp /tmp/Chart.yaml chart/mob-assist-ui/Chart.yaml
           
           cat chart/appid-binding/Chart.yaml | \
             sed "s/appVersion:.*/appVersion: \"${TAG_NAME}\"/g" | \
@@ -50,7 +50,7 @@ jobs:
           
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add chart/mob-assist-api/Chart.yaml
+          git add chart
           git add package.json
           git commit -m "Update version to ${TAG_NAME} in package.json and chart"
 

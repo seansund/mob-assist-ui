@@ -20,13 +20,6 @@ spec:
       labels:
         {{- include "mob-assist-ui.selectorLabels" . | nindent 8 }}
     spec:
-      volumes:
-        - name: config
-          configMap:
-            name: {{ include "mob-assist-ui.config-name" . }}
-        - name: default-config
-          configMap:
-            name: {{ include "mob-assist-ui.default-config-name" . }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -40,11 +33,13 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          volumeMounts:
-            - mountPath: /opt/app-root/etc/nginx.d
-              name: config
-            - mountPath: /opt/app-root/etc/nginx.default.d
-              name: default-config
+          env:
+            - name: NEXTAUTH_SECRET
+              value: {{ randAlphaNum 12 }}
+          envFrom:
+            - secretRef:
+                name: appid-binding
+              prefix: APPID_
           ports:
             - name: http
               containerPort: {{ .Values.image.port }}

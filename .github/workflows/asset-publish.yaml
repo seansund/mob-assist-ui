@@ -23,6 +23,12 @@ jobs:
           ref: ${{ github.event.release.tag_name }}
           path: release
 
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+
       - name: Install helm
         uses: azure/setup-helm@v4
         with:
@@ -35,7 +41,7 @@ jobs:
           FULL_RELEASE_TAG=${{ github.event.release.tag_name }}
           RELEASE_TAG=${FULL_RELEASE_TAG/v/}
           
-          REPO_NAME="mob-assist-api"
+          REPO_NAME="mob-assist-ui"
           CHART_NAME="${{ matrix.chart_name }}"
           CHART_PATH="release/chart/${CHART_NAME}"
           CHART_PACKAGE="${CHART_NAME}-${RELEASE_TAG}.tgz"
@@ -65,9 +71,17 @@ jobs:
           
           echo "Repo url: ${REPO_URL}"
           echo "repo-url=$REPO_URL" >> $GITHUB_OUTPUT
+          
+          echo "Repo name: ${REPO_NAME}"
+          echo "repo-name=$REPO_NAME" >> $GITHUB_OUTPUT
 
       - name: Update helm dependencies
-        run: helm dep update ${{ steps.variables.outputs.chart-path }}
+        run: |
+          helm repo add \
+            ${{ steps.variables.outputs.repo-name }} \
+            ${{ steps.variables.outputs.repo-url }} \
+            --repository-cache ./pages
+          helm dep update ${{ steps.variables.outputs.chart-path }}
 
       - name: Build helm package
         run: helm package ${{ steps.variables.outputs.chart-path }} -d ./${{ steps.variables.outputs.package-dir }}
@@ -88,12 +102,6 @@ jobs:
           helm repo index ${{ steps.variables.outputs.package-dir }} \
             --url ${{ steps.variables.outputs.asset-url }} \
             --merge ./index.current.yaml
-
-      - name: Checkout gh-pages
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          path: pages
 
       - name: Update repo index
         run: |

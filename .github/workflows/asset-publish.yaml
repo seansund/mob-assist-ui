@@ -35,7 +35,7 @@ jobs:
           RELEASE_TAG=${FULL_RELEASE_TAG/v/}
           
           REPO_NAME="mob-assist-api"
-          CHART_NAME="${{ matrix.platform }}"
+          CHART_NAME="${{ matrix.chart_name }}"
           CHART_PATH="release/chart/${CHART_NAME}"
           CHART_PACKAGE="${CHART_NAME}-${RELEASE_TAG}.tgz"
           PACKAGE_DIR="packages"

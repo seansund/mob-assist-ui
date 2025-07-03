@@ -79,13 +79,18 @@ jobs:
           echo "Repo name: ${REPO_NAME}"
           echo "repo-name=$REPO_NAME" >> $GITHUB_OUTPUT
 
+      - name: Update helm cache
+        run: |
+          mkdir cache
+          ln -s ./pages/index.yaml ./cache/${{ steps.variables.outputs.repo-name }}-index.yaml
+
       - name: Update helm dependencies
         run: |
           helm repo add \
             ${{ steps.variables.outputs.repo-name }} \
             ${{ steps.variables.outputs.repo-base-url }} \
-            --repository-cache ./pages
-          helm dep update ${{ steps.variables.outputs.chart-path }}
+            --repository-cache ./cache
+          helm dep update ${{ steps.variables.outputs.chart-path }} --repository-cache ./cache
 
       - name: Build helm package
         run: helm package ${{ steps.variables.outputs.chart-path }} -d ./${{ steps.variables.outputs.package-dir }}

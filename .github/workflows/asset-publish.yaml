@@ -48,7 +48,8 @@ jobs:
           PACKAGE_DIR="packages"
           
           ASSET_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${FULL_RELEASE_TAG}"
-          REPO_URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${REPO_NAME}/index.yaml"
+          REPO_BASE_URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${REPO_NAME}"
+          REPO_URL="${REPO_BASE_URL}/index.yaml"
           
           echo "Release tag: ${RELEASE_TAG}"
           echo "release-tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
@@ -69,6 +70,9 @@ jobs:
           echo "Asset url: ${ASSET_URL}"
           echo "asset-url=$ASSET_URL" >> $GITHUB_OUTPUT
           
+          echo "Repo base url: ${REPO_BASE_URL}"
+          echo "repo-base-url=$REPO_BASE_URL" >> $GITHUB_OUTPUT
+          
           echo "Repo url: ${REPO_URL}"
           echo "repo-url=$REPO_URL" >> $GITHUB_OUTPUT
           
@@ -79,7 +83,7 @@ jobs:
         run: |
           helm repo add \
             ${{ steps.variables.outputs.repo-name }} \
-            ${{ steps.variables.outputs.repo-url }} \
+            ${{ steps.variables.outputs.repo-base-url }} \
             --repository-cache ./pages
           helm dep update ${{ steps.variables.outputs.chart-path }}
 

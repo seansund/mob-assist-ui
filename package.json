@@ -1,6 +1,6 @@
 {
   "name": "mob-assist-ui",
-  "version": "0.1.0",
+  ersion": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

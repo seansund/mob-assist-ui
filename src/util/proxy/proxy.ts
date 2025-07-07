@@ -1,29 +1,30 @@
 import {IncomingHttpHeaders} from "http";
 import {NextApiRequest, NextApiResponse} from "next";
 import {parse} from 'url';
+import getRawBody from 'raw-body';
 
-const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+const backendUrl = process.env.BACKEND_URL ?? 'http://mob-assist-api:3001';
 
 const getBackendHost = () => {
     return backendUrl;
 }
 
 export const proxy = async (req: NextApiRequest, res: NextApiResponse, targetPath?: string): Promise<NextApiResponse> => {
-    const incomingUrl = parse(req.url || '', true);
+    const incomingUrl = parse(req.url ?? '', true);
 
-    const backendHost = getBackendHost()
-    const backendPath = targetPath || incomingUrl.pathname;
+    const incomingPath = incomingUrl.pathname ?? '/';
+
+    const backendHost = getBackendHost();
+    const backendPath = targetPath ?? incomingPath;
 
     const backendUrl = `${backendHost}${backendPath}${toQueryString(req.query)}`;
-
-    console.log(`Proxying ${incomingUrl.pathname}${toQueryString(req.query)} to: ${backendUrl}`);
 
     return fetch(
         backendUrl,
         {
             method: req.method,
             headers: mapHeaders(req.headers),
-            body: req.body,
+            body: await getRawBody(req),
         })
         .then(async response => {
             const data = await response.text();
@@ -34,11 +35,21 @@ export const proxy = async (req: NextApiRequest, res: NextApiResponse, targetPat
         })
 }
 
-const mapHeaders = (headers: IncomingHttpHeaders): Headers => {
-    return Object.keys(headers).reduce((result: Headers, key: string) => {
-        result.append(key, headers[key] as string);
-        return result;
+const mapHeaders = (headers: IncomingHttpHeaders = {}, contentLength?: number): Headers => {
+    const result = Object.keys(headers).reduce((partialResult: Headers, key: string) => {
+        if (key === 'content-length') {
+            return partialResult;
+        }
+
+        partialResult.append(key, headers[key] as string);
+        return partialResult;
     }, new Headers);
+
+    if (contentLength) {
+        result.append('Content-Length', contentLength.toString());
+    }
+
+    return result;
 }
 
 type Query = Partial<{

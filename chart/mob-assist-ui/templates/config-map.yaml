@@ -4,4 +4,8 @@ metadata:
   name: {{ include "mob-assist-ui.config-name" . }}
   labels:
     {{ include "mob-assist-ui.labels" . | nindent 4 }}
-data: {}
+data:
+  APP_HOST: {{ required "'appHost' is required" .Values.appHost | quote }}
+  APP_PORT: {{ required "'appPort' is required" .Values.appPort | quote }}
+  NEXTAUTH_URL: {{ required "'appUrl' is required" .Values.appUrl | quote }}
+  BACKEND_URL: {{ printf "http://mob-assist-api.%s.svc" .Release.Namespace | quote }}

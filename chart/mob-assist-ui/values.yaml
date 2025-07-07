@@ -87,6 +87,13 @@ serverUrl: "http://mob-assist-api"
 route:
   enabled: true
 
+# The public host name of the deployed application (ingress host)
+appHost: ""
+# The public port of the deployed application (ingress port, e.g. 80 or 443)
+appPort: ""
+# The public url of the deployed application (ingress url, e.g. https://{APP_HOST})
+appUrl: ""
+
 appid-binding:
   enabled: false
   fullnameOverride: "appid-binding"

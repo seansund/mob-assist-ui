@@ -12,10 +12,10 @@ const splitLink = (): ApolloLink => {
         return _splitLink
     }
 
-    const subscriptionUrl = `ws://${APP_HOST}:${APP_PORT}/subscription`
+    const subscriptionUrl = `ws://${APP_HOST}:${APP_PORT}/api/subscription`
 
     const httpLink = new HttpLink({
-      uri: '/graphql'
+      uri: '/api/graphql'
     });
 
     const wsLink = new GraphQLWsLink(createClient({
@@ -45,6 +45,10 @@ let _client: ApolloClient<any>
 export const getApolloClient = () => _client
     ? _client
     : _client = new ApolloClient({
-      link: splitLink(),
-      cache: new InMemoryCache(),
+        link: splitLink(),
+        cache: new InMemoryCache(),
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
     });

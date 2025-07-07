@@ -284,6 +284,21 @@ entries:
     version: 0.1.2
   mob-assist-ui:
   - apiVersion: v2
+    appVersion: 1.0.10
+    created: "2025-07-07T22:15:27.804073327Z"
+    dependencies:
+    - condition: appid-binding.enabled
+      name: appid-binding
+      repository: https://seansund.github.io/helm-charts/
+      version: 1.0.0
+    description: A Helm chart for Kubernetes
+    digest: a79f6e155d4cf1dd026f3331b71acae1480e5fccfa44d28287c7015c2b0596da
+    name: mob-assist-ui
+    type: application
+    urls:
+    - https://github.com/seansund/mob-assist-ui/releases/download/v1.0.10/mob-assist-ui-1.0.10.tgz
+    version: 1.0.10
+  - apiVersion: v2
     appVersion: 1.0.9
     created: "2025-07-03T23:25:01.807183387Z"
     dependencies:
@@ -298,4 +313,4 @@ entries:
     urls:
     - https://github.com/seansund/mob-assist-ui/releases/download/v1.0.9/mob-assist-ui-1.0.9.tgz
     version: 1.0.9
-generated: "2025-07-03T23:25:01.806490153Z"
+generated: "2025-07-07T22:15:27.803382675Z"

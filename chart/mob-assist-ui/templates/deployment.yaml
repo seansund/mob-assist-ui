@@ -40,6 +40,8 @@ spec:
             - secretRef:
                 name: appid-binding
               prefix: APPID_
+            - configMapRef:
+                name: {{ include "mob-assist-ui.config-name" . }}
           ports:
             - name: http
               containerPort: {{ .Values.image.port }}
